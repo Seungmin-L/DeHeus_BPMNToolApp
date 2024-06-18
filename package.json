@@ -1,0 +1,15 @@
+{
+  "name": "deheus_bpmntoolapp",
+  "version": "1.0.0",
+  "description": "- **Project Name:** BPMN Tool Application\r - **Company:** De Heus",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

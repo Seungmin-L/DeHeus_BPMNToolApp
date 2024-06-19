@@ -11,7 +11,30 @@ body {
   height: 100vh;
 }
 
-.modeler-parent{
+.main-container{
+  height: 100%;
+}
+
+.modeler-header{
+  height: 20%;
+}
+
+#modeler-container{
+  width: 100%;
+  height: 80%;
+  position: relative;
+}
+
+.grid-bg{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.djs-palette.two-column.open{
+  top: 0 !important;
+  left: 0 !important;
+  width: 15% !important;
   height: 100%;
 }
 

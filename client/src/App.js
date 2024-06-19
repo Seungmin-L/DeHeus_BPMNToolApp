@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './Home';
 import Publish from './Publish';
+import Error from './Error';
 import './App.css';
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/publish/:filename" element={<Publish />} />
+        <Route path="*" element={<Error />} />
       </Routes>
     </Router>
   )

@@ -4,7 +4,7 @@ import minimapModule from 'diagram-js-minimap';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
-
+import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 
 function BpmnTest() {
     const container = useRef(null);
@@ -15,8 +15,13 @@ function BpmnTest() {
         if (modelerInstance) return;
         modelerInstance = new BpmnModeler({
             container: container.current,
-            keyboard: {bindTo: container.current},
+            keyboard: { bindTo: document },
+            propertiesPanel: {
+                parent: document.getElementById("properties-panel-parent")
+            },
             additionalModules: [
+                BpmnPropertiesPanelModule,
+                BpmnPropertiesProviderModule,
                 minimapModule
             ]
         });
@@ -27,7 +32,10 @@ function BpmnTest() {
         //     }
         //     modelerInstance.get("canvas").zoom("fit-viewport");
         // });
-        modelerInstance.createDiagram().then(() => modelerInstance.get("minimap").open());
+        modelerInstance.createDiagram().then(() => {
+            modelerInstance.get('minimap').open();
+            modelerInstance.get('keyboard').bind(document);
+        });
         setModeler(modelerInstance);
 
         return () => {
@@ -37,11 +45,14 @@ function BpmnTest() {
 
     return (
         <div className='main-container'>
-            <div className='modeler-header'>
+            <div className='model-header'>
 
             </div>
-            <div id='modeler-container' ref={container}>
-                <img src="https://svgshare.com/i/eGa.svg" className='grid-bg'/>
+            <div className='model-body'>
+                <div className='hierarchy-sidebar'>Hierarchy</div>
+                <div id='modeler-container' ref={container}>
+                </div>
+                <div id='properties-panel-parent' />
             </div>
         </div>
     )

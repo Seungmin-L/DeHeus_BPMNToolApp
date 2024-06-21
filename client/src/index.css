@@ -15,26 +15,55 @@ body {
   height: 100%;
 }
 
-.modeler-header{
+.model-header{
   height: 20%;
 }
 
-#modeler-container{
-  width: 100%;
+.model-body{
   height: 80%;
-  position: relative;
+  display: flex;
 }
 
-.grid-bg{
-  width: 100%;
+#properties-panel-parent {
+  width: 250px;
+  border-left: 1px solid #ccc;
+  overflow: auto;
+  &:empty {
+    display: none;
+  }
+  > .bio-properties-panel {
+    padding-bottom: 70px;
+    min-height:100%;
+  }
+}
+
+#modeler-container{
+  width: calc(100vw - 450px);
   height: 100%;
-  position: absolute;
+  position: relative;
+  background: url("https://svgshare.com/i/eGa.svg") center no-repeat;
+}
+
+/*Hide BPMN.io at the bottom
+.bjs-container a{
+  display: none;
+} */
+
+.hierarchy-sidebar{
+  width: 200px;
+  border: 1px solid hsl(225, 10%, 75%);
+}
+
+.djs-container{
+  width: calc(100% - 200px) !important;
+  float: right;
 }
 
 .djs-palette.two-column.open{
-  top: 0 !important;
-  left: 0 !important;
-  width: 15% !important;
+  position: fixed !important;
+  top: 20% !important;
+  left: 200px !important;
+  width: 200px !important;
   height: 100%;
 }
 

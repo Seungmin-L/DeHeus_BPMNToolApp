@@ -1,12 +1,15 @@
+import { useMsal } from "@azure/msal-react";
 import React from "react";
 import { Button } from "react-bootstrap";
 import { FaHome } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { loginRequest } from "./authConfig";
 
 function Home() {
-  const navigate = useNavigate();
-  const goLogin = () => {
-    navigate("/login");
+  const { instance } = useMsal();
+  const handleLogin = () => {
+    instance.loginRedirect(loginRequest).catch((e) => {
+      console.error(e);
+    });
   };
 
   return (
@@ -16,7 +19,12 @@ function Home() {
       <p className="lead">
         This is the landing page. (Design to be edited further.)
       </p>
-      <Button variant="primary" onClick={goLogin} size="lg" className="mt-4">
+      <Button
+        variant="primary"
+        onClick={handleLogin}
+        size="lg"
+        className="mt-4"
+      >
         Start
       </Button>
     </div>

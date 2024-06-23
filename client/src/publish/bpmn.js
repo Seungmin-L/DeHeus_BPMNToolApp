@@ -1,38 +1,65 @@
-import React, { useEffect, useRef } from 'react';
-import BpmnJS from 'bpmn-js/dist/bpmn-modeler.development.js';
+import React, { useEffect, useRef, useState } from 'react';
+import BpmnJS from 'bpmn-js/lib/Modeler';
+import minimapModule from 'diagram-js-minimap';
 import $ from 'jquery';
+import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,  ZeebePropertiesProviderModule // Camunda 8 provider
+} from 'bpmn-js-properties-panel';
+import zeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
+import ZeebeBehaviorsModule from 'camunda-bpmn-js-behaviors/lib/camunda-cloud';
+
+
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 
-const BPMNViewer = () => {
-  const canvasRef = useRef(null);
+import diagramXML from '../resources/pizza-collaboration.bpmn';
+
+
+const BPMN = () => {
+  const container = useRef(null);
+  const [modeler, setModeler] = useState(null);
+  let modelerInstance = null;
+  const diagramUrl = 'https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn';
 
   useEffect(() => {
-    const diagramUrl = 'https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn';
-
-    const bpmnModeler = new BpmnJS({
-      container: canvasRef.current,
+    if (modelerInstance) return;
+    modelerInstance = new BpmnJS({
+      container: container.current,
       keyboard: {
-        bindTo: window
+        bindTo: document
+      },
+      propertiesPanel: {
+        parent: document.getElementById("properties-panel-parent")
+      },
+      additionalModules: [
+          BpmnPropertiesPanelModule,
+          BpmnPropertiesProviderModule,
+          minimapModule,
+          ZeebePropertiesProviderModule,
+          ZeebeBehaviorsModule
+      ],
+      moddleExtensions: {
+        zeebe: zeebeModdle
       }
     });
 
-    const exportDiagram = async () => {
-      try {
-        const result = await bpmnModeler.saveXML({ format: true });
-        alert('Diagram exported. Check the developer tools!');
-        console.log('DIAGRAM', result.xml);
-      } catch (err) {
-        console.error('could not save BPMN 2.0 diagram', err);
-      }
-    };
+    // const exportDiagram = async () => {
+    //   try {
+    //     const result = await bpmnModeler.saveXML({ format: true });
+    //     alert('Diagram exported. Check the developer tools!');
+    //     console.log('DIAGRAM', result.xml);
+    //   } catch (err) {
+    //     console.error('could not save BPMN 2.0 diagram', err);
+    //   }
+    // };
 
+    // opens diagram
     const openDiagram = async (bpmnXML) => {
       try {
-        await bpmnModeler.importXML(bpmnXML);
-        const canvas = bpmnModeler.get('canvas');
-        const overlays = bpmnModeler.get('overlays');
+        await modelerInstance.importXML(bpmnXML);
+        const canvas = modelerInstance.get('canvas');
+        const overlays = modelerInstance.get('overlays');
         canvas.zoom('fit-viewport');
         overlays.add('SCAN_OK', 'note', {
           position: {
@@ -47,22 +74,24 @@ const BPMNViewer = () => {
       }
     };
 
-    $.get(diagramUrl, openDiagram, 'text');
+    $.get(diagramXML, openDiagram, 'text');
 
-    document.getElementById('save-button').addEventListener('click', exportDiagram);
+
   }, []);
 
   return (
-    <>
-        <div style={{ height: '100vh', padding: 0, margin: 0 }}>
-            <h1>BPMN Modifier</h1>
-            <button id="save-button">print to console</button>
-            <div ref={canvasRef} style={{ height: '100%', padding: 0, margin: 0 }}></div>
-        </div>
-    </>
+    <div className='main-container'>
 
+      <div className='model-header'></div>
 
+      <div className='model-body'>
+        <div className='hierarchy-sidebar'>Hierarchy</div>
+        <div id='modeler-container' ref={container}></div>
+        <div id='properties-panel-parent'></div>
+      </div>
+
+    </div>
   );
 };
 
-export default BPMNViewer;
+export default BPMN;

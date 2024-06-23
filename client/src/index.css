@@ -7,7 +7,81 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+#root{
+  height: 100vh;
+}
+
+.main-container{
+  height: 100%;
+}
+
+.model-header{
+  height: 20%;
+}
+
+.model-body{
+  height: 80%;
+  display: flex;
+}
+
+#properties-panel-parent {
+  width: 250px;
+  border-left: 1px solid #ccc;
+  overflow: auto;
+  &:empty {
+    display: none;
+  }
+  > .bio-properties-panel {
+    padding-bottom: 70px;
+    min-height:100%;
+  }
+}
+
+#modeler-container{
+  width: calc(100vw - 450px);
+  height: 100%;
+  position: relative;
+  background: url("https://svgshare.com/i/eGa.svg") center no-repeat;
+}
+
+Hide BPMN.io at the bottom
+.bjs-container a{
+  display: none;
+}
+
+.hierarchy-sidebar{
+  width: 200px;
+  border: 1px solid hsl(225, 10%, 75%);
+}
+
+.djs-container{
+  width: calc(100% - 200px) !important;
+  float: right;
+}
+
+.djs-palette.two-column.open{
+  position: fixed !important;
+  top: 20% !important;
+  left: 200px !important;
+  width: 200px !important;
+  height: 100%;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.entry.bpmn-icon-connection-multi:before {
+  content: "";
+  display: inline-block;
+  height: 20px;  /* adjust based on your needs */
+  width: 20px;  /* adjust based on your needs */
+  background-image: url('https://static-00.iconduck.com/assets.00/connection-multi-icon-477x512-v04k3v0n.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.entry.bpmn-icon-connection-multi:hover:before {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(99%) saturate(4094%) hue-rotate(190deg) brightness(102%) contrast(104%);
 }

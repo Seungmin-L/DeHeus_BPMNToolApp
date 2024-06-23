@@ -44,10 +44,10 @@ body {
   background: url("https://svgshare.com/i/eGa.svg") center no-repeat;
 }
 
-/*Hide BPMN.io at the bottom
+/*Hide BPMN.io at the bottom*/
 .bjs-container a{
-  display: none;
-} */
+  display: none ;
+}
 
 .hierarchy-sidebar{
   width: 200px;

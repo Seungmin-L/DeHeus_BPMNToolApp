@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
-import minimapModule from 'diagram-js-minimap';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import ColorPickerModule from 'bpmn-js-color-picker';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 
 function BpmnTest() {
@@ -22,7 +22,7 @@ function BpmnTest() {
             additionalModules: [
                 BpmnPropertiesPanelModule,
                 BpmnPropertiesProviderModule,
-                minimapModule
+                ColorPickerModule
             ]
         });
         // modelerInstance.importXML(diagramXML)
@@ -33,11 +33,9 @@ function BpmnTest() {
         //     modelerInstance.get("canvas").zoom("fit-viewport");
         // });
         modelerInstance.createDiagram().then(() => {
-            modelerInstance.get('minimap').open();
             modelerInstance.get('keyboard').bind(document);
         });
         setModeler(modelerInstance);
-
         return () => {
             modeler?.destroy();
         }
@@ -46,7 +44,6 @@ function BpmnTest() {
     return (
         <div className='main-container'>
             <div className='model-header'>
-
             </div>
             <div className='model-body'>
                 <div className='hierarchy-sidebar'>Hierarchy</div>

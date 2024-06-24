@@ -67,6 +67,34 @@ body {
   height: 100%;
 }
 
+.hide{
+  width: 50px;
+}
+
+.sidebar-hidden{
+  width: calc(100% - 50px) !important;
+  .djs-palette.two-column.open{
+    left: 50px !important;
+  }
+}
+
+.color-picker ul{
+  display: flex;
+}
+
+.color-picker ul li:not(:last-child){
+  border-right: 2px solid hsl(225, 10%, 90%);
+}
+
+.color-picker ul li{
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* .djs-context-pad > :not(:first-child){
+  display: none;
+} */
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

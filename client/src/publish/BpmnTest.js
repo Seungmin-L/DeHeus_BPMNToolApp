@@ -9,6 +9,7 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js
 function BpmnTest() {
     const container = useRef(null);
     const [modeler, setModeler] = useState(null);
+    const [isHidden, setIsHidden] = useState(false);
     let modelerInstance = null;
 
     useEffect(() => {
@@ -41,14 +42,19 @@ function BpmnTest() {
         }
     }, []);
 
+    const handleHidden = () => {
+        setIsHidden(prev => !prev);
+    }
+
     return (
         <div className='main-container'>
             <div className='model-header'>
             </div>
             <div className='model-body'>
-                <div className='hierarchy-sidebar'>Hierarchy</div>
-                <div id='modeler-container' ref={container}>
+                <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>
+                    <button onClick={handleHidden} style={{width: "50px"}}>{isHidden ? "Show" : "Hide"}</button>
                 </div>
+                <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container}/>
                 <div id='properties-panel-parent' />
             </div>
         </div>

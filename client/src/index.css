@@ -38,15 +38,16 @@ body {
 }
 
 #modeler-container{
-  width: calc(100vw - 450px);
+  /* width: calc(100vw - 450px); */
+  width: 100%;
   height: 100%;
   position: relative;
   background: url("https://svgshare.com/i/eGa.svg") center no-repeat;
 }
 
-Hide BPMN.io at the bottom
+/*Hide BPMN.io at the bottom*/
 .bjs-container a{
-  display: none;
+  display: none ;
 }
 
 .hierarchy-sidebar{
@@ -62,21 +63,52 @@ Hide BPMN.io at the bottom
 .djs-palette.two-column.open{
   position: fixed !important;
   top: 20% !important;
-  left: 200px !important;
+  left: 0px !important;
   width: 200px !important;
   height: 100%;
 }
+
+.hide{
+  width: 50px;
+}
+
+.sidebar-hidden{
+  width: calc(100% - 50px) !important;
+  .djs-palette.two-column.open{
+    left: 50px !important;
+  }
+}
+
+.color-picker ul{
+  display: flex;
+}
+
+.color-picker ul li:not(:last-child){
+  border-right: 2px solid hsl(225, 10%, 90%);
+}
+
+.color-picker ul li{
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* .djs-context-pad > :not(:first-child){
+  display: none;
+} */
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
+
+/* CSS for ICONS */
+
 .entry.bpmn-icon-connection-multi:before {
   content: "";
   display: inline-block;
-  height: 20px;  /* adjust based on your needs */
-  width: 20px;  /* adjust based on your needs */
+  height: 20px; 
+  width: 20px;  
   background-image: url('https://static-00.iconduck.com/assets.00/connection-multi-icon-477x512-v04k3v0n.png');
   background-size: contain;
   background-repeat: no-repeat;
@@ -85,3 +117,6 @@ code {
 .entry.bpmn-icon-connection-multi:hover:before {
   filter: brightness(0) saturate(100%) invert(28%) sepia(99%) saturate(4094%) hue-rotate(190deg) brightness(102%) contrast(104%);
 }
+
+/* CSS for Sidebar */
+

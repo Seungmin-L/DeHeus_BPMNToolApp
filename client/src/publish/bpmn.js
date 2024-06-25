@@ -2,16 +2,22 @@ import React, { useEffect, useRef, useState } from 'react';
 import BpmnJS from 'bpmn-js/lib/Modeler';
 import minimapModule from 'diagram-js-minimap';
 import $ from 'jquery';
-import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,  ZeebePropertiesProviderModule // Camunda 8 provider
+import { 
+  BpmnPropertiesPanelModule, 
+  BpmnPropertiesProviderModule,  
+  ZeebePropertiesProviderModule, 
+  CamundaPlatformPropertiesProviderModule // Camunda 8 provider
 } from 'bpmn-js-properties-panel';
 import zeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
 import ZeebeBehaviorsModule from 'camunda-bpmn-js-behaviors/lib/camunda-cloud';
+import camundaModdleDescriptor from 'camunda-bpmn-moddle/resources/camunda'; // Import this
 
 
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import '../property-panel.css';
 
 import diagramXML from '../resources/pizza-collaboration.bpmn';
 
@@ -19,6 +25,7 @@ import diagramXML from '../resources/pizza-collaboration.bpmn';
 const BPMN = () => {
   const container = useRef(null);
   const [modeler, setModeler] = useState(null);
+  const [isHidden, setIsHidden] = useState(false);
   let modelerInstance = null;
   const diagramUrl = 'https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn';
 
@@ -30,17 +37,19 @@ const BPMN = () => {
         bindTo: document
       },
       propertiesPanel: {
-        parent: document.getElementById("properties-panel-parent")
+        parent: '#properties-panel-parent'
       },
       additionalModules: [
           BpmnPropertiesPanelModule,
           BpmnPropertiesProviderModule,
+          CamundaPlatformPropertiesProviderModule,
           minimapModule,
-          ZeebePropertiesProviderModule,
-          ZeebeBehaviorsModule
+          // ZeebePropertiesProviderModule,
+          // ZeebeBehaviorsModule,
       ],
       moddleExtensions: {
-        zeebe: zeebeModdle
+        camunda: camundaModdleDescriptor 
+        // zeebe: zeebeModdle
       }
     });
 
@@ -74,10 +83,21 @@ const BPMN = () => {
       }
     };
 
-    $.get(diagramXML, openDiagram, 'text');
+    modelerInstance.createDiagram().then(() => {
+      modelerInstance.get('keyboard').bind(document);
+    });
+    setModeler(modelerInstance);
+    return () => {
+        modeler?.destroy();
+    }
+    // $.get(diagramUrl, openDiagram, 'text');
 
 
   }, []);
+
+  const handleHidden = () => {
+    setIsHidden(prev => !prev);
+  }
 
   return (
     <div className='main-container'>
@@ -85,8 +105,10 @@ const BPMN = () => {
       <div className='model-header'></div>
 
       <div className='model-body'>
-        <div className='hierarchy-sidebar'>Hierarchy</div>
-        <div id='modeler-container' ref={container}></div>
+        <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>
+            <button onClick={handleHidden} style={{width: "50px"}}>{isHidden ? "Show" : "Hide"}</button>
+        </div>
+        <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container}/>
         <div id='properties-panel-parent'></div>
       </div>
 

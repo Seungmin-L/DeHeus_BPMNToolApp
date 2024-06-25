@@ -1,7 +1,6 @@
 const sql = require('mssql');
-require('dotenv').config();
 
-const config = {
+const dbConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
@@ -21,7 +20,7 @@ const config = {
 
 async function connectDB() {
     try {
-        const pool = await sql.connect(config);
+        const pool = await sql.connect(dbConfig);
         console.log('Connected to the SQL Database');
 
         const tableCheckQuery = `

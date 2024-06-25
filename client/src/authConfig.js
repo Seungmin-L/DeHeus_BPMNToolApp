@@ -11,18 +11,6 @@ const msalConfig = {
   },
 };
 
-
-// const msalConfig = {
-//   auth: {
-//     clientId: "9075fb04-4434-493d-8d9b-c5b2a06ed6ef",
-//     authority:
-//       "https://login.microsoftonline.com/78828adaum.onmicrosoft.com",
-//     redirectUri: "http://localhost:3000/main",
-//     postLogoutRedirectUri: "/",
-//     navigateToLoginRequestUrl: false,
-//   },
-// };
-
 export const msalInstance = new PublicClientApplication(msalConfig);
 
 export const loginRequest = {

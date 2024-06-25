@@ -1,40 +1,3 @@
-// import { useMsal } from "@azure/msal-react";
-// import React from "react";
-// import { Button } from "react-bootstrap";
-// import { FaHome } from "react-icons/fa";
-// import { loginRequest } from "./authConfig";
-
-// function Home() {
-//   const { instance } = useMsal();
-//   const handleLogin = () => {
-//     instance.loginRedirect(loginRequest).catch((e) => {
-//       console.error(e);
-//     });
-//   };
-
-//   return (
-//     <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-//       <FaHome size={100} className="mb-4 text-primary" />
-//       <h1 className="display-1">De Heus BPMN Tool Application</h1>
-//       <p className="lead">
-//         This is the landing page. (Design to be edited further.)
-//       </p>
-//       <Button
-//         variant="primary"
-//         onClick={handleLogin}
-//         size="lg"
-//         className="mt-4"
-//       >
-//         Start
-//       </Button>
-//     </div>
-//   );
-// }
-
-// export default Home;
-
-
-
 import { useMsal } from "@azure/msal-react";
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
@@ -63,20 +26,6 @@ function Home() {
               'Content-Type': 'application/json'
             }
           });
-
-        //   if (response.data.isAuthenticated) {
-        //     console.log('[handleLoginRedirect] Email is registered, proceeding with login');
-        //     window.location.href = "http://localhost:3000/main"; // 리다이렉트 링크
-        //   } else {
-        //     console.log('[handleLoginRedirect] Email is not registered, logging out');
-        //     setLoginError('Email is not registered.');
-        //     instance.logoutRedirect();
-        //   }
-        // } catch (error) {
-        //   console.error(`[handleLoginRedirect] Server error: ${error}`);
-        //   setLoginError('Server error occurred.');
-        // }
-
     //
         if (response.status === 200 && response.data.isAuthenticated) {
           console.log('[handleLoginPopup] Email is registered, proceeding with login');

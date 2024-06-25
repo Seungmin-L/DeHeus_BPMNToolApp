@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const sql = require('mssql');
 
-// const authenticateUser = (req, res) => {
 const authenticateUser = async (req, res) => {
   console.log("Received request:", req.body); // 추가된 로그
   const { token } = req.body;

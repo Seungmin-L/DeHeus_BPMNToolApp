@@ -17,6 +17,8 @@ body {
 
 .model-header{
   height: 20%;
+  display: flex;
+  align-items: end;
 }
 
 .model-body{
@@ -119,4 +121,7 @@ code {
 }
 
 /* CSS for Sidebar */
+
+
+
 

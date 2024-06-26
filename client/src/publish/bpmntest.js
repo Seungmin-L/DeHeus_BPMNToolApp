@@ -1,31 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 // import BpmnModeler from 'camunda-bpmn-js/lib/camunda-platform/Modeler'; 
+
+// BPMN imports
 import BpmnModeler from 'bpmn-js/lib/Modeler';
-import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css'; 
 import minimapModule from 'diagram-js-minimap';
 import ColorPickerModule from 'bpmn-js-color-picker';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css'; 
 import { 
     BpmnPropertiesPanelModule, 
     BpmnPropertiesProviderModule,  
-    ZeebePropertiesProviderModule, 
-    CamundaPlatformPropertiesProviderModule, // Camunda 8 provider
-    CamundaPlatformTooltipProvider
+    // ZeebePropertiesProviderModule, 
+    // CamundaPlatformPropertiesProviderModule,
+    // CamundaPlatformTooltipProvider
   } from 'bpmn-js-properties-panel';
 import { isArray } from 'min-dash';
 import camundaModdleDescriptor from 'camunda-bpmn-moddle/resources/camunda'; 
 
-// Import this
-// Camunda 8 moddle extension
-import zeebeModdle from 'zeebe-bpmn-moddle/resources/zeebe';
-// Camunda 8 behaviors
-import ZeebeBehaviorsModule from 'camunda-bpmn-js-behaviors/lib/camunda-cloud';
+// diagram file
 import diagramXML from '../resources/pizza-collaboration.bpmn';
 
 // toolbar
-import Toolbar from './features/toolbar';
+import Toolbar from './features/toolbar/toolbar';
 
 function BpmnTest() {
     const diagramUrl = 'https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn';
@@ -58,33 +56,33 @@ function BpmnTest() {
         });
 
         // opens diagram
-        // const openDiagram = async (bpmnXML) => {
-        //     try {
-        //     await modelerInstance.importXML(bpmnXML);
-        //     const canvas = modelerInstance.get('canvas');
-        //     const overlays = modelerInstance.get('overlays');
-        //     canvas.zoom('fit-viewport');
-        //     overlays.add('SCAN_OK', 'note', {
-        //         position: {
-        //         bottom: 0,
-        //         right: 0
-        //         },
-        //         html: '<div class="diagram-note">Mixed up the labels?</div>'
-        //     });
-        //     canvas.addMarker('SCAN_OK', 'needs-discussion');
-        //     } catch (err) {
-        //     console.error('could not import BPMN 2.0 diagram', err);
-        //     }
-        // };
+        const openDiagram = async (bpmnXML) => {
+            try {
+            await modelerInstance.importXML(bpmnXML);
+            const canvas = modelerInstance.get('canvas');
+            const overlays = modelerInstance.get('overlays');
+            canvas.zoom('fit-viewport');
+            overlays.add('SCAN_OK', 'note', {
+                position: {
+                bottom: 0,
+                right: 0
+                },
+                html: '<div class="diagram-note">Mixed up the labels?</div>'
+            });
+            canvas.addMarker('SCAN_OK', 'needs-discussion');
+            } catch (err) {
+            console.error('could not import BPMN 2.0 diagram', err);
+            }
+        };
     
-        // fetch('https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn')
-        //     .then(response => response.text())
-        //     .then(openDiagram);
+        fetch('https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn')
+            .then(response => response.text())
+            .then(openDiagram);
 
-        modelerInstance.createDiagram().then(() => {
-            modelerInstance.get('keyboard').bind(document);
-            console.log(modelerInstance.get('commandStack')); // Should log the commandStack
-        });
+        // modelerInstance.createDiagram().then(() => {
+        //     modelerInstance.get('keyboard').bind(document);
+        //     console.log(modelerInstance.get('commandStack')); // Should log the commandStack
+        // });
 
         setModeler(modelerInstance);
         // return () => {
@@ -114,9 +112,6 @@ function BpmnTest() {
     // Implement save functionality here
     };
 
-    const handlePicture = () => {
-    // Implement picture functionality here
-    };
 
     const handleAlign = (alignment) => {
         const alignElements = modelerInstance.get('alignElements');
@@ -154,7 +149,6 @@ function BpmnTest() {
                 onZoomOut={handleZoomOut} 
                 onUndo={handleUndo} 
                 onRedo={handleRedo} 
-                onPicture={handlePicture} 
                 onAlignLeft={() => handleAlign('left')} 
                 onAlignCenter={() => handleAlign('center')} 
                 onAlignRight={() => handleAlign('right')} 

@@ -1,0 +1,33 @@
+/* CSS for toolbar */
+.toolbar {
+    display: inline-flex;        /* Enable flex layout */
+    flex-direction: row;  /* Arrange children in a row */
+    background-color: rgba(247,247,248,255); 
+    border: none;         /* No border */
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.toolbar div {
+    display: flex;
+}
+
+.toolbar button {
+    width: 35px;
+    height: 35px;
+    display: flex;        /* Enable flex layout */
+    justify-content: center; /* Center content horizontally */
+    align-items: center;  /* Center content vertically */
+    background: transparent; /* Transparent background */
+    border: none;         /* No border */
+}
+
+.toolbar-spacing {
+    width: 35px;
+    height: 35px;
+    display: flex;        /* Enable flex layout */
+    justify-content: center; /* Center content horizontally */
+    align-items: center;  /* Center content vertically */
+    background: transparent; /* Transparent background */
+    border: none;         /* No border */
+}

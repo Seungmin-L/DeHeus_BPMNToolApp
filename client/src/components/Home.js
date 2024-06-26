@@ -2,8 +2,7 @@ import { useMsal } from "@azure/msal-react";
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 import { FaHome } from "react-icons/fa";
-// import { loginRequest } from "../config/authConfig";
-import { loginRequest } from "./authConfig";
+import { loginRequest } from "../config/authConfig";
 import axios from 'axios';
 
 function Home() {

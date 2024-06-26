@@ -1,8 +1,8 @@
 import { useIsAuthenticated } from "@azure/msal-react";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Error from "./Error";
-import NoAuth from "./NoAuth";
+import Error from "./components/Error";
+import NoAuth from "./components/NoAuth";
 
 function Publish() {
   const { filename } = useParams();

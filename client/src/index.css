@@ -67,6 +67,10 @@ body {
   height: 100%;
 }
 
+.active{
+  opacity: 1.0;
+}
+
 .hide{
   width: 50px;
 }

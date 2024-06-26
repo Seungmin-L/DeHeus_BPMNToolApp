@@ -8,12 +8,16 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js
 
 function BpmnTest() {
     const container = useRef(null);
+    const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
+    const [diagramXML, setDiagramXML] = useState(null);
     let modelerInstance = null;
 
     useEffect(() => {
         if (modelerInstance) return;
+        // If there's a modeler instance already, destroy it
+        if (modeler) modeler.destroy();
         modelerInstance = new BpmnModeler({
             container: container.current,
             keyboard: { bindTo: document },
@@ -26,35 +30,139 @@ function BpmnTest() {
                 ColorPickerModule
             ]
         });
-        // modelerInstance.importXML(diagramXML)
-        // .then(({warnings}) => {
-        //     if(warnings.length){
-        //         console.warn(warnings);
-        //     }
-        //     modelerInstance.get("canvas").zoom("fit-viewport");
-        // });
-        modelerInstance.createDiagram().then(() => {
-            modelerInstance.get('keyboard').bind(document);
-        });
+        // Check file api availablitiy
+        if (!window.FileList || !window.FileReader) {
+            window.alert(
+                'Looks like you use an older browser that does not support drag and drop. ' +
+                'Try using Chrome, Firefox or the Internet Explorer > 10.');
+        } else {
+            registerFileDrop(document.getElementById('modeler-container'));
+        }
+        // Import file or create a new diagram
+        if (diagramXML) {
+            modelerInstance.importXML(diagramXML)
+                .then(({ warnings }) => {
+                    if (warnings.length) {
+                        console.warn(warnings);
+                    }
+                    modelerInstance.get("canvas").zoom("fit-viewport");
+                    modelerInstance.get('keyboard').bind(document);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        } else {
+            modelerInstance.createDiagram()
+                .then(() => {
+                    modelerInstance.get("canvas").zoom("fit-viewport");
+                    modelerInstance.get('keyboard').bind(document);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+        // Save diagram on every change
+        modelerInstance.on('commandStack.changed', saveDiagram);
         setModeler(modelerInstance);
         return () => {
             modeler?.destroy();
         }
-    }, []);
+    }, [diagramXML]);
 
     const handleHidden = () => {
         setIsHidden(prev => !prev);
     }
+    // File drag & drop
+    const registerFileDrop = (container) => {
+        const handleFileSelect = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
 
+            var files = e.dataTransfer.files;
+            var file = files[0];
+            var reader = new FileReader();
+            reader.onload = (e) => {
+                var xml = e.target.result;
+                setDiagramXML(xml);
+            };
+
+            reader.readAsText(file);
+        }
+
+        const handleDragOver = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+
+        container.addEventListener('dragover', handleDragOver, false);
+        container.addEventListener('drop', handleFileSelect, false);
+    }
+
+    const setEncoded = (link, name, data) => {
+        var encodedData = encodeURIComponent(data);
+        if (data) {
+            link.classList.add('active')
+            link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
+            link.setAttribute('download', name);
+        } else {
+            link.classList.remove('active');
+        }
+    }
+
+    // Export diagram
+    const exportDiagram = async (name) => {
+        if (modeler) {
+            const { xml } = await modeler.saveXML({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (xml) {
+                setEncoded(document.getElementById('export-diagram'), name + '.xml', xml);
+            };
+        }
+    };
+    // Save diagram
+    const saveDiagram = async () => {
+        if (modelerInstance) {
+            const { xml } = await modelerInstance.saveXML({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (xml) {
+                // Save diagram in DB
+                console.log(xml);
+            };
+        }
+    }
+    const onImportClick = () => {
+        importFile.current.click();
+    }
+    const onFileChange = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        var file = e.target.files[0];
+        var reader = new FileReader();
+        reader.onload = (e) => {
+            var xml = e.target.result;
+            setDiagramXML(xml);
+        };
+
+        reader.readAsText(file);
+    }
     return (
         <div className='main-container'>
             <div className='model-header'>
+                <a id='export-diagram' title='download BPMN diagram' target='_blank'
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        exportDiagram("diagram");
+                    }}><button>Export as XML</button></a>
+                <button onClick={onImportClick} title='import BPMN diagram'><input type='file' accept='text/xml' style={{ display: 'none' }} ref={importFile} onChange={(e) => onFileChange(e)} />Import File</button>
             </div>
             <div className='model-body'>
                 <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>
-                    <button onClick={handleHidden} style={{width: "50px"}}>{isHidden ? "Show" : "Hide"}</button>
+                    <button onClick={handleHidden} style={{ width: "50px" }}>{isHidden ? "Show" : "Hide"}</button>
                 </div>
-                <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container}/>
+                <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
                 <div id='properties-panel-parent' />
             </div>
         </div>

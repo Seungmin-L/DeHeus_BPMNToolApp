@@ -11,6 +11,7 @@ function BpmnTest() {
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
     let modelerInstance = null;
 
@@ -108,16 +109,17 @@ function BpmnTest() {
         } else {
             link.classList.remove('active');
         }
+        handleClose();
     }
 
     // Export diagram
-    const exportDiagram = async (name) => {
+    const exportDiagram = async (id, name) => {
         if (modeler) {
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
                 console.log(err);
             });
             if (xml) {
-                setEncoded(document.getElementById('export-diagram'), name + '.xml', xml);
+                setEncoded(document.getElementById(id), name + '.xml', xml);
             };
         }
     };
@@ -148,14 +150,63 @@ function BpmnTest() {
 
         reader.readAsText(file);
     }
+    const onExportClick = () => {
+        setIsOpen(prev => !prev);
+    }
+    const handleClose = () => {
+        setIsOpen(false);
+    }
     return (
-        <div className='main-container'>
+        <div className='main-container' onClick={handleClose}>
             <div className='model-header'>
-                <a id='export-diagram' title='download BPMN diagram' target='_blank'
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        exportDiagram("diagram");
-                    }}><button>Export as XML</button></a>
+                <button className='export-btn' onClick={(e) => {
+                    e.stopPropagation();
+                    onExportClick();
+                }}>Export as...</button>
+                {isOpen &&
+                    <ul className='export-options'>
+                        <li>
+                            <a id='export-xml' title='download BPMN diagram' target='_blank'
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    exportDiagram(e.target.id, "diagram");
+                                }}>XML
+                            </a>
+                        </li>
+                        <li>
+                            <a id='export-pdf' title='download BPMN diagram as PDF' target='_blank'
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    // exportDiagram(e.target.id, "diagram");
+                                }}>PDF
+                            </a>
+                        </li>
+                        <li>
+                            <a id='export-doc' title='download BPMN diagram as DOC' target='_blank'
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    // exportDiagram(e.target.id, "diagram");
+                                }}>DOC
+                            </a>
+                        </li>
+                        <li>
+                            <a id='export-png' title='download BPMN diagram as png' target='_blank'
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    // exportDiagram(e.target.id, "diagram");
+                                }}>PNG
+                            </a>
+                        </li>
+                        <li>
+                            <a id='export-svg' title='download BPMN diagram as svg' target='_blank'
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    // exportDiagram(e.target.id, "diagram");
+                                }}>SVG
+                            </a>
+                        </li>
+                    </ul>
+                }
                 <button onClick={onImportClick} title='import BPMN diagram'><input type='file' accept='text/xml' style={{ display: 'none' }} ref={importFile} onChange={(e) => onFileChange(e)} />Import File</button>
             </div>
             <div className='model-body'>

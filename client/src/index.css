@@ -17,6 +17,36 @@ body {
 
 .model-header{
   height: 20%;
+  position: relative;
+}
+
+.export-options{
+  background-color: hsl(240, 33%, 98%);
+  width: 100px;
+  padding: 10px 5px;
+  left: 10px;
+  position: absolute;
+  list-style: none;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.export-options li{
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+.export-options li a{
+  text-decoration: none;
+  color: black;
+  width: 100%;
+  display: inline-block;
+}
+
+.export-options li:hover{
+  cursor: pointer;
+  background-color: hsl(210, 8%, 90%);
 }
 
 .model-body{

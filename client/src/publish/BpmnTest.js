@@ -4,6 +4,8 @@ import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 import ColorPickerModule from 'bpmn-js-color-picker';
+import minimapModule from 'diagram-js-minimap';
+import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 
 function BpmnTest() {
@@ -23,12 +25,13 @@ function BpmnTest() {
             container: container.current,
             keyboard: { bindTo: document },
             propertiesPanel: {
-                parent: document.getElementById("properties-panel-parent")
+                parent: "#properties-panel-parent"
             },
             additionalModules: [
                 BpmnPropertiesPanelModule,
                 BpmnPropertiesProviderModule,
-                ColorPickerModule
+                ColorPickerModule,
+                minimapModule
             ]
         });
         // Check file api availablitiy
@@ -57,6 +60,8 @@ function BpmnTest() {
                 .then(() => {
                     modelerInstance.get("canvas").zoom("fit-viewport");
                     modelerInstance.get('keyboard').bind(document);
+                    // Open minimap
+                    modelerInstance.get('minimap').open();
                 })
                 .catch(err => {
                     console.log(err);
@@ -64,6 +69,7 @@ function BpmnTest() {
         }
         // Save diagram on every change
         modelerInstance.on('commandStack.changed', saveDiagram);
+
         setModeler(modelerInstance);
         return () => {
             modeler?.destroy();
@@ -82,12 +88,16 @@ function BpmnTest() {
             var files = e.dataTransfer.files;
             var file = files[0];
             var reader = new FileReader();
-            reader.onload = (e) => {
-                var xml = e.target.result;
-                setDiagramXML(xml);
-            };
-
-            reader.readAsText(file);
+            if(file){
+                reader.onload = (e) => {
+                    var xml = e.target.result;
+                    setDiagramXML(xml);
+                };
+    
+                reader.readAsText(file);
+            }else{
+                console.log("Invalid File");
+            }
         }
 
         const handleDragOver = (e) => {
@@ -103,17 +113,14 @@ function BpmnTest() {
     const setEncoded = (link, name, data) => {
         var encodedData = encodeURIComponent(data);
         if (data) {
-            link.classList.add('active')
             link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
             link.setAttribute('download', name);
-        } else {
-            link.classList.remove('active');
         }
         handleClose();
     }
 
-    // Export diagram
-    const exportDiagram = async (id, name) => {
+    // Export diagram as xml
+    const exportXml = async (id, name) => {
         if (modeler) {
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
                 console.log(err);
@@ -123,6 +130,19 @@ function BpmnTest() {
             };
         }
     };
+
+    // Export diagram as svg
+    const exportSvg = async (id, name) => {
+        if (modeler) {
+            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (svg) {
+                setEncoded(document.getElementById(id), name + '.svg', svg);
+            };
+        }
+    };
+
     // Save diagram
     const saveDiagram = async () => {
         if (modelerInstance) {
@@ -143,12 +163,16 @@ function BpmnTest() {
         e.preventDefault();
         var file = e.target.files[0];
         var reader = new FileReader();
-        reader.onload = (e) => {
-            var xml = e.target.result;
-            setDiagramXML(xml);
-        };
+        if(file){
+            reader.onload = (e) => {
+                var xml = e.target.result;
+                setDiagramXML(xml);
+            };
 
-        reader.readAsText(file);
+            reader.readAsText(file);
+        }else{
+            console.log("Invalid File");
+        }
     }
     const onExportClick = () => {
         setIsOpen(prev => !prev);
@@ -169,7 +193,7 @@ function BpmnTest() {
                             <a id='export-xml' title='download BPMN diagram' target='_blank'
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    exportDiagram(e.target.id, "diagram");
+                                    exportXml(e.target.id, "diagram");
                                 }}>XML
                             </a>
                         </li>
@@ -201,7 +225,7 @@ function BpmnTest() {
                             <a id='export-svg' title='download BPMN diagram as svg' target='_blank'
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    // exportDiagram(e.target.id, "diagram");
+                                    exportSvg(e.target.id, "diagram");
                                 }}>SVG
                             </a>
                         </li>

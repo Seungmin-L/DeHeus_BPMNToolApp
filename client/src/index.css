@@ -97,10 +97,6 @@ body {
   height: 100%;
 }
 
-.active{
-  opacity: 1.0;
-}
-
 .hide{
   width: 50px;
 }
@@ -132,4 +128,33 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* CSS for ICONS */
+
+.entry.bpmn-icon-connection-multi:before {
+  content: "";
+  display: inline-block;
+  height: 20px; 
+  width: 20px;  
+  background-image: url('https://static-00.iconduck.com/assets.00/connection-multi-icon-477x512-v04k3v0n.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.entry.bpmn-icon-connection-multi:hover:before {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(99%) saturate(4094%) hue-rotate(190deg) brightness(102%) contrast(104%);
+}
+
+/*CSS for sidebar*/
+
+/*CSS for minimap*/
+.djs-minimap{
+  border-radius: 5px !important;
+  line-height: 15px;
+  z-index: 100;
+}
+
+.djs-minimap.open .toggle::before{
+  content: "X";
 }

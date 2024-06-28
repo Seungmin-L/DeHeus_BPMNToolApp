@@ -2,7 +2,7 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import React, { useState} from "react";
 import { Button } from "react-bootstrap";
 import { FaUserCircle } from "react-icons/fa";
-import NoAuth from "../NoAuth";
+import NoAuth from "./common/NoAuth";
 import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
 

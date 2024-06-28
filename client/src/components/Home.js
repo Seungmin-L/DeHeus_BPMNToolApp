@@ -1,13 +1,23 @@
-import { useMsal } from "@azure/msal-react";
+import { useMsal, useIsAuthenticated } from "@azure/msal-react";
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
-import { FaHome } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import backgroundImage from "../assets/backgrounds/home_background.png";
+import logo from "../assets/logos/logo_deheus.png";
 import { loginRequest } from "../config/authConfig";
 import axios from 'axios';
 
 function Home() {
   const { instance } = useMsal();
   const [loginError, setLoginError] = useState('');
+  const isAuthenticated = useIsAuthenticated();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/main");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLoginRedirect = () => {
     console.log('[handleLoginRedirect] Handling login redirect');
@@ -25,7 +35,6 @@ function Home() {
               'Content-Type': 'application/json'
             }
           });
-    //
         if (response.status === 200 && response.data.isAuthenticated) {
           console.log('[handleLoginPopup] Email is registered, proceeding with login');
           window.location.href = "http://localhost:3000/main"; // 리다이렉트 링크
@@ -39,7 +48,6 @@ function Home() {
           setLoginError('Server error occurred.');
         }
       }
-    //
     }).catch((error) => {
       console.error(`[handleLoginRedirect] Login error: ${error}`);
       setLoginError('Login failed.');
@@ -47,21 +55,24 @@ function Home() {
   };
 
   return (
-    <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-      <FaHome size={100} className="mb-4 text-primary" />
-      <h1 className="display-1">De Heus BPMN Tool Application</h1>
-      <p className="lead">
-        This is the landing page. (Design to be edited further.)
-      </p>
-      <Button
-        variant="primary"
-        onClick={handleLoginRedirect}
-        size="lg"
-        className="mt-4"
-      >
-        Start
-      </Button>
-      {loginError && <p className="text-danger mt-3">{loginError}</p>}
+    // <div className="d-flex flex-column justify-content-center align-items-center vh-100">
+    <div className="d-flex flex-column justify-content-center align-items-start vh-100" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', minHeight: '100vh' }}>
+      <div style={{ marginLeft: "15%", color: "#004085" }}>
+        <img src={logo} alt="De Heus Logo" style={{ width: "120px", marginBottom: "25px" }} /> {/* Logo Image */}
+        <h1 className="display-1 mb-3">De Heus<span className="d-block">BPMN Tool</span></h1>
+        <p className="lead">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod<span className="d-block">tempor incididunt ut labore et dolore magna aliqua.</span>
+        </p>
+        <Button
+          onClick={handleLoginRedirect}
+          size="lg"
+          className="mt-4"
+          style={{ backgroundColor: "#2A85E2", width: "30%"}}
+        >
+          Start
+        </Button>
+        {loginError && <p className="text-danger mt-3">{loginError}</p>}
+      </div>
     </div>
   );
 }

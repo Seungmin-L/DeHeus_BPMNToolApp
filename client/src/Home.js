@@ -1,11 +1,22 @@
-import { useMsal } from "@azure/msal-react";
-import React from "react";
+import { useMsal, useIsAuthenticated } from "@azure/msal-react";
+import React, { useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { FaHome } from "react-icons/fa";
 import { loginRequest } from "./authConfig";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const { instance } = useMsal();
+
+  const isAuthenticated = useIsAuthenticated();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/main");
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleLogin = () => {
     instance.loginRedirect(loginRequest).catch((e) => {
       console.error(e);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
@@ -8,9 +8,14 @@ import LeftNavBar from './common/LeftNavBar';
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
-
   const { accounts } = useMsal(); // Retrieve accounts from useMsal hook
-  const userName = accounts[0].username; 
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    if (isAuthenticated && accounts.length > 0) {
+      setUserName(accounts[0].username);
+    }
+  }, [isAuthenticated, accounts]);
 
   // DATAAAAAA~~~~~~ This should be set by the fetched data once the BE is ready. (user's available project!!!)
   const mockData = [

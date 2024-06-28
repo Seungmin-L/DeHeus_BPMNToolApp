@@ -7,6 +7,7 @@ import Home from "./components/Home";
 import Main from "./components/Main";
 import Publish from "./Publish";
 import { msalInstance } from "./config/authConfig";
+import ListSingleProject from "./components/ListSingleProject";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/main" element={<Main />} />
+          <Route path="/project/:projectId" element={<ListSingleProject />} />
           <Route path="/publish/:filename" element={<Publish />} />
           <Route path="*" element={<Error />} />
         </Routes>

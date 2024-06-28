@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar, Container, Form, FormControl, InputGroup, Nav } from 'react-bootstrap';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
+import logo from '../../assets/logos/logo_deheus.png';
 
 function TopBar({ onLogoClick, userName }) {
 
@@ -9,7 +10,7 @@ function TopBar({ onLogoClick, userName }) {
       <Container fluid>
         <Navbar.Brand onClick={onLogoClick} style={{ cursor: 'pointer' }}>
           <img
-            src="/logo_deheus.png"
+            src={logo}
             height="30"
             className="d-inline-block align-top"
             alt="Company Logo"

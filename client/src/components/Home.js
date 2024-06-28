@@ -2,7 +2,7 @@ import { useMsal, useIsAuthenticated } from "@azure/msal-react";
 import React, { useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { FaHome } from "react-icons/fa";
-import { loginRequest } from "../authConfig";
+import { loginRequest } from "../config/authConfig";
 import { useNavigate } from "react-router-dom";
 
 function Home() {

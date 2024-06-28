@@ -6,7 +6,7 @@ import Error from "./components/common/Error";
 import Home from "./components/Home";
 import Main from "./components/Main";
 import Publish from "./Publish";
-import { msalInstance } from "./authConfig";
+import { msalInstance } from "./config/authConfig";
 
 function App() {
   return (

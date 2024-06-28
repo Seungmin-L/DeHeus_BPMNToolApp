@@ -8,7 +8,6 @@ import Main from "./components/Main";
 import Publish from "./Publish";
 import { msalInstance } from "./config/authConfig";
 import ListSingleProject from "./components/ListSingleProject";
-import { msalInstance } from "./config/authConfig";
 
 function App() {
   return (

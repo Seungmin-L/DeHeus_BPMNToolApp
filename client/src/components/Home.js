@@ -13,11 +13,11 @@ function Home() {
   const isAuthenticated = useIsAuthenticated();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/main");
-    }
-  }, [isAuthenticated, navigate]);
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     navigate("/main");
+  //   }
+  // }, [isAuthenticated, navigate]);
 
   const handleLoginRedirect = () => {
     console.log('[handleLoginRedirect] Handling login redirect');

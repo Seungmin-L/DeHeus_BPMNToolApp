@@ -1,9 +1,17 @@
 import React from 'react';
-import { Navbar, Container, Form, FormControl, InputGroup, Nav } from 'react-bootstrap';
+import { Navbar, Container, Form, FormControl, InputGroup, Nav, Dropdown } from 'react-bootstrap';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
 import logo from '../../assets/logos/logo_deheus.png';
+import { useMsal } from "@azure/msal-react";
 
 function TopBar({ onLogoClick, userName }) {
+  const { instance } = useMsal();
+
+  const logout = () => {
+    instance.logoutRedirect().catch((error) => {
+      console.error("Logout error:", error);
+    });
+  };
 
   return (
     <Navbar style={{backgroundColor: '#d3e0ea'}} variant="light" expand="lg">
@@ -31,10 +39,18 @@ function TopBar({ onLogoClick, userName }) {
           </Form>
         </Nav>
         <Nav>
-          <Nav.Item className="d-flex align-items-center">
-            <span style={{marginRight: '10px', fontSize: '1rem', color: '#6c757d'}}>{userName}</span>
-            <FaUserCircle size={30} style={{marginLeft: '5px', color: '#fff'}} />
-          </Nav.Item>
+          <Dropdown >
+            <Dropdown.Toggle as={Nav.Item}>
+              <span style={{ marginRight: '10px', fontSize: '1rem', color: '#6c757d' }}>{userName}</span>
+              <FaUserCircle size={30} style={{ marginRight: '5px', color: '#fff' }} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item href="/">---------</Dropdown.Item>
+              <Dropdown.Item href="/">---------</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item onClick={logout}>Logout</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
         </Nav>
       </Container>
     </Navbar>

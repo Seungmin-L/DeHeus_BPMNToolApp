@@ -3,8 +3,7 @@ import { Nav } from 'react-bootstrap';
 
 function LeftNavBar() {
   const leftNavBarStyle = {
-    backgroundColor: '#007bff',
-
+    backgroundColor: '#2A85E2',
     width: '10%',
     top: '56px',
     left: 0,

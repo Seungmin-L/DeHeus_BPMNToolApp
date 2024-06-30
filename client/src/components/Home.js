@@ -1,7 +1,8 @@
-import { useMsal, useIsAuthenticated } from "@azure/msal-react";
+import { useMsal } from "@azure/msal-react";
+// import { useMsal, useIsAuthenticated } from "@azure/msal-react";
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/backgrounds/home_background.png";
 import logo from "../assets/logos/logo_deheus.png";
 import { loginRequest } from "../config/authConfig";
@@ -10,8 +11,8 @@ import axios from 'axios';
 function Home() {
   const { instance } = useMsal();
   const [loginError, setLoginError] = useState('');
-  const isAuthenticated = useIsAuthenticated();
-  const navigate = useNavigate();
+  // const isAuthenticated = useIsAuthenticated();
+  // const navigate = useNavigate();
 
   // useEffect(() => {
   //   if (isAuthenticated) {
@@ -23,13 +24,13 @@ function Home() {
     console.log('[handleLoginRedirect] Handling login redirect');
     instance.loginPopup(loginRequest).then(
       async (loginResponse) => {
-        const idToken = loginResponse.idToken;
-        console.log(`[handleLoginRedirect] Logged in user token: ${idToken}`);
+        const accessToken = loginResponse.accessToken;
+        console.log(`[handleLoginRedirect] Logged in user token: ${accessToken}`);
 
         // 백엔드로 토큰 전달
         try {
           const response = await axios.post('http://localhost:3001/api/authenticate', {
-            token: idToken,
+            token: accessToken,
           }, {
             headers: {
               'Content-Type': 'application/json'
@@ -41,7 +42,7 @@ function Home() {
         }
       } catch (error) {
         if (error.response.status === 401) {
-          console.log('[handleLoginPopup] Email is not registered, logging out (2)');
+          console.log('[handleLoginPopup] Email is not registered, logging out');
           setLoginError('Email is not registered.');
         } else {
           console.error(`[handleLoginPopup] Server error: ${error}`);

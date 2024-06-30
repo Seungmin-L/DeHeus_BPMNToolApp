@@ -20,6 +20,9 @@ function Toolbar({
     onDistributeHorizontally, 
     onDistributeVertically 
 }) {
+
+  const fonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana'];
+
   return (
     <div className="toolbar">
 
@@ -29,17 +32,27 @@ function Toolbar({
 
       <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/>
 
-      <div className="toolbar-group-zoom">
-        <button onClick={onZoomIn} dangerouslySetInnerHTML={{ __html: Icons.zoomIn }}/>
-        <button onClick={onZoomOut} dangerouslySetInnerHTML={{ __html: Icons.zoomOut }}/>
-      </div>
-
-      <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/>
-
       <div className="toolbar-group-action">
         <button onClick={onUndo} dangerouslySetInnerHTML={{ __html: Icons.undo }}/>
         <button onClick={onRedo} dangerouslySetInnerHTML={{ __html: Icons.redo }}/>
       </div>
+
+      <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/>
+
+      <div className="toolbar-group-zoom">
+        <button onClick={onZoomOut} dangerouslySetInnerHTML={{ __html: Icons.zoomOut }}/>
+        <button onClick={onZoomIn} dangerouslySetInnerHTML={{ __html: Icons.zoomIn }}/>
+      </div>
+
+      {/* <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/>
+
+      <div className='toolbar-font'>
+        <select onChange={(event) => onFontChange(event.target.value)}>
+            {fonts.map((font) => (
+                <option value={font}>{font}</option>
+            ))}
+        </select>      
+      </div> */}
 
       <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/>
 

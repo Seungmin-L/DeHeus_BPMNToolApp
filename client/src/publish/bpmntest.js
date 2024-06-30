@@ -25,6 +25,7 @@ import diagramXML from '../resources/pizza-collaboration.bpmn';
 // toolbar
 import Toolbar from './features/toolbar/toolbar';
 
+
 function BpmnTest() {
     const diagramUrl = 'https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn';
 
@@ -47,11 +48,18 @@ function BpmnTest() {
                 // ZeebePropertiesProviderModule,
                 // ZeebeBehaviorsModule,
                 ColorPickerModule,
-                minimapModule,
             ],
             moddleExtensions: {
                 // camunda: camundaModdleDescriptor,
                 // zeebe: zeebeModdle
+            },
+            textRenderer: {
+                defaultStyle: {
+                //   fontFamily: 'none'
+                }
+            },
+            bpmnRenderer: {
+                defaultStrokeColor: '#333'
             }
         });
 
@@ -83,7 +91,6 @@ function BpmnTest() {
         //     modelerInstance.get('keyboard').bind(document);
         //     console.log(modelerInstance.get('commandStack')); // Should log the commandStack
         // });
-
         setModeler(modelerInstance);
         // return () => {
         //     modeler?.destroy();
@@ -137,7 +144,23 @@ function BpmnTest() {
         }
     };
       
+    // const handleChangeColor = () => {
+    //     const selection = modelerInstance.get('selection');
+    //     const modeling = modelerInstance.get('modeling');
+    //     const selectedElement = selection.get()[0]; // get the first selected element
+      
+    //     if (selectedElement) {
+    //       modeling.setColor(selectedElement, {
+    //         stroke: 'red',
+            
+    //       });
+    //     //   console.log(selectedElement);
+    //     }
 
+        
+
+    // };
+      
 
     return (
         <div className='main-container'>

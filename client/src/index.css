@@ -17,7 +17,7 @@ body {
 
 .model-header{
   height: 20%;
-  display: flex;
+  display: inline-flex;
   align-items: end;
 }
 

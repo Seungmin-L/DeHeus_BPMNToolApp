@@ -10,11 +10,11 @@ const dbConfig = {
         min: 0,
         idleTimeoutMillis: 30000
     },
-    connectionTimeout: 30000,  // 연결 타임아웃을 30초로 설정
-    requestTimeout: 30000,      // 요청 타임아웃을 30초로 설정
+    connectionTimeout: 30000,  
+    requestTimeout: 30000,      
     options: {
         encrypt: true,
-        trustServerCertificate: true  // 배포할 때는 false
+        trustServerCertificate: true  // if deploy => false
     }
 };
 

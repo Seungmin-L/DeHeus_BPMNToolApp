@@ -1,3 +1,4 @@
+// Main.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table } from "react-bootstrap";
@@ -20,12 +21,28 @@ function Main() {
       setUserName(accounts[0].username);
       
       axios.get("/api/projects").then(response => {
-        setProjects(response.data);
+        const formattedProjects = formatProjectDates(response.data);
+        setProjects(formattedProjects);
       }).catch(error => {
         console.error("Error fetching projects", error);
       });
     }
   }, [isAuthenticated, accounts]);
+
+  const formatProjectDates = (projects) => {
+    return projects.map(project => {
+      return {
+        ...project,
+        lastUpdate: convertUTCToLocal(project.lastUpdate)
+      };
+    });
+  };
+
+  const convertUTCToLocal = (dateString) => {
+    const date = new Date(dateString);
+    const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // UTC+7
+    return localTime.toISOString().slice(0, 16).replace('T', ' ');
+  };
 
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);

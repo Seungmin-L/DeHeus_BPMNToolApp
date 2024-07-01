@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Table } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
@@ -8,30 +9,23 @@ import LeftNavBar from './common/LeftNavBar';
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
-  const { accounts } = useMsal(); // Retrieve accounts from useMsal hook
+  const { accounts } = useMsal();
   const [userName, setUserName] = useState("");
+  const [projects, setProjects] = useState([]);
+  const [isNavVisible, setIsNavVisible] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated && accounts.length > 0) {
       setUserName(accounts[0].username);
+      
+      axios.get("/api/projects").then(response => {
+        setProjects(response.data);
+      }).catch(error => {
+        console.error("Error fetching projects", error);
+      });
     }
   }, [isAuthenticated, accounts]);
-
-  // DATAAAAAA~~~~~~ This should be set by the fetched data once the BE is ready. (user's available project!!!)
-  const mockData = [
-    { id: 1, projectName: "Project 1: VN Sales Department", lastUpdate: "2024-06-25" },
-    { id: 2, projectName: "Project 2: MY IT Department", lastUpdate: "2024-06-24" },
-    { id: 3, projectName: "Project 3", lastUpdate: "2024-06-23" },
-    { id: 4, projectName: "Project 4", lastUpdate: "2024-06-23" },
-    { id: 5, projectName: "Project 5", lastUpdate: "2024-06-23" },
-    { id: 6, projectName: "Project 6", lastUpdate: "2024-06-23" },
-    { id: 7, projectName: "Project 7", lastUpdate: "2024-06-23" },
-  ];
-  // DATAAAAAA~~~~~~
-
-  const [isNavVisible, setIsNavVisible] = useState(false);
-
-  const navigate = useNavigate();
 
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);
@@ -41,7 +35,6 @@ function Main() {
     navigate(`/project/${projectId}`);
   };
 
-  // if not logged in, navigate to noauth pageeeeeeeeee
   if (!isAuthenticated) {
     return <NoAuth />;
   }
@@ -63,7 +56,7 @@ function Main() {
                   </tr>
                 </thead>
                 <tbody>
-                  {mockData.map((project) => (
+                  {projects.map((project) => (
                     <tr key={project.id} onClick={() => handleProjectClick(project.id)} style={{ cursor: "pointer" }}>
                       <td>{project.projectName}</td>
                       <td>{project.lastUpdate}</td>

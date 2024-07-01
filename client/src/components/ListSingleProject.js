@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Table } from "react-bootstrap";
 import { BsChevronDown, BsChevronRight } from "react-icons/bs";
 import { MdOpenInNew } from "react-icons/md";
@@ -9,106 +10,41 @@ import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
 
 function ListSingleProject() {
-  // This is the projectId param from previous page! Fetch appropriate data according to this~~~~
   const { projectId } = useParams();
-
-  // DATAAAAAA~~~~~~
-  // This is just mock data I set! we have to fetch once BE is ready~~~
-  const mockData = [
-    {
-      id: 1,
-      name: "Order Fulfilment Process",
-      status: "Checked in by Chris",
-      lastUpdate: "2024-01-01",
-      children: [],
-    },
-    {
-      id: 2,
-      name: "Payment Process",
-      status: "Checked in by Bob",
-      lastUpdate: "2024-02-01",
-      children: [
-        {
-          id: 21,
-          name: "Order Generation Process",
-          status: "Checked in by Chris",
-          lastUpdate: "2024-02-10",
-          children: [
-            { id: 211, name: "POG2002", status: "", lastUpdate: "2024-02-15" },
-            { id: 212, name: "POG5037", status: "Checked in by Luke", lastUpdate: "2024-02-20" },
-          ],
-        },
-        { id: 22, name: "Financial Control Process", status: "", lastUpdate: "2024-02-25" },
-        { id: 23, name: "Shipment Fulfilment Process", status: "", lastUpdate: "2024-02-26" },
-      ],
-    },
-    {
-      id: 3,
-      name: "Business Generation Process",
-      status: "",
-      lastUpdate: "2024-01-01",
-      children: [],
-    },
-    {
-      id: 4,
-      name: "Order Fulfilment Process",
-      status: "",
-      lastUpdate: "2024-01-01",
-      children: [],
-    },
-    {
-      id: 5,
-      name: "Payment Process",
-      status: "",
-      lastUpdate: "2024-02-01",
-      children: [
-        {
-          id: 51,
-          name: "Order Generation Process",
-          status: "Checked in by Chris",
-          lastUpdate: "2024-02-10",
-          children: [
-            { id: 511, name: "POG2002", status: "", lastUpdate: "2024-02-15" },
-            { id: 512, name: "POG5037", status: "Checked in by Luke", lastUpdate: "2024-02-20" },
-          ],
-        },
-        { id: 52, name: "Financial Control Process", status: "", lastUpdate: "2024-02-25" },
-        { id: 53, name: "Shipment Fulfilment Process", status: "", lastUpdate: "2024-02-26" },
-      ],
-    },
-    {
-      id: 6,
-      name: "Business Generation Process",
-      status: "",
-      lastUpdate: "2024-01-01",
-      children: [],
-    },
-    {
-      id: 7,
-      name: "Order Fulfilment Process",
-      status: "Checked in by Bob",
-      lastUpdate: "2024-01-01",
-      children: [],
-    },
-    {
-      id: 8,
-      name: "Payment Process",
-      status: "",
-      lastUpdate: "2024-01-01",
-      children: [],
-    },
-  ];
-  // DATAAAAA~~~~~~~
-
   const isAuthenticated = useIsAuthenticated();
-
   const { accounts } = useMsal();
-  const userName = accounts[0].username; 
-  
-  // For Hierarchical Table
-  const navigate = useNavigate();
+  const userName = accounts[0].username;
+  const [processes, setProcesses] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
   const [isNavVisible, setIsNavVisible] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      axios.get(`/api/processes/${projectId}`).then(response => {
+        const formattedProcesses = formatProcessDates(response.data);
+        setProcesses(formattedProcesses);
+      }).catch(error => {
+        console.error("Error fetching processes", error);
+      });
+    }
+  }, [isAuthenticated, projectId]);
+
+  const formatProcessDates = (processes) => {
+    return processes.map(process => {
+      return {
+        ...process,
+        lastUpdate: convertUTCToLocal(process.lastUpdate),
+        children: formatProcessDates(process.children || [])
+      };
+    });
+  };
+
+  const convertUTCToLocal = (dateString) => {
+    const date = new Date(dateString);
+    const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // UTC+7 (VN)
+    return localTime.toISOString().slice(0, 16).replace('T', ' ');
+  };
 
   const toggleRow = (id) => {
     setExpandedRows(expandedRows.includes(id)
@@ -140,7 +76,7 @@ function ListSingleProject() {
           style={{ cursor: hasChildren ? "pointer" : "default" }}
           className={isExpanded ? rowClass(level) : ""}
         >
-          <td style={{ paddingLeft: level * 50 + "px", width: "60%" }}>
+          <td style={{ paddingLeft: level * 20 + "px", width: "60%" }}>
             <span style={{ marginRight: "5px" }}>
               {hasChildren ? (isExpanded ? <BsChevronDown /> : <BsChevronRight />) : <span>&nbsp;&nbsp;</span>}
             </span>
@@ -161,7 +97,6 @@ function ListSingleProject() {
     setIsNavVisible(!isNavVisible);
   };
 
-  // if not logged in, navigate to noauth pageeeeeeeeee
   if (!isAuthenticated) {
     return <NoAuth />;
   }
@@ -194,7 +129,7 @@ function ListSingleProject() {
                     <th></th>
                   </tr>
                 </thead>
-                <tbody>{mockData.map((item) => renderRow(item))}</tbody>
+                <tbody>{processes.map((item) => renderRow(item))}</tbody>
               </Table>
             </div>
           </div>
@@ -202,6 +137,6 @@ function ListSingleProject() {
       </div>
     </div>
   );
-};
+}
 
 export default ListSingleProject;

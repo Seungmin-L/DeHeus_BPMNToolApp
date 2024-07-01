@@ -75,7 +75,7 @@ body {
 }
 
 /*Hide BPMN.io at the bottom*/
-.bjs-container a{
+.bjs-container a.bjs-powered-by{
   display: none ;
 }
 
@@ -120,14 +120,13 @@ body {
   border-radius: 0 !important;
   margin: 0 !important;
 }
-
-/* .djs-context-pad > :not(:first-child){
-  display: none;
-} */
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.djs-palette-shown .bjs-breadcrumbs{
+  left: 5px !important;
 }
 
 /* CSS for ICONS */

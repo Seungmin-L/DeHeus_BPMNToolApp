@@ -8,6 +8,8 @@ import minimapModule from 'diagram-js-minimap';
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import ErrorPage from './ErrorPage';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
+import attachmentPropertiesProviderModule from '../providers';
+import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 
 function BpmnTest() {
     const container = useRef(null);
@@ -34,8 +36,12 @@ function BpmnTest() {
                 BpmnPropertiesPanelModule,
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
-                minimapModule
-            ]
+                minimapModule,
+                attachmentPropertiesProviderModule
+            ],
+            moddleExtensions: {
+                attachment: attachmentModdleDescriptor
+            }
         });
         // Check file api availablitiy
         if (!window.FileList || !window.FileReader) {
@@ -80,10 +86,10 @@ function BpmnTest() {
             if(event.ctrlKey || event.metaKey){
                 if(saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1){
                     modelerInstance.get('editorActions').trigger('save');
+                    return true;
                 }
             }
-            return true;
-        })
+        });
         
         setModeler(modelerInstance);
         return () => {

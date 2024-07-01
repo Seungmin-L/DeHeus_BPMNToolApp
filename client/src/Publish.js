@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import Error from './Error';
+import { useIsAuthenticated } from "@azure/msal-react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import Error from "./components/common/Error";
+import NoAuth from "./components/common/NoAuth";
 
 function Publish() {
   const { filename } = useParams();
   const [Component, setComponent] = useState(null);
   const [error, setError] = useState(false);
+  const isAuthenticated = useIsAuthenticated();
 
   useEffect(() => {
     const importFile = async () => {
@@ -20,6 +23,9 @@ function Publish() {
     importFile();
   }, [filename]);
 
+  if (!isAuthenticated) {
+    return <NoAuth />;
+  }
 
   if (error) {
     return <Error />;
@@ -29,9 +35,7 @@ function Publish() {
     return <div>Loading...</div>;
   }
 
-  return (
-    <Component />
-  );
+  return <Component />;
 }
 
 export default Publish;

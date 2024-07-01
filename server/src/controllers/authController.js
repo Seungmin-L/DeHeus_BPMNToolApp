@@ -2,17 +2,15 @@ const jwt = require('jsonwebtoken');
 const sql = require('mssql');
 
 const authenticateUser = async (req, res) => {
-  console.log("Received request:", req.body);
+  // console.log("Received request:", req.body);
   const { token } = req.body;
 
   try {
-    // 토큰 검증 및 디코딩
+    // token authentication & decoding
     const decodedToken = jwt.decode(token, { complete: true });
-    console.log(decodedToken); // 터미널에 토큰 정보 출력 (확인 용도)
-
-    // 디코딩된 토큰에서 이메일 추출
+    // console.log(decodedToken);
     const email = decodedToken.payload.email;
-    console.log(`User Email: ${email}`);
+    // console.log(`User Email: ${email}`);
 
     const userResult = await sql.query`SELECT * FROM Users WHERE email = ${email}`;
     if (userResult.recordset.length === 0) {
@@ -20,7 +18,7 @@ const authenticateUser = async (req, res) => {
       return res.status(401).json({ message: 'User not found in the database' });
     }
 
-    // 데이터베이스에 사용자 정보 업데이트
+    // update in the database
     const userId = userResult.recordset[0].id;
     await sql.query`
       UPDATE Users 
@@ -36,7 +34,7 @@ const authenticateUser = async (req, res) => {
         resource_id = ${decodedToken.payload.aud}
       WHERE id = ${userId}
     `;
-    console.log('Successfully Updated in the database')
+    // console.log('Successfully Updated in the database')
     res.json({ isAuthenticated: true });
   } catch (error) {
     console.error(error);

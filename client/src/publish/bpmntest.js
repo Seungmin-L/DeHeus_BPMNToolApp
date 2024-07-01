@@ -119,6 +119,13 @@ function BpmnTest() {
     // Implement save functionality here
     };
 
+    const handleImport = () => {
+        // import function
+    }
+
+    const handleExport = () => {
+        // export function
+    }
 
     const handleAlign = (alignment) => {
         const alignElements = modelerInstance.get('alignElements');
@@ -144,22 +151,19 @@ function BpmnTest() {
         }
     };
       
-    // const handleChangeColor = () => {
-    //     const selection = modelerInstance.get('selection');
-    //     const modeling = modelerInstance.get('modeling');
-    //     const selectedElement = selection.get()[0]; // get the first selected element
+    const handleChangeColor = () => {
+        const selection = modelerInstance.get('selection');
+        const modeling = modelerInstance.get('modeling');
+        const selectedElement = selection.get()[0]; // get the first selected element
       
-    //     if (selectedElement) {
-    //       modeling.setColor(selectedElement, {
-    //         stroke: 'red',
+        if (selectedElement) {
+          modeling.setColor(selectedElement, {
+            stroke: 'red',
             
-    //       });
-    //     //   console.log(selectedElement);
-    //     }
-
-        
-
-    // };
+          });
+        //   console.log(selectedElement);
+        }
+    };
       
 
     return (
@@ -168,6 +172,8 @@ function BpmnTest() {
             <div className='model-header'>
             <Toolbar 
                 onSave={handleSave} 
+                onImport={handleImport}
+                onExport={handleExport}
                 onZoomIn={handleZoomIn} 
                 onZoomOut={handleZoomOut} 
                 onUndo={handleUndo} 
@@ -181,7 +187,7 @@ function BpmnTest() {
                 onDistributeHorizontally={() => handleDistribute('horizontal')} 
                 onDistributeVertically={() => handleDistribute('vertical')} 
             />
-
+            <button onClick={handleChangeColor}>Change Color</button>
 
             </div>
 

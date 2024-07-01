@@ -13,8 +13,8 @@
 }
 
 .toolbar button {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     display: flex;        /* Enable flex layout */
     justify-content: center; /* Center content horizontally */
     align-items: center;  /* Center content vertically */
@@ -23,11 +23,16 @@
 }
 
 .toolbar-spacing {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     display: flex;        /* Enable flex layout */
     justify-content: center; /* Center content horizontally */
     align-items: center;  /* Center content vertically */
     background: transparent; /* Transparent background */
     border: none;         /* No border */
 }
+
+/* .export-button {
+    width: 40px !important;
+    height: 40px !important;
+} */

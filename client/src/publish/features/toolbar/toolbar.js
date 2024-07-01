@@ -7,6 +7,8 @@ import Icons from '../../../resources/toolbar/toolbar-icons';
 
 function Toolbar({   
     onSave, 
+    onImport,
+    onExport,
     onZoomIn, 
     onZoomOut, 
     onUndo, 
@@ -26,8 +28,16 @@ function Toolbar({
   return (
     <div className="toolbar">
 
-      <div className="toolbar-group-file">
+      <div className="toolbar-group-save">
         <button onClick={onSave} dangerouslySetInnerHTML={{ __html: Icons.save }} />
+      </div>
+
+      <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/>
+
+      <div className='toolbar-group-file'>
+        <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }}/>
+        
+        <button className='export-button' onClick={onExport} dangerouslySetInnerHTML={{ __html: Icons.export }}/>
       </div>
 
       <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/>

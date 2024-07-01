@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './toolbar.css'
 // ICONS
 import AlignIcons from 'bpmn-js/lib/features/align-elements/AlignElementsIcons';
 import DistributeIcons from 'bpmn-js/lib/features/distribute-elements/DistributeElementsIcons';
 import Icons from '../../../resources/toolbar/toolbar-icons';
+import DropdownExport from './dropdownExport';
 
 function Toolbar({   
     onSave, 
@@ -20,10 +21,18 @@ function Toolbar({
     onAlignMiddle, 
     onAlignBottom, 
     onDistributeHorizontally, 
-    onDistributeVertically 
+    onDistributeVertically ,
+    onToggleExport,
 }) {
 
+  // for fonts
   const fonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana'];
+  // for export
+  const [openExport, setOpenExport] = useState(false);
+
+  const changeExportState = () => {
+    setOpenExport(false);
+  } 
 
   return (
     <div className="toolbar">
@@ -36,8 +45,11 @@ function Toolbar({
 
       <div className='toolbar-group-file'>
         <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }}/>
-        
-        <button className='export-button' onClick={onExport} dangerouslySetInnerHTML={{ __html: Icons.export }}/>
+        <button dangerouslySetInnerHTML={{ __html: Icons.export }} onClick={() => setOpenExport((prev) => !prev)}></button>
+        {
+          openExport && <DropdownExport/>   
+        }
+
       </div>
 
       <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/>

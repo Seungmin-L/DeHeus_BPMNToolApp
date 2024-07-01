@@ -20,7 +20,13 @@
     align-items: center;  /* Center content vertically */
     background: transparent; /* Transparent background */
     border: none;         /* No border */
+    transition: background-color 0.3s ease; 
+    border-radius: 10px;
 }
+
+.toolbar button:hover {
+    background-color: #cecece;
+  }
 
 .toolbar-spacing {
     width: 40px;
@@ -32,7 +38,38 @@
     border: none;         /* No border */
 }
 
-/* .export-button {
-    width: 40px !important;
-    height: 40px !important;
+.dropdownExport {
+    position: absolute;
+    top: 10rem;
+    left: 8rem;
+    width: 200px;
+    /* padding: 15px; */
+    /* border-radius: 15px; */
+    /* background-color: white;
+    border: 1px solid grey; */
+    z-index: 9999;
+}
+
+.dropdownExport ul,
+.dropdownExport li {
+    /* margin: 0; */
+    padding: 0;
+}
+
+.dropdownExport ul {
+    list-style-type: none;
+    background-color: white;
+    border-top: 1px solid grey;
+}
+
+.dropdownExport li {
+    padding: 5px;
+    /* text-align: left; */
+    border-bottom: 1px solid grey;
+    border-left: 1px solid grey;
+    border-right: 1px solid grey;
+}
+
+/* .dropdownExport a {
+    display: block;
 } */

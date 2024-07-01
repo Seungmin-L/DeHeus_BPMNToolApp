@@ -5,21 +5,21 @@ const cors = require("cors");
 const corsOptions = require('./src/config/corsOptions');
 const bodyParser = require('body-parser');
 const authController = require('./src/controllers/authController');
+const projectsController = require('./src/controllers/projectsController');
+const processesController = require('./src/controllers/processesController');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-connectDB();
+connectDB();  // when the server starts, automatically connect to the database
 
-app.use(cors(corsOptions)); // CORS 미들웨어 사용
-app.use(bodyParser.json()); // body-parser 설정
-
-// app.get("/api", (req, res) => {
-//   console.log('API endpoint hit!'); // 서버 콘솔에 로그 출력
-// });
+app.use(cors(corsOptions));
+app.use(bodyParser.json());
 
 app.post('/api/authenticate', authController.authenticateUser);
+app.get('/api/projects', projectsController.listProjects);
+app.get('/api/processes/:projectId', processesController.listProcesses);
 
 app.listen(PORT, () => {
-  console.log(`Server listening on ${PORT}`); // 서버 시작 로그
+  console.log(`Server listening on ${PORT}`);
 });

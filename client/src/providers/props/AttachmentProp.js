@@ -1,6 +1,6 @@
 import { html } from 'htm/preact';
 
-import { TextFieldEntry, isTextFieldEntryEdited } from '@bpmn-io/properties-panel';
+import { isTextFieldEntryEdited } from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 
 export default function(element) {
@@ -21,7 +21,7 @@ function Attachment(props) {
   const modeling = useService('modeling');
   const translate = useService('translate');
   const debounce = useService('debounceInput');
-
+  console.log(element);
   const getValue = () => {
     return element.businessObject.attachment || '';
   };
@@ -32,7 +32,7 @@ function Attachment(props) {
     });
   };
 
-  return html`<${TextFieldEntry}
+  return html`<input type='file'
     id=${ id }
     element=${ element }
     label=${ translate('Attachment File') }

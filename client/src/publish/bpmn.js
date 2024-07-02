@@ -8,7 +8,6 @@ import ColorPickerModule from 'bpmn-js-color-picker';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
-import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css'; 
 import { 
     BpmnPropertiesPanelModule, 
     BpmnPropertiesProviderModule,  

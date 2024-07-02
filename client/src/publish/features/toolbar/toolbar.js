@@ -24,6 +24,8 @@ function Toolbar({
     onExportImage,
     onExportPdf,
     onExportBpmn,
+    importFile,
+    onFileChange
 }) {
 
   // for fonts
@@ -46,7 +48,8 @@ function Toolbar({
 
       <div className='toolbar-group-file'>
         <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }}/>
-        <button dangerouslySetInnerHTML={{ __html: Icons.export }} onClick={() => setOpenExport((prev) => !prev)}></button>
+        <input type='file' accept='text/xml' style={{ display: 'none' }} ref={importFile} onChange={(e) => onFileChange(e)} />
+        <button dangerouslySetInnerHTML={{ __html: Icons.export }} onClick={onExport}></button>
         {
           openExport && 
           <div className='flex flex-col dropdownExport'>

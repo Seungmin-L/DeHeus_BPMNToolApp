@@ -23,6 +23,7 @@ function BpmnTest() {
     const diagramUrl = 'https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn';
 
     const container = useRef(null);
+    const [isOpen, setIsOpen] = useState(false);
     let [modelerInstance, setModeler] = useState(null); // <-- Add this line
     // Event handler to toggle the export dropdown
 
@@ -112,9 +113,14 @@ function BpmnTest() {
         // import function
     }
 
-    const handleExport = () => {
+    const handleExport = (e) => {
         // export function
+    }
 
+    const handleExportXml = (e) => {
+      // export xml function
+      e.stopPropagation();
+      exportXml(e.target.id,"diagram")
     }
 
     const handleAlign = (alignment) => {
@@ -154,7 +160,45 @@ function BpmnTest() {
         //   console.log(selectedElement);
         }
     };
-      
+    
+    const onExportClick = () => {
+      setIsOpen(prev => !prev);
+    }
+    // Export diagram as xml
+    const exportXml = async (id, name) => {
+      if (modelerInstance) {
+          const { xml } = await modelerInstance.saveXML({ format: true }).catch(err => {
+              console.log(err);
+          });
+          if (xml) {
+              setEncoded(document.getElementById(id), name + '.xml', xml);
+          };
+      }
+    };
+  
+    // Export diagram as svg
+    const exportSvg = async (id, name) => {
+        if (modelerInstance) {
+            const { svg } = await modelerInstance.saveSVG({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (svg) {
+                setEncoded(document.getElementById(id), name + '.svg', svg);
+            };
+        }
+    };
+
+    const setEncoded = (link, name, data) => {
+      var encodedData = encodeURIComponent(data);
+      if (data) {
+          link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
+          link.setAttribute('download', name);
+      }
+      handleClose();
+  }
+  const handleClose = () => {
+    setIsOpen(false);
+}
 
     return (
         <div className='main-container'>
@@ -164,6 +208,7 @@ function BpmnTest() {
                 onSave={handleSave} 
                 onImport={handleImport}
                 onExport={handleExport}
+                onExportXml={handleExportXml}
                 onZoomIn={handleZoomIn} 
                 onZoomOut={handleZoomOut} 
                 onUndo={handleUndo} 

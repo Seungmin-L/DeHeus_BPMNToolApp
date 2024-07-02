@@ -4,7 +4,6 @@ import './toolbar.css'
 import AlignIcons from 'bpmn-js/lib/features/align-elements/AlignElementsIcons';
 import DistributeIcons from 'bpmn-js/lib/features/distribute-elements/DistributeElementsIcons';
 import Icons from '../../../resources/toolbar/toolbar-icons';
-import DropdownExport from './dropdownExport';
 
 function Toolbar({   
     onSave, 
@@ -22,7 +21,9 @@ function Toolbar({
     onAlignBottom, 
     onDistributeHorizontally, 
     onDistributeVertically ,
-    onToggleExport,
+    onExportImage,
+    onExportPdf,
+    onExportBpmn,
 }) {
 
   // for fonts
@@ -47,7 +48,14 @@ function Toolbar({
         <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }}/>
         <button dangerouslySetInnerHTML={{ __html: Icons.export }} onClick={() => setOpenExport((prev) => !prev)}></button>
         {
-          openExport && <DropdownExport/>   
+          openExport && 
+          <div className='flex flex-col dropdownExport'>
+              <ul className='flex flex-col gap-4'>
+                  <li onClick={onExportImage}><a>Image (.png, .jpg)</a></li>
+                  <li onClick={onExportPdf}><a>PDF (.pdf)</a></li>
+                  <li onClick={onExportBpmn}><a>BPMN (.bpmn)</a></li>
+              </ul>
+          </div> 
         }
 
       </div>

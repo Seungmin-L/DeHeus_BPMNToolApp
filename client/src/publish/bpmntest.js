@@ -190,7 +190,7 @@ function BpmnTest() {
                 onDistributeHorizontally={() => handleDistribute('horizontal')} 
                 onDistributeVertically={() => handleDistribute('vertical')} 
             />
-            <button onClick={handleChangeColor}>Change Color</button>
+            {/* <button onClick={handleChangeColor}>Change Color</button> */}
 
             </div>
 

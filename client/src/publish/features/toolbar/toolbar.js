@@ -51,9 +51,9 @@ function Toolbar({
           openExport && 
           <div className='flex flex-col dropdownExport'>
               <ul className='flex flex-col gap-4'>
-                  <li onClick={onExportImage}><a>Image (.png, .jpg)</a></li>
-                  <li onClick={onExportPdf}><a>PDF (.pdf)</a></li>
-                  <li onClick={onExportBpmn}><a>BPMN (.bpmn)</a></li>
+                  <li onClick={onExportImage}>Image (.png, .jpg)</li>
+                  <li onClick={onExportPdf}>PDF (.pdf)</li>
+                  <li onClick={onExportBpmn}>BPMN (.bpmn)</li>
               </ul>
           </div> 
         }

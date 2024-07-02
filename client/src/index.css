@@ -130,6 +130,10 @@ code {
   left: 5px !important;
 }
 
+.bjs-container svg{
+  vertical-align: top;
+}
+
 /* CSS for ICONS */
 
 .entry.bpmn-icon-connection-multi:before {

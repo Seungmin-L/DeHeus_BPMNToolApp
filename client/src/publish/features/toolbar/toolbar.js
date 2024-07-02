@@ -8,7 +8,6 @@ import Icons from '../../../resources/toolbar/toolbar-icons';
 function Toolbar({   
     onSave, 
     onImport,
-    onExport,
     onZoomIn, 
     onZoomOut, 
     onUndo, 
@@ -21,22 +20,25 @@ function Toolbar({
     onAlignBottom, 
     onDistributeHorizontally, 
     onDistributeVertically ,
-    onExportImage,
+    onExportXml,
+    onExportSvg,
     onExportPdf,
     onExportBpmn,
     importFile,
-    onFileChange
+    onFileChange,
+    isOpen,
+    setIsOpen,
 }) {
 
   // for fonts
   const fonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana'];
   // for export
-  const [openExport, setOpenExport] = useState(false);
-
-  const changeExportState = () => {
-    setOpenExport(false);
-  } 
-
+  // const [isOpen, setIsOpen] = useState(false);
+  const onExportClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(prev => !prev);
+}
   return (
     <div className="toolbar">
 
@@ -49,16 +51,44 @@ function Toolbar({
       <div className='toolbar-group-file'>
         <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }}/>
         <input type='file' accept='text/xml' style={{ display: 'none' }} ref={importFile} onChange={(e) => onFileChange(e)} />
-        <button dangerouslySetInnerHTML={{ __html: Icons.export }} onClick={onExport}></button>
-        {
-          openExport && 
-          <div className='flex flex-col dropdownExport'>
-              <ul className='flex flex-col gap-4'>
-                  <li onClick={onExportImage}>Image (.png, .jpg)</li>
-                  <li onClick={onExportPdf}>PDF (.pdf)</li>
-                  <li onClick={onExportBpmn}>BPMN (.bpmn)</li>
-              </ul>
-          </div> 
+        <button dangerouslySetInnerHTML={{ __html: Icons.export }} onClick={onExportClick}></button>
+        {isOpen &&
+            <ul className='export-options'>
+                <li>
+                    <a id='export-xml' title='download BPMN diagram' target='_blank'
+                        onClick={onExportXml}>XML
+                    </a>
+                </li>
+                <li>
+                    <a id='export-pdf' title='download BPMN diagram as PDF' target='_blank'
+                        onClick={(e) => {
+                            // e.stopPropagation();
+                            // exportDiagram(e.target.id, "diagram");
+                        }}>PDF
+                    </a>
+                </li>
+                <li>
+                    <a id='export-doc' title='download BPMN diagram as DOC' target='_blank'
+                        onClick={(e) => {
+                            // e.stopPropagation();
+                            // exportDiagram(e.target.id, "diagram");
+                        }}>DOC
+                    </a>
+                </li>
+                <li>
+                    <a id='export-png' title='download BPMN diagram as png' target='_blank'
+                        onClick={(e) => {
+                            // e.stopPropagation();
+                            // exportDiagram(e.target.id, "diagram");
+                        }}>PNG
+                    </a>
+                </li>
+                <li>
+                    <a id='export-svg' title='download BPMN diagram as svg' target='_blank'
+                        onClick={onExportSvg}>SVG
+                    </a>
+                </li>
+            </ul>
         }
 
       </div>

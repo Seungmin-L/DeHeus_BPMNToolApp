@@ -1,7 +1,7 @@
 {
-    "name": "Attributes",
-    "prefix": "additional_attributes",
-    "uri": "http://attributes",
+    "name": "Attachment",
+    "prefix": "attachment",
+    "uri": "http://attachment",
     "xml": {
       "tagAlias": "lowerCase"
     },

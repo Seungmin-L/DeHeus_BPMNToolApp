@@ -17,8 +17,36 @@ body {
 
 .model-header{
   height: 20%;
-  display: inline-flex;
-  align-items: end;
+  position: relative;
+}
+
+.export-options{
+  background-color: hsl(240, 33%, 98%);
+  width: 100px;
+  padding: 10px 5px;
+  left: 10px;
+  position: absolute;
+  list-style: none;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.export-options li{
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+.export-options li a{
+  text-decoration: none;
+  color: black;
+  width: 100%;
+  display: inline-block;
+}
+
+.export-options li:hover{
+  cursor: pointer;
+  background-color: hsl(210, 8%, 90%);
 }
 
 .model-body{
@@ -40,15 +68,14 @@ body {
 }
 
 #modeler-container{
-  /* width: calc(100vw - 450px); */
-  width: 100%;
+  width: calc(100vw - 450px);
   height: 100%;
   position: relative;
   background: url("https://svgshare.com/i/eGa.svg") center no-repeat;
 }
 
 /*Hide BPMN.io at the bottom*/
-.bjs-container a{
+.bjs-container a.bjs-powered-by{
   display: none ;
 }
 
@@ -65,7 +92,7 @@ body {
 .djs-palette.two-column.open{
   position: fixed !important;
   top: 20% !important;
-  left: 0px !important;
+  left: 200px !important;
   width: 200px !important;
   height: 100%;
 }
@@ -94,15 +121,14 @@ body {
   margin: 0 !important;
 }
 
-/* .djs-context-pad > :not(:first-child){
-  display: none;
-} */
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
+.djs-palette-shown .bjs-breadcrumbs{
+  left: 5px !important;
+}
 
 /* CSS for ICONS */
 
@@ -120,8 +146,15 @@ code {
   filter: brightness(0) saturate(100%) invert(28%) sepia(99%) saturate(4094%) hue-rotate(190deg) brightness(102%) contrast(104%);
 }
 
-/* CSS for Sidebar */
+/*CSS for sidebar*/
 
+/*CSS for minimap*/
+.djs-minimap{
+  border-radius: 5px !important;
+  line-height: 15px;
+  z-index: 100;
+}
 
-
-
+.djs-minimap.open .toggle::before{
+  content: "X";
+}

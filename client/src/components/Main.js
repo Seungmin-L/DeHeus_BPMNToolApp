@@ -1,18 +1,55 @@
-import { useIsAuthenticated } from "@azure/msal-react";
-import React, { useState } from "react";
-import { CiViewTable } from "react-icons/ci";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Table } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import NoAuth from "./common/NoAuth";
 import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
-
+  const { accounts } = useMsal();
+  const [userName, setUserName] = useState("");
+  const [projects, setProjects] = useState([]);
   const [isNavVisible, setIsNavVisible] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated && accounts.length > 0) {
+      setUserName(accounts[0].username);
+      
+      axios.get("/api/projects").then(response => {
+        const formattedProjects = formatProjectDates(response.data);
+        setProjects(formattedProjects);
+      }).catch(error => {
+        console.error("Error fetching projects", error);
+      });
+    }
+  }, [isAuthenticated, accounts]);
+
+  const formatProjectDates = (projects) => {
+    return projects.map(project => {
+      return {
+        ...project,
+        lastUpdate: convertUTCToLocal(project.lastUpdate)
+      };
+    });
+  };
+
+  const convertUTCToLocal = (dateString) => {
+    const date = new Date(dateString);
+    const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // UTC+7
+    return localTime.toISOString().slice(0, 16).replace('T', ' ');
+  };
 
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);
-  }; 
+  };
+
+  const handleProjectClick = (projectId) => {
+    navigate(`/project/${projectId}`);
+  };
 
   if (!isAuthenticated) {
     return <NoAuth />;
@@ -20,16 +57,30 @@ function Main() {
 
   return (
     <div>
-      <TopBar onLogoClick={toggleNav} userName="User Name" />
-      <div style={{ display: 'flex' }}>
+      <TopBar onLogoClick={toggleNav} userName={userName} />
+      <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
-        <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray' }}>
-          <div className="d-flex flex-column justify-content-center align-items-center w-100 vh-100 bg-light text-dark">
-            <CiViewTable size={100} className="text-secondary mb-4" />
-            <h1 className="display-1">Main Dashboard</h1>
-            <p className="lead">
-              This is the main dashboard page. (Design to be edited further.)
-            </p>
+        <div style={{ flexGrow: 1 }}>
+          <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
+            <div className="mt-4" style={{ width: "85%" }}>
+              <h3 className="mb-3">Accessible Projects</h3>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Project Name</th>
+                    <th>Last Update</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projects.map((project) => (
+                    <tr key={project.id} onClick={() => handleProjectClick(project.id)} style={{ cursor: "pointer" }}>
+                      <td>{project.projectName}</td>
+                      <td>{project.lastUpdate}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
           </div>
         </div>
       </div>

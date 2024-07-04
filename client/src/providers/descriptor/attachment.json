@@ -16,7 +16,7 @@
           {
             "name": "attachment",
             "isAttr": true,
-            "type": "String"
+            "type": "File"
           }
         ]
       }

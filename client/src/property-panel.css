@@ -1495,3 +1495,51 @@ textarea.bio-properties-panel-input {
 .bio-properties-panel-feel-popup .cm-gutters .cm-lineNumbers .cm-gutterElement {
     text-align: center;
 }
+
+.bio-properties-panel-attachment-btn{
+    background-color: var(--color-grey-225-10-97);
+    border: 1px solid var(--color-grey-225-10-80);
+    border-radius: 5px;
+    width: 100%;
+}
+
+.bio-properties-panel-attachment-btn:hover{
+    background-color: var(--color-grey-225-10-75);
+    transition: ease-in-out 0.3s;
+}
+
+.bio-properties-panel-a{
+    display: inline-block;
+    color: black;
+    text-decoration: none;
+}
+
+.bio-properties-panel-a::before{
+    display: inline-block;
+    content: '';
+    width: 20px;
+    height: 20px;
+    background: url("./assets/fileTypes/file.png") no-repeat center transparent;
+    background-size: contain;
+    margin-right: 3px;
+}
+
+.bio-properties-panel-a:hover, .bio-properties-panel-a:hover p{
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.bio-properties-panel-a p{
+    display: inline-block;
+    vertical-align: top;
+    margin-bottom: 8px;
+}
+
+.bio-properties-panel-input-file {
+    display: none;
+}
+
+.bio-properties-panel-attachment-entry{
+    margin: 10px 12px;
+}
+

@@ -1,11 +1,11 @@
 import { html } from 'htm/preact';
 
-import { useShowEntryEvent, isTextFieldEntryEdited, TooltipEntry, useError } from '@bpmn-io/properties-panel';
+import { useShowEntryEvent, isTextFieldEntryEdited, useError } from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 import { isFunction } from 'min-dash';
 import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
 
-export default function(element) {
+export default function (element) {
 
   return [
     {
@@ -21,12 +21,11 @@ function Attachment(props) {
   const { element, id } = props;
 
   const modeling = useService('modeling');
-  const translate = useService('translate');
   const debounce = useService('debounceInput');
   const getValue = () => {
     return element.businessObject.attachment || '';
   };
-
+  // Update property of the element and save it in the diagram file 
   const setValue = value => {
     return modeling.updateProperties(element, {
       attachment: value
@@ -34,58 +33,84 @@ function Attachment(props) {
   };
 
   return html`<${AttachmentfieldEntry}
-    id=${ id }
-    element=${ element }
-    label=${ translate('Attachment File') }
-    getValue=${ getValue }
-    setValue=${ setValue }
-    debounce=${ debounce }
+    id=${id}
+    element=${element}
+    getValue=${getValue}
+    setValue=${setValue}
+    debounce=${debounce}
   />`;
 }
 
 var hooks = require('../../../node_modules/@bpmn-io/properties-panel/preact/hooks');
 var classnames = require('classnames');
 
+// Create html element for file attachment
 function Attachmentfield(props) {
   const {
     debounce,
     disabled = false,
     id,
-    label,
-    onInput,
+    onChange,
     onFocus,
     onBlur,
-    placeholder,
-    value = '',
-    tooltip
+    value = ''
   } = props;
   const [localValue, setLocalValue] = hooks.useState(value || '');
   const ref = useShowEntryEvent(id);
-  const handleInputCallback = hooks.useMemo(() => {
-    return debounce(target => onInput(target.value.length ? target.value : undefined));
-  }, [onInput, debounce]);
-  const handleInput = e => {
-    handleInputCallback(e.target);
-    setLocalValue(e.target.value);
+  // Call onChange function to set new property value
+  const handleChangeCallback = hooks.useMemo(() => {
+    return debounce(target => onChange(target.files.length > 0 ? target.files[0] : undefined));
+  }, [onChange, debounce]);
+  // Attach new file 
+  const handleChange = e => {
+    handleChangeCallback(e.target);
+    if (e.target.files.length > 0) {
+      let newFile = e.target.files[0];
+      // Function for saving file in the storage to be added
+      setLocalValue(newFile);
+    }
   };
+  // Download file on click
+  const onClick = e => {
+    e.stopPropagation();
+    if (localValue !== '') {
+      const url = URL.createObjectURL(localValue);
+      e.target.href = url;
+      e.target.download = localValue.name;
+    }
+  }
+  // Check value changes
   hooks.useEffect(() => {
     if (value === localValue) {
       return;
     }
     setLocalValue(value);
   }, [value]);
+  //
+  const btnOnClick = e => {
+    e.preventDefault();
+    document.getElementById(prefixId(id)).click();
+  }
   return jsxs("div", {
-    class: "bio-properties-panel-textfield",
-    children: [jsx("label", {
-      for: prefixId(id),
-      class: "bio-properties-panel-label",
-      children: jsx(TooltipEntry, {
-        value: tooltip,
-        forId: id,
-        element: props.element,
-        children: label
-      })
-    }), jsx("input", {
+    class: "bio-properties-panel-attachment-field",
+    children: [localValue !== '' &&
+      jsx("a", {
+        ref: ref,
+        name: id,
+        onFocus: onFocus,
+        onBlur: onBlur,
+        children: jsx("p", {children: localValue.name}),
+        onClick: onClick,
+        class: "bio-properties-panel-a"
+      }),
+    jsx("button", {
+      ref: ref,
+      name: id,
+      class: "bio-properties-panel-attachment-btn",
+      onClick: btnOnClick,
+      children: localValue === '' ? "Select a file..." : "Browse..."
+    }),
+    jsx("input", {
       ref: ref,
       id: prefixId(id),
       type: "file",
@@ -93,30 +118,29 @@ function Attachmentfield(props) {
       spellCheck: "false",
       autoComplete: "off",
       disabled: disabled,
-      class: "bio-properties-panel-input",
-      onInput: handleInput,
+      class: "bio-properties-panel-input-file",
+      onChange: handleChange,
       onFocus: onFocus,
       onBlur: onBlur,
-      placeholder: placeholder,
-      value: localValue
-    })]
+      value: localValue,
+      accept: "image/*, .xml, .pdf, .doc, .docx"
+    })
+    ]
   });
 }
 
+// Create html element for field wrapper
 function AttachmentfieldEntry(props) {
   const {
     element,
     id,
     debounce,
     disabled,
-    label,
     getValue,
     setValue,
     validate,
     onFocus,
-    onBlur,
-    placeholder,
-    tooltip
+    onBlur
   } = props;
   const globalError = useError(id);
   const [localError, setLocalError] = hooks.useState(null);
@@ -127,7 +151,8 @@ function AttachmentfieldEntry(props) {
       setLocalError(newValidationError);
     }
   }, [value, validate]);
-  const onInput = newValue => {
+  // Change attachment in the element 
+  const onChange = newValue => {
     let newValidationError = null;
     if (isFunction(validate)) {
       newValidationError = validate(newValue) || null;
@@ -135,21 +160,19 @@ function AttachmentfieldEntry(props) {
     setValue(newValue, newValidationError);
     setLocalError(newValidationError);
   };
+
   const error = globalError || localError;
   return jsxs("div", {
-    class: classnames('bio-properties-panel-entry', error ? 'has-error' : ''),
+    class: classnames('bio-properties-panel-attachment-entry', error ? 'has-error' : ''),
     "data-entry-id": id,
     children: [jsx(Attachmentfield, {
       debounce: debounce,
       disabled: disabled,
       id: id,
-      label: label,
-      onInput: onInput,
+      onChange: onChange,
       onFocus: onFocus,
       onBlur: onBlur,
-      placeholder: placeholder,
       value: value,
-      tooltip: tooltip,
       element: element
     }, element), error && jsx("div", {
       class: "bio-properties-panel-error",

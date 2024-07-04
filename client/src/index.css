@@ -130,7 +130,7 @@ code {
   left: 5px !important;
 }
 
-.bjs-container svg{
+.djs-container svg{
   vertical-align: top;
 }
 
@@ -162,3 +162,5 @@ code {
 .djs-minimap.open .toggle::before{
   content: "X";
 }
+
+

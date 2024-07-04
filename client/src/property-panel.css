@@ -1512,6 +1512,7 @@ textarea.bio-properties-panel-input {
     display: inline-block;
     color: black;
     text-decoration: none;
+    width: 100%;
 }
 
 .bio-properties-panel-a::before{
@@ -1534,6 +1535,7 @@ textarea.bio-properties-panel-input {
     vertical-align: top;
     margin-bottom: 8px;
     pointer-events: none;
+    width: 85%;
 }
 
 .bio-properties-panel-input-file {

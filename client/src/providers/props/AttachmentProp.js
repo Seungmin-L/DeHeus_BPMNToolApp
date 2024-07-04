@@ -76,7 +76,7 @@ function Attachmentfield(props) {
     if (localValue !== '') {
       const url = URL.createObjectURL(localValue);
       e.target.href = url;
-      e.target.download = localValue.name;
+      // e.target.download = localValue.name;
     }
   }
   // Check value changes
@@ -100,6 +100,7 @@ function Attachmentfield(props) {
         onFocus: onFocus,
         onBlur: onBlur,
         children: jsx("p", {children: localValue.name}),
+        target: "_blank",
         onClick: onClick,
         class: "bio-properties-panel-a"
       }),

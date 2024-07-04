@@ -1519,7 +1519,7 @@ textarea.bio-properties-panel-input {
     content: '';
     width: 20px;
     height: 20px;
-    background: url("./assets/fileTypes/file.png") no-repeat center transparent;
+    background: url("./assets/icons/file.png") no-repeat center transparent;
     background-size: contain;
     margin-right: 3px;
 }
@@ -1533,6 +1533,7 @@ textarea.bio-properties-panel-input {
     display: inline-block;
     vertical-align: top;
     margin-bottom: 8px;
+    pointer-events: none;
 }
 
 .bio-properties-panel-input-file {

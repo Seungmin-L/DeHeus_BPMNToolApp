@@ -5,6 +5,7 @@ import './property-panel.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import './property-panel.css';
+import 'bootstrap/dist/css/bootstrap.css'
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

@@ -31,6 +31,7 @@ function ListSingleProject() {
   const [expandedRows, setExpandedRows] = useState([]);
   const [isNavVisible, setIsNavVisible] = useState(false);
   const navigate = useNavigate();
+  const [options, setOptions] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -39,6 +40,10 @@ function ListSingleProject() {
         .then((response) => {
           const formattedProcesses = formatProcessDates(response.data);
           setProcesses(formattedProcesses);
+          setOptions(response.data.map(process => ({
+            id: process.id,
+            name: process.name
+          })));
         })
         .catch((error) => {
           console.error("Error fetching processes", error);
@@ -117,15 +122,15 @@ function ListSingleProject() {
   const [selectedProcess, setSelectedProcess] = useState("");
   const [diagramName, setDiagramName] = useState("");
 
-  // MOCKDATA!!! 프로젝트 리스트 가져와야 함~~~~
-  const [options, setOptions] = useState([
-    { id: "Process1", name: "Process1" },
-    { id: "Process2", name: "Process2" },
-    { id: "Process3", name: "Process3" },
-    { id: "Process4", name: "Process4" },
-    { id: "Process5", name: "Process5" },
-    { id: "Process6", name: "Process6" },
-  ]);
+  // // MOCKDATA!!! 프로젝트 리스트 가져와야 함~~~~
+  // const [options, setOptions] = useState([
+  //   { id: "Process1", name: "Process1" },
+  //   { id: "Process2", name: "Process2" },
+  //   { id: "Process3", name: "Process3" },
+  //   { id: "Process4", name: "Process4" },
+  //   { id: "Process5", name: "Process5" },
+  //   { id: "Process6", name: "Process6" },
+  // ]);
 
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);

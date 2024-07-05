@@ -11,6 +11,8 @@ function TopBar({ onLogoClick, userName }) {
     instance.logoutRedirect().catch((error) => {
       console.error("Logout error:", error);
     });
+    localStorage.removeItem('msalToken');
+    localStorage.removeItem('msalAccount');
   };
 
   return (

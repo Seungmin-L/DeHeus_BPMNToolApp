@@ -20,6 +20,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import LeftNavBar from "./common/LeftNavBar";
 import NoAuth from "./common/NoAuth";
 import TopBar from "./common/TopBar";
+import { formatProcessDates } from '../utils/utils';
 
 function ListSingleProject() {
   const { projectId } = useParams();
@@ -44,22 +45,6 @@ function ListSingleProject() {
         });
     }
   }, [isAuthenticated, projectId]);
-
-  const formatProcessDates = (processes) => {
-    return processes.map((process) => {
-      return {
-        ...process,
-        lastUpdate: convertUTCToLocal(process.lastUpdate),
-        children: formatProcessDates(process.children || []),
-      };
-    });
-  };
-
-  const convertUTCToLocal = (dateString) => {
-    const date = new Date(dateString);
-    const localTime = new Date(date.getTime() + 7 * 60 * 60 * 1000); // UTC+7 (VN)
-    return localTime.toISOString().slice(0, 16).replace("T", " ");
-  };
 
   const toggleRow = (id) => {
     setExpandedRows(

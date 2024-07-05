@@ -1508,11 +1508,15 @@ textarea.bio-properties-panel-input {
     transition: ease-in-out 0.3s;
 }
 
+.bio-properties-panel-attachment-container{
+    width: 100%;
+}
+
 .bio-properties-panel-a{
     display: inline-block;
     color: black;
     text-decoration: none;
-    width: 100%;
+    width: 85%;
 }
 
 .bio-properties-panel-a::before{
@@ -1545,4 +1549,19 @@ textarea.bio-properties-panel-input {
 .bio-properties-panel-attachment-entry{
     margin: 10px 12px;
 }
+.attachment-del-btn{
+    display: inline-block;
+    background: url("./assets/icons/delete.png") transparent no-repeat center;
+    background-size: contain;
+    width: 25px;
+    height: 25px;
+    border: none;
+    border-radius: 5px;
+    background-origin: content-box;
+    padding: 5px;
+}
 
+.attachment-del-btn:hover{
+    background-color: var(--color-grey-225-10-75);
+    transition: ease-in-out 0.3s;
+}

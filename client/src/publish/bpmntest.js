@@ -7,10 +7,16 @@ import ColorPickerModule from 'bpmn-js-color-picker';
 import minimapModule from 'diagram-js-minimap';
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import ErrorPage from './ErrorPage';
-import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
+import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, ZeebePropertiesProviderModule, CamundaPlatformPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import Toolbar from './features/toolbar/toolbar';
+
+//custom properties
+import magicPropertiesProviderModule from './features/panel';
+import magicModdleDescriptor from './features/panel/magic.json';
+import ZeebeBpmnModdle from 'zeebe-bpmn-moddle/resources/zeebe.json'
+import zeebeModdleDescriptor from 'zeebe-bpmn-moddle/resources/zeebe';
 
 function BpmnTest() {
     const container = useRef(null);
@@ -38,10 +44,14 @@ function BpmnTest() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                attachmentPropertiesProviderModule
+                attachmentPropertiesProviderModule,
+                // magicPropertiesProviderModule,
+                ZeebePropertiesProviderModule,
             ],
             moddleExtensions: {
-                attachment: attachmentModdleDescriptor
+                attachment: attachmentModdleDescriptor,
+                // magic: magicModdleDescriptor,
+                zeebe: ZeebeBpmnModdle
             }
         });
         // Check file api availablitiy

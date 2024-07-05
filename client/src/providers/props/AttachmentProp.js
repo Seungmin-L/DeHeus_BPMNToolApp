@@ -22,8 +22,9 @@ function Attachment(props) {
 
   const modeling = useService('modeling');
   const debounce = useService('debounceInput');
+  // Get attachment 
   const getValue = () => {
-    return element.businessObject.attachment || '';
+    return element.businessObject.attachment || [];
   };
   // Update property of the element and save it in the diagram file 
   const setValue = value => {
@@ -53,9 +54,9 @@ function Attachmentfield(props) {
     onChange,
     onFocus,
     onBlur,
-    value = ''
+    value = []
   } = props;
-  const [localValue, setLocalValue] = hooks.useState(value || '');
+  const [localValue, setLocalValue] = hooks.useState(value || []);
   const ref = useShowEntryEvent(id);
   // Call onChange function to set new property value
   const handleChangeCallback = hooks.useMemo(() => {
@@ -67,17 +68,23 @@ function Attachmentfield(props) {
     if (e.target.files.length > 0) {
       let newFile = e.target.files[0];
       // Function for saving file in the storage to be added
-      setLocalValue(newFile);
+      const newList = [...value];
+      if (!newList.includes(newFile)) {
+        newList.push(newFile);
+        setLocalValue(newList);
+      }
+      console.log(localValue);
     }
   };
   // Download file on click
   const onClick = e => {
     e.stopPropagation();
-    if (localValue !== '') {
-      const url = URL.createObjectURL(localValue);
-      e.target.href = url;
-      // e.target.download = localValue.name;
-    }
+    let file = localValue.find(el => {
+      return el.name === e.target.name;
+    })
+    const url = URL.createObjectURL(file);
+    e.target.href = url;
+    // e.target.download = localValue.name;
   }
   // Check value changes
   hooks.useEffect(() => {
@@ -93,23 +100,25 @@ function Attachmentfield(props) {
   }
   return jsxs("div", {
     class: "bio-properties-panel-attachment-field",
-    children: [localValue !== '' &&
-      jsx("a", {
-        ref: ref,
-        name: id,
-        onFocus: onFocus,
-        onBlur: onBlur,
-        children: jsx("p", {children: localValue.name}),
-        target: "_blank",
-        onClick: onClick,
-        class: "bio-properties-panel-a"
-      }),
+    children: [localValue.length > 0 &&
+      localValue.map(el =>
+        jsx("a", {
+          ref: ref,
+          name: el.name,
+          onFocus: onFocus,
+          onBlur: onBlur,
+          children: jsx("p", { children: el.name }),
+          target: "_blank",
+          onClick: onClick,
+          class: "bio-properties-panel-a"
+        })
+      ),
     jsx("button", {
       ref: ref,
       name: id,
       class: "bio-properties-panel-attachment-btn",
       onClick: btnOnClick,
-      children: localValue === '' ? "Select a file..." : "Browse..."
+      children: localValue === '' ? "Select a file..." : "Edit attachment..."
     }),
     jsx("input", {
       ref: ref,
@@ -124,7 +133,7 @@ function Attachmentfield(props) {
       onFocus: onFocus,
       onBlur: onBlur,
       value: localValue,
-      accept: "image/*, .xml, .pdf, .doc, .docx"
+      accept: "image/*, .pdf, .doc, .docx"
     })
     ]
   });
@@ -158,7 +167,8 @@ function AttachmentfieldEntry(props) {
     if (isFunction(validate)) {
       newValidationError = validate(newValue) || null;
     }
-    setValue(newValue, newValidationError);
+    const newList = [...value, newValue];
+    setValue(newList, newValidationError);
     setLocalError(newValidationError);
   };
 

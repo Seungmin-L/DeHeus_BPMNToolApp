@@ -1,238 +1,236 @@
-import React, { useEffect, useRef, useState } from 'react';
-
-// BPMN imports
-import BpmnModeler from 'bpmn-js/lib/Modeler';
-import minimapModule from 'diagram-js-minimap';
-import ColorPickerModule from 'bpmn-js-color-picker';
-import 'bpmn-js/dist/assets/diagram-js.css';
-import 'bpmn-js/dist/assets/bpmn-js.css';
-import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
-import { 
-    BpmnPropertiesPanelModule, 
-    BpmnPropertiesProviderModule,  
-  } from 'bpmn-js-properties-panel';
-
-// diagram file
-import diagramXML from '../resources/pizza-collaboration.bpmn';
-
-// toolbar
+import { BpmnModeler, CustomBpmnJsModeler, Event, isContentSavedEvent } from "@miragon/camunda-web-modeler";
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import Toolbar from './features/toolbar/toolbar';
 
+const diagramUrl = 'https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn';
 
-function BpmnTest() {
-    const diagramUrl = 'https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn';
+const Bpmn = () => {
+  const modelerRef = useRef();
+  const [xml, setXml] = useState('');
+  const container = useRef(null);
+  const importFile = useRef(null);
+  const [modeler, setModeler] = useState(null);
+  const [isHidden, setIsHidden] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [diagramXML, setDiagramXML] = useState(null);
+  const [isFileValid, setIsFileValid] = useState(true);
+  const saveKeys = ['s', 'S'];
 
-    const container = useRef(null);
-    const [isOpen, setIsOpen] = useState(false);
-    let [modelerInstance, setModeler] = useState(null); // <-- Add this line
-    // Event handler to toggle the export dropdown
+  let modelerInstance = null;
+  useEffect(() => {
+    // Fetch the diagram XML
+    fetch(diagramUrl)
+      .then(response => response.text())
+      .then(setXml);
+  }, []);
 
-
-    useEffect(() => {
-        if (modelerInstance) return;
-        modelerInstance = new BpmnModeler({
-            container: container.current,
-            keyboard: { bindTo: document },
-            propertiesPanel: {
-                parent: '#properties-panel-parent'
-            },
-            additionalModules: [
-                BpmnPropertiesPanelModule,
-                BpmnPropertiesProviderModule,
-                ColorPickerModule,
-            ],
-            moddleExtensions: {
-            },
-            textRenderer: {
-                defaultStyle: {
-                //   fontFamily: 'none'
-                }
-            },
-            bpmnRenderer: {
-                defaultStrokeColor: '#333'
-            }
-        });
-
-        // opens diagram
-        const openDiagram = async (bpmnXML) => {
-            try {
-            await modelerInstance.importXML(bpmnXML);
-            const canvas = modelerInstance.get('canvas');
-            const overlays = modelerInstance.get('overlays');
-            canvas.zoom('fit-viewport');
-            overlays.add('SCAN_OK', 'note', {
-                position: {
-                bottom: 0,
-                right: 0
-                },
-                html: '<div class="diagram-note">Mixed up the labels?</div>'
-            });
-            canvas.addMarker('SCAN_OK', 'needs-discussion');
-            } catch (err) {
-            console.error('could not import BPMN 2.0 diagram', err);
-            }
-        };
-    
-        fetch('https://cdn.statically.io/gh/bpmn-io/bpmn-js-examples/dfceecba/starter/diagram.bpmn')
-            .then(response => response.text())
-            .then(openDiagram);
-
-        // modelerInstance.createDiagram().then(() => {
-        //     modelerInstance.get('keyboard').bind(document);
-        //     console.log(modelerInstance.get('commandStack')); // Should log the commandStack
-        // });
-        setModeler(modelerInstance);
-        // return () => {
-        //     modeler?.destroy();
-        // }
-        console.log(modelerInstance)
-    }, []);
-
-    const handleZoomIn = () => {
-        modelerInstance?.get('zoomScroll').stepZoom(1);
-    };
-
-    const handleZoomOut = () => {
-        modelerInstance?.get('zoomScroll').stepZoom(-1);
-    };
-
-    const handleUndo = () => {
-        modelerInstance?.get('commandStack').undo();
-        console.log(modelerInstance?.get('commandStack'))
-    };
-
-    const handleRedo = () => {
-        modelerInstance?.get('commandStack').redo();
-    };
-
-    const handleSave = () => {
-    // Implement save functionality here
-    };
-
-    const handleImport = () => {
-        // import function
+  const onEvent = useCallback(async (event) => {
+    if (isContentSavedEvent(event)) {
+      setXml(event.data.xml);
+      return;
     }
+  }, []);
 
-    const handleExport = (e) => {
-        // export function
-    }
+  const modelerTabOptions = useMemo(() => ({
+    modelerOptions: { refs: [modelerRef] }
+  }), []);
 
-    const handleExportXml = (e) => {
-      // export xml function
-      e.stopPropagation();
-      exportXml(e.target.id,"diagram")
-    }
-
-    const handleAlign = (alignment) => {
-        const alignElements = modelerInstance.get('alignElements');
-        const selection = modelerInstance.get('selection');
-        const selectedElements = selection.get();
-    
-        if (selectedElements.length > 1) {
-            alignElements.trigger(selectedElements, alignment);
-        } else {
-            console.log('Please select at least two elements to align.');
-        }
-    };
-    
-    const handleDistribute = (direction) => {
-        const distributeElements = modelerInstance.get('distributeElements');
-        const selection = modelerInstance.get('selection');
-        const selectedElements = selection.get();
-    
-        if (selectedElements.length > 2) {
-            distributeElements.trigger(selectedElements, direction);
-        } else {
-            console.log('Please select at least three elements to distribute.');
-        }
-    };
-      
-    const handleChangeColor = () => {
-        const selection = modelerInstance.get('selection');
-        const modeling = modelerInstance.get('modeling');
-        const selectedElement = selection.get()[0]; // get the first selected element
-      
-        if (selectedElement) {
-          modeling.setColor(selectedElement, {
-            stroke: 'red',
-            
-          });
-        //   console.log(selectedElement);
-        }
-    };
-    
-    const onExportClick = () => {
-      setIsOpen(prev => !prev);
-    }
-    // Export diagram as xml
-    const exportXml = async (id, name) => {
-      if (modelerInstance) {
-          const { xml } = await modelerInstance.saveXML({ format: true }).catch(err => {
-              console.log(err);
-          });
-          if (xml) {
-              setEncoded(document.getElementById(id), name + '.xml', xml);
-          };
-      }
-    };
   
-    // Export diagram as svg
-    const exportSvg = async (id, name) => {
-        if (modelerInstance) {
-            const { svg } = await modelerInstance.saveSVG({ format: true }).catch(err => {
-                console.log(err);
-            });
-            if (svg) {
-                setEncoded(document.getElementById(id), name + '.svg', svg);
-            };
-        }
-    };
+  const handleHidden = () => {
+    setIsHidden(prev => !prev);
+}
+// File drag & drop
+const registerFileDrop = (container) => {
+    const handleFileSelect = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
 
-    const setEncoded = (link, name, data) => {
-      var encodedData = encodeURIComponent(data);
-      if (data) {
-          link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
-          link.setAttribute('download', name);
-      }
-      handleClose();
-  }
-  const handleClose = () => {
+        var files = e.dataTransfer.files;
+        var file = files[0];
+        var reader = new FileReader();
+        if (file) {
+            reader.onload = (e) => {
+                var xml = e.target.result;
+                setDiagramXML(xml);
+            };
+
+            reader.readAsText(file);
+        } else {
+            console.log("Invalid File");
+        }
+    }
+
+    const handleDragOver = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    }
+
+    container.addEventListener('dragover', handleDragOver, false);
+    container.addEventListener('drop', handleFileSelect, false);
+}
+
+const setEncoded = (link, name, data) => {
+    var encodedData = encodeURIComponent(data);
+    if (data) {
+        link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
+        link.setAttribute('download', name);
+    }
+    handleClose();
+}
+
+// Export diagram as xml
+const exportXml = async (id, name) => {
+    if (modeler) {
+        const { xml } = await modeler.saveXML({ format: true }).catch(err => {
+            console.log(err);
+        });
+        if (xml) {
+            setEncoded(document.getElementById(id), name + '.xml', xml);
+        };
+    }
+};
+
+// Export diagram as svg
+const exportSvg = async (id, name) => {
+    if (modeler) {
+        const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
+            console.log(err);
+        });
+        if (svg) {
+            setEncoded(document.getElementById(id), name + '.svg', svg);
+        };
+    }
+};
+
+// Save diagram
+const saveDiagram = async () => {
+    if (modelerInstance) {
+        const { xml } = await modelerInstance.saveXML({ format: true }).catch(err => {
+            console.log(err);
+        });
+        if (xml) {
+            // Save diagram in DB
+            console.log(xml);
+        };
+    }
+}
+const onImportClick = () => {
+    importFile.current.click();
+}
+const onFileChange = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    var file = e.target.files[0];
+    var reader = new FileReader();
+    if (file) {
+        reader.onload = (e) => {
+            var xml = e.target.result;
+            setDiagramXML(xml);
+        };
+
+        reader.readAsText(file);
+    } else {
+        console.log("Invalid File");
+    }
+}
+const handleExportXml = (e) => {
+    e.stopPropagation();
+    exportXml(e.target.id,"diagram")
+}
+const handleExportSvg = (e) => {
+    e.stopPropagation();
+    exportSvg(e.target.id,"diagram")
+}
+const handleClose = () => {
     setIsOpen(false);
 }
+const handleZoomIn = () => {
+    modelerRef.current?.get('zoomScroll').stepZoom(1);
+};
 
-    return (
-        <div className='main-container'>
+const handleZoomOut = () => {
+    modelerRef.current?.get('zoomScroll').stepZoom(-1);
+};
 
-            <div className='model-header'>
-            <Toolbar 
-                onSave={handleSave} 
-                onImport={handleImport}
-                onExport={handleExport}
-                onExportXml={handleExportXml}
-                onZoomIn={handleZoomIn} 
-                onZoomOut={handleZoomOut} 
-                onUndo={handleUndo} 
-                onRedo={handleRedo} 
-                onAlignLeft={() => handleAlign('left')} 
-                onAlignCenter={() => handleAlign('center')} 
-                onAlignRight={() => handleAlign('right')} 
-                onAlignTop={() => handleAlign('top')} 
-                onAlignMiddle={() => handleAlign('middle')} 
-                onAlignBottom={() => handleAlign('bottom')} 
-                onDistributeHorizontally={() => handleDistribute('horizontal')} 
-                onDistributeVertically={() => handleDistribute('vertical')} 
-            />
-            {/* <button onClick={handleChangeColor}>Change Color</button> */}
+const handleUndo = () => {
+    modelerRef.current?.get('commandStack').undo();
+    console.log(modelerRef.current?.get('commandStack'))
+};
 
-            </div>
+const handleRedo = () => {
+    modelerRef.current?.get('commandStack').redo();
+};
 
-            <div className='model-body'>
-                <div id='modeler-container' ref={container}/>
-                <div id='properties-panel-parent' />
-            </div>
+const handleSave = async () => {
+    // Implement save functionality here
+    if (modeler) {
+        const { xml } = await modeler.saveXML({ format: true }).catch(err => {
+            console.log(err);
+        });
+        if (xml) {
+            // Save diagram in DB
+            console.log(xml);
+        };
+    }
+};
 
-        </div>
-    )
+const handleImport = () => {
+    // import function
 }
 
-export default BpmnTest;
+const handleAlign = (alignment) => {
+    const alignElements = modelerRef.current?.get('alignElements');
+    const selection = modelerRef.current?.get('selection');
+    const selectedElements = selection.get();
+
+    if (selectedElements.length > 1) {
+        alignElements.trigger(selectedElements, alignment);
+    } else {
+        console.log('Please select at least two elements to align.');
+    }
+};
+
+const handleDistribute = (direction) => {
+    const distributeElements = modelerRef.current?.get('distributeElements');
+    const selection = modelerRef.current?.get('selection');
+    const selectedElements = selection.get();
+
+    if (selectedElements.length > 2) {
+        distributeElements.trigger(selectedElements, direction);
+    } else {
+        console.log('Please select at least three elements to distribute.');
+    }
+};
+
+  return (
+    <div style={{ height: "100vh" }}>
+        <Toolbar
+            isOpen={isOpen} 
+            setIsOpen={setIsOpen}
+            onSave={handleSave}
+            onImport={onImportClick}
+            onExportXml={handleExportXml}
+            onExportSvg={handleExportSvg}
+            // more export calls here
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onAlignLeft={() => handleAlign('left')}
+            onAlignCenter={() => handleAlign('center')}
+            onAlignRight={() => handleAlign('right')}
+            onAlignTop={() => handleAlign('top')}
+            onAlignMiddle={() => handleAlign('middle')}
+            onAlignBottom={() => handleAlign('bottom')}
+            onDistributeHorizontally={() => handleDistribute('horizontal')}
+            onDistributeVertically={() => handleDistribute('vertical')}
+            importFile={importFile}
+            onFileChange = {onFileChange}
+        />
+      <BpmnModeler xml={xml} onEvent={onEvent} modelerTabOptions={modelerTabOptions} />
+    </div>
+  );
+}
+
+export default Bpmn;

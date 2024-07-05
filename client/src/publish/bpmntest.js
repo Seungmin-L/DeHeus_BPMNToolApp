@@ -17,6 +17,8 @@ import magicPropertiesProviderModule from './features/panel';
 import magicModdleDescriptor from './features/panel/magic.json';
 import ZeebeBpmnModdle from 'zeebe-bpmn-moddle/resources/zeebe.json'
 import zeebeModdleDescriptor from 'zeebe-bpmn-moddle/resources/zeebe';
+import CamundaModdleDescriptor from 'camunda-bpmn-moddle/resources/camunda.json';
+
 
 function BpmnTest() {
     const container = useRef(null);
@@ -46,12 +48,12 @@ function BpmnTest() {
                 minimapModule,
                 attachmentPropertiesProviderModule,
                 // magicPropertiesProviderModule,
-                ZeebePropertiesProviderModule,
+                // ZeebePropertiesProviderModule,
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
                 // magic: magicModdleDescriptor,
-                zeebe: ZeebeBpmnModdle
+                // zeebe: ZeebeBpmnModdle,
             }
         });
         // Check file api availablitiy

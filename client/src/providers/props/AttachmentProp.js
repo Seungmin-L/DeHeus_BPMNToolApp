@@ -45,40 +45,29 @@ function Attachment(props) {
 var hooks = require('../../../node_modules/@bpmn-io/properties-panel/preact/hooks');
 var classnames = require('classnames');
 
-// Create html element for file attachment
-function Attachmentfield(props) {
+function AttachmentList(props) {
   const {
-    debounce,
-    disabled = false,
     id,
     onChange,
-    onFocus,
-    onBlur,
     onDelete,
+    handleHide,
+    resetFile,
     value = []
   } = props;
   const [localValue, setLocalValue] = hooks.useState(value || []);
-  const ref = useShowEntryEvent(id);
-  // Call onChange function to set new property value
-  const handleChangeCallback = hooks.useMemo(() => {
-    return debounce(target => onChange(target.files.length > 0 ? target.files[0] : undefined));
-  }, [onChange, debounce]);
-  const handleDeleteCallback = hooks.useMemo(() => {
-    return debounce(fileName => onDelete(fileName));
-  }, [onChange, debounce]);
-  // Attach new file 
-  const handleChange = e => {
-    if (e.target.files.length > 0) {
-      handleChangeCallback(e.target);
-      let newFile = e.target.files[0];
-      // Function for saving file in the storage to be added
-      const newList = [...value];
-      if (!newList.includes(newFile)) {
-        newList.push(newFile);
-        setLocalValue(newList);
-      }
+  const onDeleteClick = e => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (localValue.length > 0) {
+      onDelete(e.target.name);
+      // Function for deleting file in the storage to be added
+      const newList = localValue.filter(el => { return el.name !== e.target.name });
+      setLocalValue(newList);
     }
-  };
+    if (localValue.length === 0) {
+      handleHide();
+    }
+  }
   // Download file on click
   const onClick = e => {
     e.stopPropagation();
@@ -88,6 +77,130 @@ function Attachmentfield(props) {
     const url = URL.createObjectURL(file);
     e.target.href = url;
     // e.target.download = localValue.name;
+  }
+  const btnOnClick = e => {
+    e.preventDefault();
+    document.getElementById("add-attachment").click();
+  }
+  // Check value changes
+  hooks.useEffect(() => {
+    if (value === localValue) {
+      return;
+    }
+    setLocalValue(value);
+  }, [value]);
+  return jsxs("div", {
+    class: "bio-properties-panel-attachments-wrapper",
+    children: [
+      jsx("div", { class: "bio-properties-panel-attachments-bg", onClick: handleHide }),
+      jsxs("div", {
+        class: "bio-properties-panel-attachments-container",
+        children: [
+          jsxs("div", {
+            class: "bio-properties-panel-attachment-header-container",
+            children: [
+              jsx("h1", { children: "Attachments" }),
+              jsx("button", {
+                name: id,
+                class: "attachment-add-btn",
+                onClick: btnOnClick,
+              }),
+              jsx("input", {
+                id: "add-attachment",
+                type: "file",
+                name: id,
+                class: "bio-properties-panel-input-file",
+                onChange: onChange,
+                onClick: resetFile,
+                value: localValue,
+                accept: "image/*, .pdf, .doc, .docx"
+              })
+            ]
+          })
+          ,
+          jsx("div", {
+            class: "bio-properties-panel-attachment-list-container",
+            children: localValue.map(el =>
+              jsxs("div", {
+                class: "bio-properties-panel-attachment-container",
+                children: [
+                  jsx("a", {
+                    name: el.name,
+                    children: jsx("p", { children: el.name }),
+                    target: "_blank",
+                    onClick: onClick,
+                    class: "bio-properties-panel-a"
+                  }),
+                  jsx("button", {
+                    onClick: onDeleteClick,
+                    class: "attachment-del-btn",
+                    name: el.name,
+                  })
+                ]
+              })
+            )
+          })
+          ,
+          jsx("div", {
+            class: "text-end",
+            children: jsx("button", {
+              class: "bio-properties-panel-attachment-close-btn",
+              onClick: handleHide,
+              children: "Close"
+            })
+          })
+        ]
+      })
+
+    ]
+  })
+}
+
+// Create html element for file attachment
+function Attachmentfield(props) {
+  const {
+    debounce,
+    id,
+    onChange,
+    onDelete,
+    value = []
+  } = props;
+  const [localValue, setLocalValue] = hooks.useState(value || []);
+  const [isShown, setIsShown] = hooks.useState(false);
+  const ref = useShowEntryEvent(id);
+  // Call onChange function to set new property value
+  const handleChangeCallback = hooks.useMemo(() => {
+    return debounce(target => onChange(target.files.length > 0 ? target.files[0] : undefined));
+  }, [onChange, debounce]);
+  const handleDeleteCallback = hooks.useMemo(() => {
+    return debounce(fileName => onDelete(fileName));
+  }, [onDelete, debounce]);
+  // Attach new file 
+  const handleChange = e => {
+    if (e.target.files.length > 0) {
+      let newFile = e.target.files[0];
+      const newList = [...value];
+      if (value.length > 0) {
+        const duplicate = value.filter(el => { return el.name === newFile.name });
+        if (duplicate.length === 0) {
+          handleChangeCallback(e.target);
+          // Function for saving file in the storage to be added
+          newList.push(newFile);
+          setLocalValue(newList);
+        }
+      } else {
+        handleChangeCallback(e.target);
+        // Function for saving file in the storage to be added
+        newList.push(newFile);
+        setLocalValue(newList);
+      }
+    }
+  };
+  const handleShow = () => {
+    setIsShown(true);
+  }
+  const handleHide = () => {
+    setIsShown(false);
   }
   // Check value changes
   hooks.useEffect(() => {
@@ -101,62 +214,43 @@ function Attachmentfield(props) {
     e.preventDefault();
     document.getElementById(prefixId(id)).click();
   }
-  const onDeleteClick = e => {
-    e.stopPropagation();
-    if (localValue.length > 0) {
-      handleDeleteCallback(e.target.name);
-      // Function for deleting file in the storage to be added
-      const newList = [...localValue];
-      newList.filter(el => {return el.name !== e.target.name});
-      setLocalValue(newList);
-    }
+  const resetFile = e => {
+    e.target.value = null;
   }
   return jsxs("div", {
     class: "bio-properties-panel-attachment-field",
-    children: [localValue.length > 0 &&
-      localValue.map(el =>
-        jsxs("div", {
-          class: "bio-properties-panel-attachment-container",
-          children: [
-            jsx("a", {
-              ref: ref,
-              name: el.name,
-              onFocus: onFocus,
-              onBlur: onBlur,
-              children: jsx("p", { children: el.name }),
-              target: "_blank",
-              onClick: onClick,
-              class: "bio-properties-panel-a"
-            }),
-            jsx("button", {
-              onClick: onDeleteClick,
-              class: "attachment-del-btn",
-              name: el.name
-            })
-          ]
-        })
-      ),
-    jsx("button", {
-      ref: ref,
-      name: id,
-      class: "bio-properties-panel-attachment-btn",
-      onClick: btnOnClick,
-      children: localValue.length <= 0 ? "Select a file..." : "Add attachment..."
-    }),
+    children: [localValue.length > 0 ?
+      jsx("button", {
+        ref: ref,
+        name: id,
+        class: "bio-properties-panel-attachment-btn",
+        onClick: handleShow,
+        children: "View attachments..."
+      }) :
+      jsx("button", {
+        ref: ref,
+        name: id,
+        class: "bio-properties-panel-attachment-btn",
+        onClick: btnOnClick,
+        children: "Select a file..."
+      }),
     jsx("input", {
       ref: ref,
       id: prefixId(id),
       type: "file",
       name: id,
-      spellCheck: "false",
-      autoComplete: "off",
-      disabled: disabled,
       class: "bio-properties-panel-input-file",
+      onClick: resetFile,
       onChange: handleChange,
-      onFocus: onFocus,
-      onBlur: onBlur,
-      value: localValue,
       accept: "image/*, .pdf, .doc, .docx"
+    }),
+    (localValue.length > 0 && isShown) && jsx(AttachmentList, {
+      id: id,
+      onChange: handleChange,
+      onDelete: handleDeleteCallback,
+      value: localValue,
+      resetFile: resetFile,
+      handleHide: handleHide
     })
     ]
   });
@@ -168,12 +262,9 @@ function AttachmentfieldEntry(props) {
     element,
     id,
     debounce,
-    disabled,
     getValue,
     setValue,
     validate,
-    onFocus,
-    onBlur
   } = props;
   const globalError = useError(id);
   const [localError, setLocalError] = hooks.useState(null);
@@ -211,11 +302,8 @@ function AttachmentfieldEntry(props) {
     "data-entry-id": id,
     children: [jsx(Attachmentfield, {
       debounce: debounce,
-      disabled: disabled,
       id: id,
       onChange: onChange,
-      onFocus: onFocus,
-      onBlur: onBlur,
       value: value,
       element: element,
       onDelete: onDelete

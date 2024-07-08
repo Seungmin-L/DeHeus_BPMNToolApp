@@ -79,7 +79,6 @@ function BpmnTest() {
         }
         // Save diagram on every change
         modelerInstance.on('commandStack.changed', saveDiagram);
-
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
         modelerInstance.get('keyboard').addListener(function (context) {

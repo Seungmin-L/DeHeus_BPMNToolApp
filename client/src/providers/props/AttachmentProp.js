@@ -6,7 +6,6 @@ import { isFunction } from 'min-dash';
 import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
 
 export default function (element) {
-
   return [
     {
       id: 'attachment',
@@ -126,7 +125,8 @@ function AttachmentList(props) {
                 children: [
                   jsx("a", {
                     name: el.name,
-                    children: jsx("p", { children: el.name }),
+                    title: el.name,
+                    children: jsx("p", { children: el.name.length > 20 ? el.name.substring(0, 21) + "..." : el.name }),
                     target: "_blank",
                     onClick: onClick,
                     class: "bio-properties-panel-a"
@@ -142,7 +142,7 @@ function AttachmentList(props) {
           })
           ,
           jsx("div", {
-            class: "text-end",
+            class: "text-end pb-2",
             children: jsx("button", {
               class: "bio-properties-panel-attachment-close-btn",
               onClick: handleHide,

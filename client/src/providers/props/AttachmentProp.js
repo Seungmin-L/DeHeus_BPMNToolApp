@@ -111,7 +111,6 @@ function AttachmentList(props) {
                 class: "bio-properties-panel-input-file",
                 onChange: onChange,
                 onClick: resetFile,
-                value: localValue,
                 accept: "image/*, .pdf, .doc, .docx"
               })
             ]
@@ -134,7 +133,7 @@ function AttachmentList(props) {
                   jsx("button", {
                     onClick: onDeleteClick,
                     class: "attachment-del-btn",
-                    name: el.name,
+                    name: el.name
                   })
                 ]
               })
@@ -181,8 +180,8 @@ function Attachmentfield(props) {
       let newFile = e.target.files[0];
       const newList = [...value];
       if (value.length > 0) {
-        const duplicate = value.filter(el => { return el.name === newFile.name });
-        if (duplicate.length === 0) {
+        const duplicate = value.find(el => { return el.name === newFile.name }) || null;
+        if (duplicate === null) {
           handleChangeCallback(e.target);
           // Function for saving file in the storage to be added
           newList.push(newFile);
@@ -244,7 +243,8 @@ function Attachmentfield(props) {
       onChange: handleChange,
       accept: "image/*, .pdf, .doc, .docx"
     }),
-    (localValue.length > 0 && isShown) && jsx(AttachmentList, {
+    (localValue.length > 0 && isShown) &&
+    jsx(AttachmentList, {
       id: id,
       onChange: handleChange,
       onDelete: handleDeleteCallback,

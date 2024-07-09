@@ -13,7 +13,6 @@ import {
   BsChevronDown,
   BsChevronRight,
   BsFillPlusCircleFill,
-  BsX,
 } from "react-icons/bs";
 import { MdOpenInNew } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
@@ -173,15 +172,10 @@ function ListSingleProject() {
             <BsFillPlusCircleFill size={50} style={{ color: "#2A85E2" }} />
           </button>
           <Modal size="lg" show={showModal} onHide={handleCloseModal} centered>
-            <Modal.Header>
+            <Modal.Header closeButton>
               <Modal.Title className="w-100 text-center">
                 Create New
               </Modal.Title>
-              <BsX
-                size={30}
-                style={{ cursor: "pointer" }}
-                onClick={handleCloseModal}
-              />
             </Modal.Header>
             <Modal.Body className="text-center">
               <ToggleButtonGroup

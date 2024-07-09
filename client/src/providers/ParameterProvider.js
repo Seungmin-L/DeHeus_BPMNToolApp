@@ -1,7 +1,8 @@
-// Import your custom property entries.
-// The entry is a text input field with logic attached to create,
-// update and delete the "spell" property.
-import custonParts from './customPartsProp';
+// Import your custom list group entries.
+import parametersProps from './props/parameter/ParametersProp';
+
+// Import the properties panel list group component.
+import { ListGroup } from '@bpmn-io/properties-panel';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
@@ -15,7 +16,7 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function MagicPropertiesProvider(propertiesPanel, translate) {
+export default function MagicPropertiesProvider(propertiesPanel, injector, translate) {
 
   // API ////////
 
@@ -38,9 +39,8 @@ export default function MagicPropertiesProvider(propertiesPanel, translate) {
      */
     return function(groups) {
 
-      // Add the "magic" group
-      if (is(element, 'bpmn:StartEvent')) {
-        groups.push(createMagicGroup(element, translate));
+      if (is(element, 'bpmn:BaseElement')) {
+        groups.push(createParametersGroup(element, injector, translate));
       }
 
       return groups;
@@ -56,18 +56,18 @@ export default function MagicPropertiesProvider(propertiesPanel, translate) {
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-MagicPropertiesProvider.$inject = [ 'propertiesPanel', 'translate' ];
+MagicPropertiesProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
-// Create the custom magic group
-function createMagicGroup(element, translate) {
+// Create the custom parameters list group.
+function createParametersGroup(element, injector, translate) {
 
-  // create a group called "Magic properties".
-  const magicGroup = {
-    id: 'magic',
-    label: translate('Magic properties'),
-    entries: custonParts(element),
-    tooltip: translate('Make sure you know what you are doing!')
+  // Create a group called "parameters".
+  const parametersGroup = {
+    id: 'parameters',
+    label: translate('Custom parameters'),
+    component: ListGroup,
+    ...parametersProps({ element, injector })
   };
 
-  return magicGroup;
+  return parametersGroup;
 }

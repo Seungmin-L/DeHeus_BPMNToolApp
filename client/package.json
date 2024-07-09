@@ -5,11 +5,10 @@
   "dependencies": {
     "@azure/msal-browser": "^3.17.0",
     "@azure/msal-react": "^2.0.19",
-    "@miragon/camunda-web-modeler": "^0.0.4",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "bpmn-js": "github:tjdwns1904/bpmn-js",
+    "bpmn-js": "^17.8.2",
     "bpmn-js-color-picker": "^0.7.1",
     "bpmn-js-properties-panel": "^5.18.0",
     "diagram-js-minimap": "^5.1.0",

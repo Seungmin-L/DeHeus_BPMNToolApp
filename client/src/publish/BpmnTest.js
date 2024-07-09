@@ -13,12 +13,10 @@ import attachmentModdleDescriptor from '../providers/descriptor/attachment.json'
 import Toolbar from './features/toolbar/toolbar';
 
 //custom properties
-import magicPropertiesProviderModule from './features/panel';
-import magicModdleDescriptor from './features/panel/magic.json';
-import ZeebeBpmnModdle from 'zeebe-bpmn-moddle/resources/zeebe.json'
-import zeebeModdleDescriptor from 'zeebe-bpmn-moddle/resources/zeebe';
-import CamundaModdleDescriptor from 'camunda-bpmn-moddle/resources/camunda.json';
-
+import attributePropertiesProviderModule from '../providers';
+import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
+import magicPropertiesProviderModule from '../providers';
+import magicModdleDescriptor from '../providers/descriptor/parameter.json';
 
 function BpmnTest() {
     const container = useRef(null);
@@ -46,14 +44,13 @@ function BpmnTest() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                attachmentPropertiesProviderModule,
-                // magicPropertiesProviderModule,
-                // ZeebePropertiesProviderModule,
+                // attributePropertiesProviderModule,
+                magicPropertiesProviderModule
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
-                // magic: magicModdleDescriptor,
-                // zeebe: ZeebeBpmnModdle,
+                // attribute: attributeModdleDescriptor,
+                magic: magicModdleDescriptor
             }
         });
         // Check file api availablitiy

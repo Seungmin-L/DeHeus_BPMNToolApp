@@ -11,6 +11,8 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import Toolbar from './features/toolbar/toolbar';
+import generateImage from '../util/generateImage';
+import generatePdf from '../util/generatePdf';
 
 function BpmnTest() {
     const container = useRef(null);
@@ -77,7 +79,6 @@ function BpmnTest() {
                     setIsFileValid(false);
                 });
         }
-        // Save diagram on every change
         modelerInstance.on('commandStack.changed', saveDiagram);
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
@@ -131,12 +132,20 @@ function BpmnTest() {
         container.addEventListener('drop', handleFileSelect, false);
     }
 
+    // Download exported file (SVG, XML)
     const setEncoded = (link, name, data) => {
         var encodedData = encodeURIComponent(data);
         if (data) {
             link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
             link.setAttribute('download', name);
         }
+        handleClose();
+    }
+
+    // Download exported image file (PNG, JPEG)
+    const downloadImage = (link, name, url) => {
+        link.setAttribute('href', url);
+        link.setAttribute('download', name);
         handleClose();
     }
 
@@ -163,6 +172,33 @@ function BpmnTest() {
             };
         }
     };
+
+    // Export diagram as png
+    const exportPng = async (id, name) => {
+        if (modeler) {
+            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (svg) {
+                const url = await generateImage('png', svg);
+                downloadImage(document.getElementById(id), name + '.png', url);
+            };
+        }
+    };
+
+    // Export diagram as pdf
+    const exportPdf = async (id, name) => {
+        if (modeler) {
+            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (svg) {
+                const url = await generateImage('png', svg);
+                generatePdf(url, name);
+            };
+            handleClose();
+        }
+    }
 
     // Save diagram
     const saveDiagram = async () => {
@@ -202,6 +238,14 @@ function BpmnTest() {
     const handleExportSvg = (e) => {
         e.stopPropagation();
         exportSvg(e.target.id,"diagram")
+    }
+    const handleExportPng = (e) => {
+        e.stopPropagation();
+        exportPng(e.target.id,"diagram")
+    }
+    const handleExportPdf = (e) => {
+        e.stopPropagation();
+        exportPdf(e.target.id, "diagram");
     }
     const handleClose = () => {
         setIsOpen(false);
@@ -274,6 +318,8 @@ function BpmnTest() {
                         onImport={onImportClick}
                         onExportXml={handleExportXml}
                         onExportSvg={handleExportSvg}
+                        onExportPng={handleExportPng}
+                        onExportPdf={handleExportPdf}
                         // more export calls here
                         onZoomIn={handleZoomIn}
                         onZoomOut={handleZoomOut}

@@ -24,6 +24,7 @@ function Toolbar({
     onExportSvg,
     onExportPdf,
     onExportBpmn,
+    onExportPng,
     importFile,
     onFileChange,
     isOpen,
@@ -60,15 +61,12 @@ function Toolbar({
                     </a>
                 </li>
                 <li>
-                    <a id='export-pdf' title='download BPMN diagram as PDF' target='_blank'
-                        onClick={(e) => {
-                            // e.stopPropagation();
-                            // exportDiagram(e.target.id, "diagram");
-                        }}>PDF
+                    <a id='export-pdf' title='download BPMN diagram as pdf' target='_blank'
+                        onClick={onExportPdf}>PDF
                     </a>
                 </li>
                 <li>
-                    <a id='export-doc' title='download BPMN diagram as DOC' target='_blank'
+                    <a id='export-doc' title='download BPMN diagram as doc' target='_blank'
                         onClick={(e) => {
                             // e.stopPropagation();
                             // exportDiagram(e.target.id, "diagram");
@@ -77,10 +75,7 @@ function Toolbar({
                 </li>
                 <li>
                     <a id='export-png' title='download BPMN diagram as png' target='_blank'
-                        onClick={(e) => {
-                            // e.stopPropagation();
-                            // exportDiagram(e.target.id, "diagram");
-                        }}>PNG
+                        onClick={onExportPng}>PNG
                     </a>
                 </li>
                 <li>

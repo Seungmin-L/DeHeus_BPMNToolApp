@@ -24,11 +24,11 @@ async function connectDB() {
         console.log('Connected to the SQL Database');
 
         const tableCheckQuery = `
-            SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Users';
+            SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'user';
         `;
         
         const tableCreateQuery = `
-            CREATE TABLE Users (
+            CREATE TABLE [user] (
                 id VARCHAR(255) PRIMARY KEY,          -- oid
                 email VARCHAR(255) NOT NULL,          -- preferred_username
                 name VARCHAR(255) NOT NULL,           -- name
@@ -45,9 +45,9 @@ async function connectDB() {
         const result = await pool.request().query(tableCheckQuery);
         if (result.recordset.length === 0) {
             await pool.request().query(tableCreateQuery);
-            console.log('Users table did not exist, created a new one.');
+            console.log('user table did not exist, created a new one.');
         } else {
-            console.log('Users table already exists.');
+            console.log('user table already exists.');
         }
     } catch (err) {
         console.error('Unable to connect to the database or create table:', err);

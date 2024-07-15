@@ -8,7 +8,7 @@ export const formatProjectDates = (projects) => {
   return projects.map(project => {
     return {
       ...project,
-      lastUpdate: convertUTCToLocal(project.lastUpdate)
+      last_update: convertUTCToLocal(project.last_update)
     };
   });
 };
@@ -17,8 +17,8 @@ export const formatProcessDates = (processes) => {
   return processes.map(process => {
     return {
       ...process,
-      lastUpdate: convertUTCToLocal(process.lastUpdate),
-      children: formatProcessDates(process.children || [])
+      lastUpdate: convertUTCToLocal(process.last_update),
+      children: formatProcessDates(process.child_diagram || [])
     };
   });
 };

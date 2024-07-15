@@ -12,7 +12,7 @@ const authenticateUser = async (req, res) => {
     const email = decodedToken.payload.email;
     // console.log(`User Email: ${email}`);
 
-    const userResult = await sql.query`SELECT * FROM Users WHERE email = ${email}`;
+    const userResult = await sql.query`SELECT * FROM [user] WHERE email = ${email}`;
     if (userResult.recordset.length === 0) {
       console.log('User not found in the database')
       return res.status(401).json({ message: 'User not found in the database' });
@@ -21,7 +21,7 @@ const authenticateUser = async (req, res) => {
     // update in the database
     const userId = userResult.recordset[0].id;
     await sql.query`
-      UPDATE Users 
+      UPDATE [user] 
       SET 
         id = ${decodedToken.payload.oid},
         name = ${decodedToken.payload.name},

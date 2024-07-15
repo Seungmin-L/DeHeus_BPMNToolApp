@@ -60,8 +60,8 @@ function Main() {
                 <tbody>
                   {projects.map((project) => (
                     <tr key={project.id} onClick={() => handleProjectClick(project.id)} style={{ cursor: "pointer" }}>
-                      <td>{project.projectName}</td>
-                      <td>{project.lastUpdate}</td>
+                      <td>{project.name}</td>
+                      <td>{project.last_update}</td>
                     </tr>
                   ))}
                 </tbody>

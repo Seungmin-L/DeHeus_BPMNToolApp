@@ -10,6 +10,9 @@ import ErrorPage from './ErrorPage';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
+import Toolbar from './features/toolbar/toolbar';
+import generateImage from '../util/generateImage';
+import generatePdf from '../util/generatePdf';
 
 function BpmnTest() {
     const container = useRef(null);
@@ -76,21 +79,19 @@ function BpmnTest() {
                     setIsFileValid(false);
                 });
         }
-        // Save diagram on every change
         modelerInstance.on('commandStack.changed', saveDiagram);
-        
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
-        modelerInstance.get('keyboard').addListener(function(context){
+        modelerInstance.get('keyboard').addListener(function (context) {
             var event = context.keyEvent;
-            if(event.ctrlKey || event.metaKey){
-                if(saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1){
+            if (event.ctrlKey || event.metaKey) {
+                if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
                     modelerInstance.get('editorActions').trigger('save');
                     return true;
                 }
             }
         });
-        
+
         setModeler(modelerInstance);
         return () => {
             modeler?.destroy();
@@ -131,12 +132,20 @@ function BpmnTest() {
         container.addEventListener('drop', handleFileSelect, false);
     }
 
+    // Download exported file (SVG, XML)
     const setEncoded = (link, name, data) => {
         var encodedData = encodeURIComponent(data);
         if (data) {
             link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
             link.setAttribute('download', name);
         }
+        handleClose();
+    }
+
+    // Download exported image file (PNG, JPEG)
+    const downloadImage = (link, name, url) => {
+        link.setAttribute('href', url);
+        link.setAttribute('download', name);
         handleClose();
     }
 
@@ -163,6 +172,33 @@ function BpmnTest() {
             };
         }
     };
+
+    // Export diagram as png
+    const exportPng = async (id, name) => {
+        if (modeler) {
+            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (svg) {
+                const url = await generateImage('png', svg);
+                downloadImage(document.getElementById(id), name + '.png', url);
+            };
+        }
+    };
+
+    // Export diagram as pdf
+    const exportPdf = async (id, name) => {
+        if (modeler) {
+            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (svg) {
+                const url = await generateImage('png', svg);
+                generatePdf(url, name);
+            };
+            handleClose();
+        }
+    }
 
     // Save diagram
     const saveDiagram = async () => {
@@ -195,69 +231,111 @@ function BpmnTest() {
             console.log("Invalid File");
         }
     }
-    const onExportClick = () => {
-        setIsOpen(prev => !prev);
+    const handleExportXml = (e) => {
+        e.stopPropagation();
+        exportXml(e.target.id,"diagram")
+    }
+    const handleExportSvg = (e) => {
+        e.stopPropagation();
+        exportSvg(e.target.id,"diagram")
+    }
+    const handleExportPng = (e) => {
+        e.stopPropagation();
+        exportPng(e.target.id,"diagram")
+    }
+    const handleExportPdf = (e) => {
+        e.stopPropagation();
+        exportPdf(e.target.id, "diagram");
     }
     const handleClose = () => {
         setIsOpen(false);
     }
+    const handleZoomIn = () => {
+        modeler?.get('zoomScroll').stepZoom(1);
+    };
+
+    const handleZoomOut = () => {
+        modeler?.get('zoomScroll').stepZoom(-1);
+    };
+
+    const handleUndo = () => {
+        modeler?.get('commandStack').undo();
+        console.log(modeler?.get('commandStack'))
+    };
+
+    const handleRedo = () => {
+        modeler?.get('commandStack').redo();
+    };
+
+    const handleSave = async () => {
+        // Implement save functionality here
+        if (modeler) {
+            const { xml } = await modeler.saveXML({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (xml) {
+                // Save diagram in DB
+                console.log(xml);
+            };
+        }
+    };
+
+    const handleAlign = (alignment) => {
+        const alignElements = modeler?.get('alignElements');
+        const selection = modeler?.get('selection');
+        const selectedElements = selection.get();
+
+        if (selectedElements.length > 1) {
+            alignElements.trigger(selectedElements, alignment);
+        } else {
+            console.log('Please select at least two elements to align.');
+        }
+    };
+
+    const handleDistribute = (direction) => {
+        const distributeElements = modeler?.get('distributeElements');
+        const selection = modeler?.get('selection');
+        const selectedElements = selection.get();
+
+        if (selectedElements.length > 2) {
+            distributeElements.trigger(selectedElements, direction);
+        } else {
+            console.log('Please select at least three elements to distribute.');
+        }
+    };
     if (!isFileValid) {
-        return(
-            <ErrorPage/>
+        return (
+            <ErrorPage />
         )
     } else {
         return (
-            <div className='main-container' onClick={handleClose}>
+            <div className='main-container' onClick={handleClose} >
                 <div className='model-header'>
-                    <button className='export-btn' onClick={(e) => {
-                        e.stopPropagation();
-                        onExportClick();
-                    }}>Export as...</button>
-                    {isOpen &&
-                        <ul className='export-options'>
-                            <li>
-                                <a id='export-xml' title='download BPMN diagram' target='_blank'
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        exportXml(e.target.id, "diagram");
-                                    }}>XML
-                                </a>
-                            </li>
-                            <li>
-                                <a id='export-pdf' title='download BPMN diagram as PDF' target='_blank'
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        // exportDiagram(e.target.id, "diagram");
-                                    }}>PDF
-                                </a>
-                            </li>
-                            <li>
-                                <a id='export-doc' title='download BPMN diagram as DOC' target='_blank'
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        // exportDiagram(e.target.id, "diagram");
-                                    }}>DOC
-                                </a>
-                            </li>
-                            <li>
-                                <a id='export-png' title='download BPMN diagram as png' target='_blank'
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        // exportDiagram(e.target.id, "diagram");
-                                    }}>PNG
-                                </a>
-                            </li>
-                            <li>
-                                <a id='export-svg' title='download BPMN diagram as svg' target='_blank'
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        exportSvg(e.target.id, "diagram");
-                                    }}>SVG
-                                </a>
-                            </li>
-                        </ul>
-                    }
-                    <button onClick={onImportClick} title='import BPMN diagram'><input type='file' accept='text/xml' style={{ display: 'none' }} ref={importFile} onChange={(e) => onFileChange(e)} />Import File</button>
+                    <Toolbar
+                        isOpen={isOpen} 
+                        setIsOpen={setIsOpen}
+                        onSave={handleSave}
+                        onImport={onImportClick}
+                        onExportXml={handleExportXml}
+                        onExportSvg={handleExportSvg}
+                        onExportPng={handleExportPng}
+                        onExportPdf={handleExportPdf}
+                        // more export calls here
+                        onZoomIn={handleZoomIn}
+                        onZoomOut={handleZoomOut}
+                        onUndo={handleUndo}
+                        onRedo={handleRedo}
+                        onAlignLeft={() => handleAlign('left')}
+                        onAlignCenter={() => handleAlign('center')}
+                        onAlignRight={() => handleAlign('right')}
+                        onAlignTop={() => handleAlign('top')}
+                        onAlignMiddle={() => handleAlign('middle')}
+                        onAlignBottom={() => handleAlign('bottom')}
+                        onDistributeHorizontally={() => handleDistribute('horizontal')}
+                        onDistributeVertically={() => handleDistribute('vertical')}
+                        importFile={importFile}
+                        onFileChange = {onFileChange}
+                    />
                 </div>
                 <div className='model-body'>
                     <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>

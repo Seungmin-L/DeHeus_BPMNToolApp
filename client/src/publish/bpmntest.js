@@ -12,11 +12,16 @@ import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import Toolbar from './features/toolbar/toolbar';
 
-//custom properties
-import attributePropertiesProviderModule from '../providers';
-import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
-import magicPropertiesProviderModule from '../providers';
-import magicModdleDescriptor from '../providers/descriptor/parameter.json';
+//custom properties module
+// import attributePropertiesProviderModule from '../providers';
+// import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
+import parameterPropertiesProviderModule from '../providers';
+import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
+
+//search
+import searchPadModule from 'diagram-js/lib/features/search-pad/SearchPad';
+import BpmnSearchProvider from './features/search/BpmnSearchProvider';
+
 
 function BpmnTest() {
     const container = useRef(null);
@@ -45,12 +50,14 @@ function BpmnTest() {
                 ColorPickerModule,
                 minimapModule,
                 // attributePropertiesProviderModule,
-                magicPropertiesProviderModule
+                parameterPropertiesProviderModule,
+                searchPadModule,
+                { 'searchPad.provider': [ 'type', BpmnSearchProvider ] }
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
                 // attribute: attributeModdleDescriptor,
-                magic: magicModdleDescriptor
+                parameter: parameterModdleDescriptor
             }
         });
         // Check file api availablitiy
@@ -70,6 +77,8 @@ function BpmnTest() {
                     }
                     modelerInstance.get("canvas").zoom("fit-viewport");
                     modelerInstance.get('keyboard').bind(document);
+
+
                 })
                 .catch(err => {
                     console.log(err);
@@ -100,8 +109,8 @@ function BpmnTest() {
                 }
             }
         });
-
         setModeler(modelerInstance);
+        
         return () => {
             modeler?.destroy();
         }
@@ -246,10 +255,6 @@ function BpmnTest() {
         }
     };
 
-    const handleImport = () => {
-        // import function
-    }
-
     const handleAlign = (alignment) => {
         const alignElements = modeler?.get('alignElements');
         const selection = modeler?.get('selection');
@@ -273,6 +278,9 @@ function BpmnTest() {
             console.log('Please select at least three elements to distribute.');
         }
     };
+
+
+
     if (!isFileValid) {
         return (
             <ErrorPage />

@@ -16,7 +16,7 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function MagicPropertiesProvider(propertiesPanel, injector, translate) {
+export default function ParameterPropertiesProvider(propertiesPanel, injector, translate) {
 
   // API ////////
 
@@ -50,13 +50,12 @@ export default function MagicPropertiesProvider(propertiesPanel, injector, trans
 
   // registration ////////
 
-  // Register our custom magic properties provider.
   // Use a lower priority to ensure it is loaded after
   // the basic BPMN properties.
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-MagicPropertiesProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
+ParameterPropertiesProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
 // Create the custom parameters list group.
 function createParametersGroup(element, injector, translate) {
@@ -64,7 +63,7 @@ function createParametersGroup(element, injector, translate) {
   // Create a group called "parameters".
   const parametersGroup = {
     id: 'parameters',
-    label: translate('Custom parameters'),
+    label: translate('Parameters'),
     component: ListGroup,
     ...parametersProps({ element, injector })
   };

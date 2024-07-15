@@ -1,11 +1,15 @@
 import AttachmentPropertiesProvider from './AttachmentPropertiesProvider';
-import AttributePropertiesProvider from './attributePropertiesProvider';
-import MagicPropertiesProvider from './ParameterProvider';
+// import AttributePropertiesProvider from './attributePropertiesProvider';
+import ParameterPropertiesProvider from './ParameterProvider';
 
 
 export default {
-  __init__: [ 'attachmentPropertiesProvider','attributePropertiesProvider','magicPropertiesProvider' ],
+  // initiate custom modules for properties panel
+  __init__: [ 
+    'attachmentPropertiesProvider',
+    // 'attributePropertiesProvider',
+    'parameterPropertiesProvider' ],
   attachmentPropertiesProvider: [ 'type', AttachmentPropertiesProvider ],
-  attributePropertiesProvider: [ 'type', AttributePropertiesProvider ],
-  magicPropertiesProvider: [ 'type', MagicPropertiesProvider ]
+  // attributePropertiesProvider: [ 'type', AttributePropertiesProvider ],
+  parameterPropertiesProvider: [ 'type', ParameterPropertiesProvider ]
 };

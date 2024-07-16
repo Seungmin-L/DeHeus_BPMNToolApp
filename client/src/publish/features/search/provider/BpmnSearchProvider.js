@@ -67,6 +67,7 @@ import {
           for(let i = 0; i < parameters.length; i++){
             let tokens = matchAndSplit(parameters[i].name || '', pattern);
             tertiaryTokens = tertiaryTokens.concat(tokens);
+            console.log(tertiaryTokens);
           }
       }
   

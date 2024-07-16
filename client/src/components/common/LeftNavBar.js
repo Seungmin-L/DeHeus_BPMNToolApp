@@ -19,7 +19,7 @@ function LeftNavBar() {
   return (
     <div style={leftNavBarStyle}>
       <Nav className="flex-column">
-        <Nav.Link href="/" style={navItemStyle}>--------------</Nav.Link>
+        <Nav.Link href="/" style={navItemStyle}>Home</Nav.Link>
         <Nav.Link href="/" style={navItemStyle}>--------------</Nav.Link>
         <Nav.Link href="/" style={navItemStyle}>--------------</Nav.Link>
       </Nav>

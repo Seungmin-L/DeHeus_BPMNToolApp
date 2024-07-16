@@ -8,6 +8,7 @@ export type Token = {
 export type SearchResult = {
   primaryTokens: Token[];
   secondaryTokens: Token[];
+  thirdTokens: Token[];
   element: Element;
 };
 

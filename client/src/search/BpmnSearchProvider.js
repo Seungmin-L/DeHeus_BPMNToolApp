@@ -63,19 +63,18 @@ import {
       return {
         primaryTokens: matchAndSplit(getLabel(element), pattern),
         secondaryTokens: matchAndSplit(element.id, pattern),
+        thirdTokens: matchAndSplit(element.businessObject.attachment || '', pattern),
         element: element
       };
     });
   
     // exclude non-matched elements
     elements = filter(elements, function(element) {
-      return hasMatched(element.primaryTokens) || hasMatched(element.secondaryTokens);
+      return hasMatched(element.primaryTokens) || hasMatched(element.secondaryTokens) || hasMatched(element.thirdTokens);
     });
-  
     elements = sortBy(elements, function(element) {
-      return getLabel(element.element) + element.element.id;
+      return getLabel(element.element) + element.element.id + (element.element.businessObject.documentation || '');
     });
-    console.log(elements);
     return elements;
   };
   

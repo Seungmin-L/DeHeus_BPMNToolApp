@@ -105,7 +105,6 @@ import {
     // preselect result on hover
     listen(this._container, SearchPad.RESULT_SELECTOR, 'mouseover', function(e) {
       e.stopPropagation();
-      console.log(e.delegateTarget);
       self._scrollToNode(e.delegateTarget);
       self._preselect(e.delegateTarget);
     });

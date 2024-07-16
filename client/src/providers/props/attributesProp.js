@@ -7,7 +7,7 @@ export default function(element) {
 
   return [
     {
-      id: 'custom_id',
+      id: 'customId',
       element,
       component: AttrId,
       isEdited: isTextFieldEntryEdited
@@ -29,12 +29,12 @@ function AttrId(props) {
   const debounce = useService('debounceInput');
 
   const getValue = () => {
-    return element.businessObject.custom_id || '';
+    return element.businessObject.customId || '';
   };
 
   const setValue = value => {
     return modeling.updateProperties(element, {
-      custom_id: value
+      customId: value
     });
   };
 

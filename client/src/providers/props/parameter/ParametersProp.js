@@ -117,7 +117,7 @@ import {
   
       // (3) create parameter
       const newParameter = createElement('magic:Parameter', {
-        name: nextId('P_'),
+        name: nextId('Parameter_'),
         value: ''
       }, extension, bpmnFactory);
   

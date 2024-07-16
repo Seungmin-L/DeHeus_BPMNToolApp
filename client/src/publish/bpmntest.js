@@ -13,15 +13,13 @@ import attachmentModdleDescriptor from '../providers/descriptor/attachment.json'
 import Toolbar from './features/toolbar/toolbar';
 
 //custom properties module
-// import attributePropertiesProviderModule from '../providers';
-// import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
+import attributePropertiesProviderModule from '../providers';
+import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
 
 //search
-import searchPadModule from 'diagram-js/lib/features/search-pad/SearchPad';
-import BpmnSearchProvider from './features/search/BpmnSearchProvider';
-
+import bpmnSearchModule  from './features/search/provider';
 
 function BpmnTest() {
     const container = useRef(null);
@@ -49,14 +47,13 @@ function BpmnTest() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                // attributePropertiesProviderModule,
+                attributePropertiesProviderModule,
                 parameterPropertiesProviderModule,
-                searchPadModule,
-                { 'searchPad.provider': [ 'type', BpmnSearchProvider ] }
+                bpmnSearchModule
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
-                // attribute: attributeModdleDescriptor,
+                attribute: attributeModdleDescriptor,
                 parameter: parameterModdleDescriptor
             }
         });
@@ -110,7 +107,7 @@ function BpmnTest() {
             }
         });
         setModeler(modelerInstance);
-        
+        console.log(modeler?.get('elementRegistry'))
         return () => {
             modeler?.destroy();
         }
@@ -278,8 +275,6 @@ function BpmnTest() {
             console.log('Please select at least three elements to distribute.');
         }
     };
-
-
 
     if (!isFileValid) {
         return (

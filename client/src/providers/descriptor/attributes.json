@@ -14,7 +14,7 @@
         ],
         "properties": [
           {
-            "name": "custom_id",
+            "name": "customId",
             "isAttr": true,
             "type": "String"
           },

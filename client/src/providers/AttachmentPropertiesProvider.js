@@ -1,6 +1,3 @@
-// Import your custom property entries.
-// The entry is a text input field with logic attached to create,
-// update and delete the "spell" property.
 import attachmentProp from './props/AttachmentProp';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
@@ -16,8 +13,6 @@ const LOW_PRIORITY = 500;
  * @param {Function} translate
  */
 export default function AttachmentPropertiesProvider(propertiesPanel, translate) {
-
-  // API ////////
 
   /**
    * Return the groups provided for the given element.
@@ -50,7 +45,7 @@ export default function AttachmentPropertiesProvider(propertiesPanel, translate)
 
   // registration ////////
 
-  // Register our custom magic properties provider.
+  // Register our custom properties provider.
   // Use a lower priority to ensure it is loaded after
   // the basic BPMN properties.
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
@@ -58,7 +53,7 @@ export default function AttachmentPropertiesProvider(propertiesPanel, translate)
 
 AttachmentPropertiesProvider.$inject = [ 'propertiesPanel', 'translate' ];
 
-// Create the custom magic group
+// Create the custom attachment group
 function createAttachGroup(element, translate) {
 
   // create a group called "Attachment".

@@ -23,10 +23,16 @@ function Attachment(props) {
   const debounce = useService('debounceInput');
   // Get attachment 
   const getValue = () => {
-    return element.businessObject.attachment || [];
+    // Function for geting attachment files in the storage to be added
+    if(element.businessObject.attachment){
+      return [element.businessObject.attachment];
+    }else{
+      return [];
+    }
   };
   // Update property of the element and save it in the diagram file 
   const setValue = value => {
+    // Function for retrieving attachment file names in the storage to be added
     return modeling.updateProperties(element, {
       attachment: value
     });

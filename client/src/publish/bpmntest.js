@@ -81,6 +81,7 @@ function BpmnTest() {
                     setIsFileValid(false);
                 });
         }
+        modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);

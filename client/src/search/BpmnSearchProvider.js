@@ -63,7 +63,7 @@ import {
       return {
         primaryTokens: matchAndSplit(getLabel(element), pattern),
         secondaryTokens: matchAndSplit(element.id, pattern),
-        thirdTokens: matchAndSplit(element.businessObject.attachment || '', pattern),
+        thirdTokens: matchAndSplit(element.businessObject.documentation || '', pattern),
         element: element
       };
     });
@@ -98,13 +98,22 @@ import {
    * @return {Token[]}
    */
   function matchAndSplit(text, pattern) {
-    var tokens = [],
-        originalText = text;
-  
+    var tokens = []
+
     if (!text) {
       return tokens;
     }
-  
+    if(typeof text !== 'string'){
+        if(text.length > 0){
+            text = text[0].text;
+        }else{
+            text = '';
+        }
+    }
+    if(text === ''){
+        return tokens;
+    }
+    var originalText = text;
     text = text.toLowerCase();
     pattern = pattern.toLowerCase();
   

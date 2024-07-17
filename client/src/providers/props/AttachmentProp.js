@@ -23,8 +23,8 @@ function Attachment(props) {
   const debounce = useService('debounceInput');
   // Get attachment 
   const getValue = () => {
-    // Function for geting attachment files in the storage to be added
     if(element.businessObject.attachment){
+      // Function for geting attachment files in the storage to be added
       return [element.businessObject.attachment];
     }else{
       return [];

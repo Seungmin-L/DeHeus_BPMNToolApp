@@ -13,7 +13,6 @@ import attachmentModdleDescriptor from '../providers/descriptor/attachment.json'
 import Toolbar from './features/toolbar/toolbar';
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
-import bpmnSearchModule from '../search';
 
 //custom properties module
 import attributePropertiesProviderModule from '../providers';

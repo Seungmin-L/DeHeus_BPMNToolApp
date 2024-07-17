@@ -7,13 +7,22 @@ import ColorPickerModule from 'bpmn-js-color-picker';
 import minimapModule from 'diagram-js-minimap';
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import ErrorPage from './ErrorPage';
-import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
+import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, ZeebePropertiesProviderModule, CamundaPlatformPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import Toolbar from './features/toolbar/toolbar';
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
 import bpmnSearchModule from '../search';
+
+//custom properties module
+import attributePropertiesProviderModule from '../providers';
+import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
+import parameterPropertiesProviderModule from '../providers';
+import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
+
+//search
+import bpmnSearchModule  from './features/search/provider';
 
 function BpmnTest() {
     const container = useRef(null);
@@ -42,10 +51,14 @@ function BpmnTest() {
                 ColorPickerModule,
                 minimapModule,
                 attachmentPropertiesProviderModule,
+                attributePropertiesProviderModule,
+                parameterPropertiesProviderModule,
                 bpmnSearchModule
             ],
             moddleExtensions: {
-                attachment: attachmentModdleDescriptor
+                attachment: attachmentModdleDescriptor,
+                attribute: attributeModdleDescriptor,
+                parameter: parameterModdleDescriptor
             }
         });
         // Check file api availablitiy
@@ -65,6 +78,8 @@ function BpmnTest() {
                     }
                     modelerInstance.get("canvas").zoom("fit-viewport");
                     modelerInstance.get('keyboard').bind(document);
+
+
                 })
                 .catch(err => {
                     console.log(err);
@@ -83,6 +98,7 @@ function BpmnTest() {
         }
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
+
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
         modelerInstance.get('keyboard').addListener(function (context) {
@@ -95,6 +111,7 @@ function BpmnTest() {
             }
         });
         setModeler(modelerInstance);
+        console.log(modeler?.get('elementRegistry'))
         return () => {
             modeler?.destroy();
         }

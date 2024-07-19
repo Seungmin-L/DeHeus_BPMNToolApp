@@ -7,6 +7,7 @@ import Error from "./components/common/Error";
 import Home from "./components/Home";
 import ListSingleProject from "./components/ListSingleProject";
 import Main from "./components/Main";
+import MyPage from "./components/MyPage";
 import { msalInstance } from "./config/authConfig";
 import Publish from "./Publish";
 
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/main" element={<Main />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/mypage" element={<MyPage />} />
           <Route path="/project/:projectId" element={<ListSingleProject />} />
           <Route path="/publish/:filename" element={<Publish />} />
           <Route path="*" element={<Error />} />

@@ -6,6 +6,7 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import NoAuth from "./common/NoAuth";
 import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
+import { formatProjectDates } from '../utils/utils';
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
@@ -27,21 +28,6 @@ function Main() {
       });
     }
   }, [isAuthenticated, accounts]);
-
-  const formatProjectDates = (projects) => {
-    return projects.map(project => {
-      return {
-        ...project,
-        lastUpdate: convertUTCToLocal(project.lastUpdate)
-      };
-    });
-  };
-
-  const convertUTCToLocal = (dateString) => {
-    const date = new Date(dateString);
-    const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // UTC+7
-    return localTime.toISOString().slice(0, 16).replace('T', ' ');
-  };
 
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);
@@ -74,8 +60,8 @@ function Main() {
                 <tbody>
                   {projects.map((project) => (
                     <tr key={project.id} onClick={() => handleProjectClick(project.id)} style={{ cursor: "pointer" }}>
-                      <td>{project.projectName}</td>
-                      <td>{project.lastUpdate}</td>
+                      <td>{project.name}</td>
+                      <td>{project.last_update}</td>
                     </tr>
                   ))}
                 </tbody>

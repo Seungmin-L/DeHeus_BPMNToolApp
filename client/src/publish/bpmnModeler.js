@@ -11,6 +11,7 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, ZeebePropertie
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import Toolbar from './features/toolbar/toolbar';
+import Topbar from '../components/common/TopBar';
 
 //custom properties module
 import attributePropertiesProviderModule from '../providers';
@@ -284,6 +285,7 @@ function BpmnTest() {
         return (
             <div className='main-container' onClick={handleClose} >
                 <div className='model-header'>
+                    <Topbar></Topbar>
                     <Toolbar
                         isOpen={isOpen} 
                         setIsOpen={setIsOpen}

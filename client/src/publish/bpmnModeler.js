@@ -95,6 +95,7 @@ function BpmnTest() {
                     setIsFileValid(false);
                 });
         }
+        // Save diagram on every change
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
 
@@ -149,20 +150,12 @@ function BpmnTest() {
         container.addEventListener('drop', handleFileSelect, false);
     }
 
-    // Download exported file (SVG, XML)
     const setEncoded = (link, name, data) => {
         var encodedData = encodeURIComponent(data);
         if (data) {
             link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
             link.setAttribute('download', name);
         }
-        handleClose();
-    }
-
-    // Download exported image file (PNG, JPEG)
-    const downloadImage = (link, name, url) => {
-        link.setAttribute('href', url);
-        link.setAttribute('download', name);
         handleClose();
     }
 
@@ -189,33 +182,6 @@ function BpmnTest() {
             };
         }
     };
-
-    // Export diagram as png
-    const exportPng = async (id, name) => {
-        if (modeler) {
-            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
-                console.log(err);
-            });
-            if (svg) {
-                const url = await generateImage('png', svg);
-                downloadImage(document.getElementById(id), name + '.png', url);
-            };
-        }
-    };
-
-    // Export diagram as pdf
-    const exportPdf = async (id, name) => {
-        if (modeler) {
-            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
-                console.log(err);
-            });
-            if (svg) {
-                const url = await generateImage('png', svg);
-                generatePdf(url, name);
-            };
-            handleClose();
-        }
-    }
 
     // Save diagram
     const saveDiagram = async () => {

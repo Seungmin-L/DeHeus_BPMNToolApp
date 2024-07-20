@@ -110,7 +110,6 @@ function BpmnTest() {
             }
         });
         setModeler(modelerInstance);
-        console.log(modeler?.get('elementRegistry'))
         return () => {
             modeler?.destroy();
         }

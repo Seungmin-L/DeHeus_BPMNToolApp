@@ -18,14 +18,17 @@ export default function (element) {
 
 function Attachment(props) {
   const { element, id } = props;
-
+  const testing = ["asd", "dsa", "diagram"];
   const modeling = useService('modeling');
   const debounce = useService('debounceInput');
   // Get attachment 
   const getValue = () => {
     if(element.businessObject.attachment){
       // Function for geting attachment files in the storage to be added
-      return [element.businessObject.attachment];
+      if(typeof element.businessObject.attachment === 'string'){
+        return [...element.businessObject.attachment.split(',')];
+      }
+      return [...element.businessObject.attachment];
     }else{
       return [];
     }
@@ -34,7 +37,7 @@ function Attachment(props) {
   const setValue = value => {
     // Function for retrieving attachment file names in the storage to be added
     return modeling.updateProperties(element, {
-      attachment: value
+      attachment: testing
     });
   };
 
@@ -90,6 +93,7 @@ function AttachmentList(props) {
   // Check value changes
   hooks.useEffect(() => {
     if (value === localValue) {
+    console.log(value);
       return;
     }
     setLocalValue(value);
@@ -213,6 +217,7 @@ function Attachmentfield(props) {
       return;
     }
     setLocalValue(value);
+    console.log(localValue);
   }, [value]);
   //
   const btnOnClick = e => {

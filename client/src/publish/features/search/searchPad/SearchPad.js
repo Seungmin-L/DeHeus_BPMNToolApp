@@ -105,7 +105,6 @@ import {
     // preselect result on hover
     listen(this._container, SearchPad.RESULT_SELECTOR, 'mouseover', function(e) {
       e.stopPropagation();
-      console.log(e.delegateTarget);
       self._scrollToNode(e.delegateTarget);
       self._preselect(e.delegateTarget);
     });
@@ -290,7 +289,6 @@ import {
    */
   SearchPad.prototype._createResultNode = function(result, id) {
     var node = domify(SearchPad.RESULT_HTML);
-  
     // create only if available
     if (result.primaryTokens.length > 0) {
       createInnerTextNode(node, result.primaryTokens, SearchPad.RESULT_PRIMARY_HTML);
@@ -300,7 +298,19 @@ import {
     createInnerTextNode(node, result.secondaryTokens, SearchPad.RESULT_SECONDARY_HTML);
     
     // tertiary tokens (represent element parameters) are always available
-    createInnerTextNode(node, result.tertiaryTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
+    if(result.tertiaryTokens.length > 0){
+      createInnerTextNode(node, result.tertiaryTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
+    }
+
+    // fourth tokens (represent element documentation) are always available
+    if(result.fourthTokens.length > 0){
+      createInnerTextNode(node, result.fourthTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
+    }
+
+    // fifth tokens (represent element attachments) are always available
+    if(result.fifthTokens.length > 0){
+      createInnerTextNode(node, result.fifthTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
+    }
 
     domAttr(node, SearchPad.RESULT_ID_ATTRIBUTE, id);
   
@@ -512,7 +522,7 @@ import {
   function createInnerTextNode(parentNode, tokens, template) {
     var text = createHtmlText(tokens);
     var childNode = domify(template);
-    childNode.innerHTML = text;
+    childNode.innerHTML = text + '<br>';
     parentNode.appendChild(childNode);
   }
   
@@ -530,12 +540,12 @@ import {
     if (Array.isArray(tokens)) {
       tokens.forEach(function(token) {
         if (token && token.matched) {
-          htmlText += '<br><strong class="' + SearchPad.RESULT_HIGHLIGHT_CLASS + '">' + escapeHTML(token.matched) + '</strong>';
+          htmlText += '<strong class="' + SearchPad.RESULT_HIGHLIGHT_CLASS + '">' + escapeHTML(token.matched) + '</strong>';
         } else if (token) {
           htmlText += escapeHTML(token.normal);
         }
       });
-      htmlText += '<br>'; // Add a line break between parameters
+      // htmlText += '<br>'; // Add a line break between parameters
       
     } else {
       console.log('tokens is not an array');

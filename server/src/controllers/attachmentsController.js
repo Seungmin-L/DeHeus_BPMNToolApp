@@ -1,8 +1,7 @@
 const { sql } = require("../config/dbConfig");
 
 const getAttachments = async (req, res) => {
-    const { diagramId } = req.params;
-    const { nodeId } = req.body;
+    const { diagramId, nodeId } = req.params;
     try {
         const result = await sql.query(`
             SELECT * FROM node_attachment 

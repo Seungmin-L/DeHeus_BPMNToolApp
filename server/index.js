@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 app.post('/api/authenticate', authController.authenticateUser);
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
-app.get('/api/attachments/:diagramId', attachmentsController.getAttachments);
+app.get('/api/attachments/:diagramId/:nodeId', attachmentsController.getAttachments);
 app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
 app.post('/api/attachments/:diagramId/:attachmentId', attachmentsController.deleteAttachments);
 

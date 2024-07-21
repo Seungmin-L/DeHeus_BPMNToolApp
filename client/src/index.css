@@ -93,7 +93,7 @@ body {
 }
 
 .djs-container{
-  width: calc(100% - 200px) !important;
+  /* width: calc(100% - 200px) !important; */
   float: right;
 }
 

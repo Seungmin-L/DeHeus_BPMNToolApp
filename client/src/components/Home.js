@@ -4,8 +4,8 @@ import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/backgrounds/home_background.png";
 import logo from "../assets/logos/logo_deheus.png";
-import { loginRequest } from "../config/authConfig";
-import axios from 'axios';
+import { verifyUserRegistration, handleLoginRedirect, acquireToken, handleLogout } from '../utils/authUtils';
+
 
 function Home() {
   const { instance, accounts } = useMsal();
@@ -14,70 +14,14 @@ function Home() {
   const isAuthenticated = useIsAuthenticated();
   const navigate = useNavigate();
 
-  const verifyUserRegistration = async (accessToken) => {
-    try {
-      const response = await axios.post('http://localhost:3001/api/authenticate', {
-        token: accessToken,
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if (response.status === 200 && response.data.isAuthenticated) {
-        navigate("/main");
-      } else {
-        setLoginError('Email is not registered.');
-        handleLogout();
-      }
-    } catch (error) {
-      console.error('Server error:', error);
-      setLoginError('Server error occurred.');
-    }
-  };
-
   useEffect(() => {
     if (account && localStorage.getItem('msalAccount')) {
-        verifyUserRegistration(localStorage.getItem('msalToken'));
+        verifyUserRegistration(localStorage.getItem('msalToken'), navigate, setLoginError, () => handleLogout(instance, navigate));
     }
-  }, [account, isAuthenticated, accounts, verifyUserRegistration]);
+  }, [account, isAuthenticated, accounts]);
 
-  const handleLoginRedirect = async () => {
-    if (!accounts.length) {
-      try {
-        const loginResponse = await instance.loginPopup(loginRequest);
-        instance.setActiveAccount(loginResponse.account);
-        localStorage.setItem('msalAccount', loginResponse.account.username);
-        await acquireToken(loginResponse.account);
-      } catch (error) {
-        console.error('Login popup error:', error);
-        setLoginError('Login failed with popup.');
-      }
-    } else {
-      await acquireToken(account);
-    }
-  };
-
-  const acquireToken = async (account) => {
-    try {
-      const loginResponse = await instance.acquireTokenSilent({
-        ...loginRequest,
-        account: account
-      });
-      localStorage.setItem('msalToken', loginResponse.accessToken);
-      await verifyUserRegistration(loginResponse.accessToken);
-    } catch (error) {
-      console.error('Error acquiring token:', error);
-      setLoginError('Login failed.');
-      localStorage.removeItem('msalToken');
-      localStorage.removeItem('msalAccount');
-    }
-  };
-
-  const handleLogout = () => {
-    instance.logout();
-    localStorage.removeItem('msalToken');
-    localStorage.removeItem('msalAccount');
-    navigate("/login");
+  const handleLogin = async () => {
+    await handleLoginRedirect(instance, accounts, account, navigate, setLoginError, acquireToken);
   };
 
   return (
@@ -88,7 +32,7 @@ function Home() {
         <p className="lead">
         </p>
         <Button
-          onClick={handleLoginRedirect}
+          onClick={handleLogin}
           size="lg"
           className="mt-4"
           style={{ backgroundColor: "#2A85E2", width: "30%"}}

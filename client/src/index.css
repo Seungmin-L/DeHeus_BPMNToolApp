@@ -138,6 +138,10 @@ code {
   left: 5px !important;
 }
 
+.djs-container svg{
+  vertical-align: top;
+}
+
 /* CSS for ICONS */
 
 .entry.bpmn-icon-connection-multi:before {
@@ -166,3 +170,5 @@ code {
 .djs-minimap.open .toggle::before{
   content: "X";
 }
+
+

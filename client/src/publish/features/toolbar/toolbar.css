@@ -4,7 +4,7 @@
     flex-direction: row;  /* Arrange children in a row */
     background-color: rgba(247,247,248,255); 
     border: none;         /* No border */
-    border-radius: 10px;
+    /* border-radius: 10px; */
     padding: 5px;
 }
 
@@ -69,4 +69,4 @@
 
 .dropdownExport li:hover {
     background-color: #dadada;
-  }
+}

@@ -526,21 +526,24 @@ import {
    */
   function createHtmlText(tokens) {
     var htmlText = '';
-  
+    var text = '';
+
     if (Array.isArray(tokens)) {
-      tokens.forEach(function(token) {
-        if (token && token.matched) {
-          htmlText += '<br><strong class="' + SearchPad.RESULT_HIGHLIGHT_CLASS + '">' + escapeHTML(token.matched) + '</strong>';
+      tokens.forEach(function(token, index) {
+        if(token.matched){
+          text += '<strong class="' + SearchPad.RESULT_HIGHLIGHT_CLASS + '">' + escapeHTML(token.matched) + '</strong>';
         } else if (token) {
-          htmlText += escapeHTML(token.normal);
+          text += ('' + escapeHTML(token.normal) + '');
         }
+        htmlText = text;
+        // console.log('token:');
+        // console.log(token);
       });
-      htmlText += '<br>'; // Add a line break between parameters
-      
+      htmlText += '';
     } else {
       console.log('tokens is not an array');
     }
-  
+
     return htmlText !== '' ? htmlText : null;
   }
   

@@ -16,8 +16,14 @@ body {
 }
 
 .model-header{
-  height: 20%;
+  width: 100%;
+  height: 105px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* align-items: center; */
   position: relative;
+  /* background-color: black; */
 }
 
 .export-options{
@@ -50,7 +56,7 @@ body {
 }
 
 .model-body{
-  height: 80%;
+  height: calc(100% - 105px);
   display: flex;
 }
 
@@ -91,7 +97,7 @@ body {
 
 .djs-palette.two-column.open{
   position: fixed !important;
-  top: 20% !important;
+  top: 105px !important;
   left: 200px !important;
   width: 200px !important;
   height: 100%;

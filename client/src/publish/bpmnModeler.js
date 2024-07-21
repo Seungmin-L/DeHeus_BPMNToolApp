@@ -13,6 +13,7 @@ import attachmentModdleDescriptor from '../providers/descriptor/attachment.json'
 import Toolbar from './features/toolbar/toolbar';
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
+import Topbar from '../components/common/TopBar'
 
 //custom properties module
 import attributePropertiesProviderModule from '../providers';
@@ -23,7 +24,7 @@ import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
 //search
 import bpmnSearchModule  from './features/search/provider';
 
-function BpmnTest() {
+function BpmnEditor() {
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
@@ -329,6 +330,7 @@ function BpmnTest() {
         return (
             <div className='main-container' onClick={handleClose} >
                 <div className='model-header'>
+                    <Topbar/>
                     <Toolbar
                         isOpen={isOpen} 
                         setIsOpen={setIsOpen}
@@ -367,4 +369,4 @@ function BpmnTest() {
     }
 
 }
-export default BpmnTest;
+export default BpmnEditor;

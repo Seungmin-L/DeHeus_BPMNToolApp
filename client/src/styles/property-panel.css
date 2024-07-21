@@ -1543,7 +1543,7 @@ textarea.bio-properties-panel-input {
     content: '';
     width: 20px;
     height: 20px;
-    background: url("./assets/icons/file.png") no-repeat center transparent;
+    background: url("../assets/icons/file.png") no-repeat center transparent;
     background-size: contain;
     margin-right: 3px;
     margin-top: 5px;
@@ -1572,7 +1572,7 @@ textarea.bio-properties-panel-input {
 
 .attachment-add-btn{
     display: inline-block;
-    background: url("./assets/icons/plus.svg") transparent no-repeat center;
+    background: url("../assets/icons/plus.svg") transparent no-repeat center;
     background-size: contain;
     width: 20px;
     height: 20px;
@@ -1587,7 +1587,7 @@ textarea.bio-properties-panel-input {
 
 .attachment-del-btn{
     display: inline-block;
-    background: url("./assets/icons/minus.svg") transparent no-repeat center;
+    background: url("../assets/icons/minus.svg") transparent no-repeat center;
     background-size: contain;
     width: 20px;
     height: 20px;

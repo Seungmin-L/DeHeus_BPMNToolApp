@@ -29,36 +29,25 @@ function ListSingleProject() {
   const [expandedRows, setExpandedRows] = useState([]);
   const [isNavVisible, setIsNavVisible] = useState(false);
   const navigate = useNavigate();
+  const [options, setOptions] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated) {
       axios
         .get(`/api/processes/${projectId}`)
         .then((response) => {
-          const formattedProcesses = formatProcessDates(response.data);
-          setProcesses(formattedProcesses);
+          console.log("Fetched processes:", response.data);
+          setProcesses(response.data); // 데이터를 트리 구조로 설정
+          setOptions(response.data.map(process => ({
+            id: process.id,
+            name: process.name
+          })));
         })
         .catch((error) => {
           console.error("Error fetching processes", error);
         });
     }
   }, [isAuthenticated, projectId]);
-
-  const formatProcessDates = (processes) => {
-    return processes.map((process) => {
-      return {
-        ...process,
-        lastUpdate: convertUTCToLocal(process.lastUpdate),
-        children: formatProcessDates(process.children || []),
-      };
-    });
-  };
-
-  const convertUTCToLocal = (dateString) => {
-    const date = new Date(dateString);
-    const localTime = new Date(date.getTime() + 7 * 60 * 60 * 1000); // UTC+7 (VN)
-    return localTime.toISOString().slice(0, 16).replace("T", " ");
-  };
 
   const toggleRow = (id) => {
     setExpandedRows(
@@ -70,6 +59,7 @@ function ListSingleProject() {
 
   const handleOpenClick = (event, item) => {
     event.stopPropagation();
+    console.log("Clicked item ID:", item.id);  // 아이템 ID 출력
     navigate("/diagram", { state: { itemId: item.id } });
   };
 
@@ -105,8 +95,8 @@ function ListSingleProject() {
             </span>
             {item.name}
           </td>
-          <td>{item.status}</td>
-          <td>{item.lastUpdate}</td>
+          <td>{item.status || "-"}</td>
+          <td>{item.last_update || "-"}</td>
           <td>
             <MdOpenInNew
               onClick={(event) => handleOpenClick(event, item)}
@@ -130,16 +120,6 @@ function ListSingleProject() {
   const [processName, setProcessName] = useState("");
   const [selectedProcess, setSelectedProcess] = useState("");
   const [diagramName, setDiagramName] = useState("");
-
-  // MOCKDATA!!! 프로젝트 리스트 가져와야 함~~~~
-  const [options, setOptions] = useState([
-    { id: "Process1", name: "Process1" },
-    { id: "Process2", name: "Process2" },
-    { id: "Process3", name: "Process3" },
-    { id: "Process4", name: "Process4" },
-    { id: "Process5", name: "Process5" },
-    { id: "Process6", name: "Process6" },
-  ]);
 
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
@@ -245,7 +225,7 @@ function ListSingleProject() {
                       onChange={(e) => setSelectedProcess(e.target.value)}
                     >
                       {options.map((option) => (
-                        <option key={option.id} value={option.name}>
+                        <option key={option.id} value={option.id}>
                           {option.name}
                         </option>
                       ))}

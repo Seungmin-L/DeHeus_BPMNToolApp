@@ -1495,3 +1495,153 @@ textarea.bio-properties-panel-input {
 .bio-properties-panel-feel-popup .cm-gutters .cm-lineNumbers .cm-gutterElement {
     text-align: center;
 }
+
+.bio-properties-panel-attachment-btn{
+    background-color: var(--color-grey-225-10-97);
+    border: 1px solid var(--color-grey-225-10-80);
+    border-radius: 5px;
+    width: 100%;
+}
+
+.bio-properties-panel-attachment-btn:hover{
+    background-color: var(--color-grey-225-10-75);
+    transition: ease-in-out 0.3s;
+}
+.bio-properties-panel-attachment-close-btn:hover{
+    background-color: var(--color-grey-225-10-75);
+    transition: ease-in-out 0.3s;
+}
+
+.bio-properties-panel-attachment-container{
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bio-properties-panel-attachment-list-container :first-child{
+    margin-top: 5px;
+}
+
+.bio-properties-panel-attachment-list-container{
+    width: 100%;
+    height: 280px;
+    padding: 0 5px;
+    margin-bottom: 5px;
+    overflow-y: auto;
+}
+
+.bio-properties-panel-a{
+    display: inline-block;
+    color: black;
+    text-decoration: none;
+}
+
+.bio-properties-panel-a::before{
+    display: inline-block;
+    content: '';
+    width: 20px;
+    height: 20px;
+    background: url("./assets/icons/file.png") no-repeat center transparent;
+    background-size: contain;
+    margin-right: 3px;
+    margin-top: 5px;
+}
+
+.bio-properties-panel-a:hover, .bio-properties-panel-a:hover p{
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.bio-properties-panel-a p{
+    display: inline-block;
+    vertical-align: top;
+    margin-bottom: 8px;
+    pointer-events: none;
+    margin-top: 5px;
+}
+
+.bio-properties-panel-input-file {
+    display: none;
+}
+
+.bio-properties-panel-attachment-entry{
+    margin: 10px 12px;
+}
+
+.attachment-add-btn{
+    display: inline-block;
+    background: url("./assets/icons/plus.svg") transparent no-repeat center;
+    background-size: contain;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    padding: 5px;
+    border: 1px solid #006729;
+}
+
+.attachment-add-btn:hover{
+    border-width: 2px;
+}
+
+.attachment-del-btn{
+    display: inline-block;
+    background: url("./assets/icons/minus.svg") transparent no-repeat center;
+    background-size: contain;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-origin: content-box;
+    padding: 5px;
+    border: 1px solid red;
+    filter: invert(21%) sepia(100%) saturate(7414%) hue-rotate(359deg) brightness(94%) contrast(117%);
+}
+
+.attachment-del-btn:hover{
+    border: 2px solid red;
+}
+
+.bio-properties-panel-attachments-container{
+    width: 600px;
+    height: 400px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: fixed;
+    border: 1px solid var(--color-grey-225-10-55);
+    border-radius: 10px;
+    background-color: white;
+    padding: 20px 30px;
+    z-index: 1000;
+}
+
+.bio-properties-panel-attachments-container h1{
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.bio-properties-panel-attachments-bg{
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background-color: var(--color-grey-225-10-85);
+    opacity: 80%;
+    z-index: 999;
+}
+
+.bio-properties-panel-attachment-close-btn{
+    background-color: transparent;
+    border: 1px solid var(--color-grey-225-10-80);
+    border-radius: 5px;
+}
+
+.bio-properties-panel-attachment-header-container{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--color-grey-225-10-80);
+    padding: 5px;
+}

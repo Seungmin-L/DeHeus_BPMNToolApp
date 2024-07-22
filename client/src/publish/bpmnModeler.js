@@ -330,6 +330,7 @@ function BpmnEditor() {
         return (
             <div className='main-container' onClick={handleClose} >
                 <div className='model-header'>
+                    <Topbar/>
                     <Toolbar
                         isOpen={isOpen} 
                         setIsOpen={setIsOpen}

@@ -75,8 +75,7 @@ body {
 }
 
 #modeler-container{
-  /* width: calc(100vw - 450px); */
-  width: 100%;
+  width: calc(100vw - 450px);
   height: 100%;
   position: relative;
   background: url("https://svgshare.com/i/eGa.svg") center no-repeat;
@@ -93,7 +92,7 @@ body {
 }
 
 .djs-container{
-  /* width: calc(100% - 200px) !important; */
+  width: calc(100% - 200px) !important;
   float: right;
 }
 

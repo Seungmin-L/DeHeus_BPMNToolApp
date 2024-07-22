@@ -1,11 +1,11 @@
 const { sql } = require("../config/dbConfig");
 
-const getAttachments = async (req, res) => {
-    const { diagramId, nodeId } = req.params;
+const getAttachment = async (req, res) => {
+    const { diagramId, nodeId, fileName } = req.params;
     try {
         const result = await sql.query(`
             SELECT * FROM node_attachment 
-            WHERE diagram_id = ${diagramId} AND node_id = ${nodeId}
+            WHERE diagram_id = ${diagramId} AND node_id = ${nodeId} AND file_name LIKE ${fileName}
         `);
         console.log(result.recordset);
     } catch (err) {
@@ -15,11 +15,11 @@ const getAttachments = async (req, res) => {
 }
 
 const deleteAttachments = async (req, res) => {
-    const { diagramId, attachmentId } = req.params;
+    const { diagramId, fileName, nodeId } = req.params;
     try {
         const result = await sql.query(`
             DELETE FROM node_attachment 
-            WHERE diagram_id = ${diagramId} AND id = ${attachmentId}
+            WHERE diagram_id = ${diagramId} AND file_name = ${fileName} AND node_id = ${nodeId}
         `);
         console.log(result.recordset);
     } catch (err) {
@@ -48,4 +48,4 @@ const addAttachments = async (req, res) => {
     }
 }
 
-module.exports = { getAttachments, deleteAttachments, addAttachments };
+module.exports = { getAttachment, deleteAttachments, addAttachments };

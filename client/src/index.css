@@ -30,11 +30,13 @@ body {
   background-color: hsl(240, 33%, 98%);
   width: 100px;
   padding: 10px 5px;
-  left: 10px;
+  top: 100px;
+  left: 125px;
   position: absolute;
   list-style: none;
   text-decoration: none;
   border-radius: 5px;
+  z-index: 99999;
 }
 
 .export-options li{
@@ -56,7 +58,7 @@ body {
 }
 
 .model-body{
-  height: 100%;
+  height: 88%;
   display: flex;
   flex-direction: row;
 }

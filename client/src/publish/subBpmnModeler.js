@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import axios from "axios";
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import '../styles/bpmn-js.css';
 import '../styles/diagram-js.css';
@@ -13,9 +11,7 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import Toolbar from './features/toolbar/toolbar';
-import generateImage from '../util/generateImage';
-import generatePdf from '../util/generatePdf';
-import Topbar from '../components/common/TopBar'
+import Topbar from '../components/common/TopBar';
 
 //custom properties module
 import attributePropertiesProviderModule from '../providers';
@@ -29,9 +25,6 @@ import bpmnSearchModule  from './features/search/provider';
 import DrilldownOverlayBehavior from './features/subprocess/';
 
 function BpmnTest() {
-	const location = useLocation();
-	const itemId = location.state?.itemId; // ----
-	const userName = location.state?.userName; // ----
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
@@ -43,8 +36,6 @@ function BpmnTest() {
     let modelerInstance = null;
 
     useEffect(() => {
-		console.log("Received item ID:", itemId); // ----
-		console.log("Received User Name:", userName); // ---- 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -107,7 +98,6 @@ function BpmnTest() {
                 });
         }
         // Save diagram on every change
-        modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
 
         // Add Save shortcut (ctrl + s)
@@ -134,12 +124,11 @@ function BpmnTest() {
         // });
 
         setModeler(modelerInstance);
-        console.log(
-			modeler?.get('elementRegistry'))
+        console.log(modeler?.get('elementRegistry'))
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, itemId]);
+    }, [diagramXML]);
 
     const handleHidden = () => {
         setIsHidden(prev => !prev);
@@ -175,20 +164,12 @@ function BpmnTest() {
         container.addEventListener('drop', handleFileSelect, false);
     }
 
-    // Download exported file (SVG, XML)
     const setEncoded = (link, name, data) => {
         var encodedData = encodeURIComponent(data);
         if (data) {
             link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
             link.setAttribute('download', name);
         }
-        handleClose();
-    }
-
-    // Download exported image file (PNG, JPEG)
-    const downloadImage = (link, name, url) => {
-        link.setAttribute('href', url);
-        link.setAttribute('download', name);
         handleClose();
     }
 
@@ -215,33 +196,6 @@ function BpmnTest() {
             };
         }
     };
-
-    // Export diagram as png
-    const exportPng = async (id, name) => {
-        if (modeler) {
-            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
-                console.log(err);
-            });
-            if (svg) {
-                const url = await generateImage('png', svg);
-                downloadImage(document.getElementById(id), name + '.png', url);
-            };
-        }
-    };
-
-    // Export diagram as pdf
-    const exportPdf = async (id, name) => {
-        if (modeler) {
-            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
-                console.log(err);
-            });
-            if (svg) {
-                const url = await generateImage('png', svg);
-                generatePdf(url, name);
-            };
-            handleClose();
-        }
-    }
 
     // Save diagram
     const saveDiagram = async () => {
@@ -282,14 +236,6 @@ function BpmnTest() {
         e.stopPropagation();
         exportSvg(e.target.id,"diagram")
     }
-    const handleExportPng = (e) => {
-        e.stopPropagation();
-        exportPng(e.target.id,"diagram")
-    }
-    const handleExportPdf = (e) => {
-        e.stopPropagation();
-        exportPdf(e.target.id, "diagram");
-    }
     const handleClose = () => {
         setIsOpen(false);
     }
@@ -311,23 +257,15 @@ function BpmnTest() {
     };
 
     const handleSave = async () => {
+        // Implement save functionality here
         if (modeler) {
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
-                console.error("Error saving XML:", err);
+                console.log(err);
             });
-    
             if (xml) {
-                console.log("Saved XML:", xml);
-				console.log("diagramId:", itemId)
-    
-                axios.post('/api/diagram/save', { xml: xml, diagramId: itemId, userName: userName })
-                    .then(response => {
-                        console.log("Diagram saved successfully:", response.data);
-                    })
-                    .catch(error => {
-                        console.error("Error saving diagram to the database:", error);
-                    });
-            }
+                // Save diagram in DB
+                console.log(xml);
+            };
         }
     };
 
@@ -354,6 +292,7 @@ function BpmnTest() {
             console.log('Please select at least three elements to distribute.');
         }
     };
+
     if (!isFileValid) {
         return (
             <ErrorPage />
@@ -362,7 +301,7 @@ function BpmnTest() {
         return (
             <div className='main-container' onClick={handleClose} >
                 <div className='model-header'>
-                    <Topbar/>
+                    <Topbar></Topbar>
                     <Toolbar
                         isOpen={isOpen} 
                         setIsOpen={setIsOpen}
@@ -370,8 +309,6 @@ function BpmnTest() {
                         onImport={onImportClick}
                         onExportXml={handleExportXml}
                         onExportSvg={handleExportSvg}
-                        onExportPng={handleExportPng}
-                        onExportPdf={handleExportPdf}
                         // more export calls here
                         onZoomIn={handleZoomIn}
                         onZoomOut={handleZoomOut}
@@ -388,6 +325,7 @@ function BpmnTest() {
                         importFile={importFile}
                         onFileChange = {onFileChange}
                     />
+                    {/* <button onClick={onImportClick} title='import BPMN diagram'><input type='file' accept='text/xml' style={{ display: 'none' }} ref={importFile} onChange={(e) => onFileChange(e)} />Import File</button> */}
                 </div>
                 <div className='model-body'>
                     <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>

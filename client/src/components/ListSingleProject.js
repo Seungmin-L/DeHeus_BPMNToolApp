@@ -59,8 +59,9 @@ function ListSingleProject() {
 
   const handleOpenClick = (event, item) => {
     event.stopPropagation();
-    console.log("Clicked item ID:", item.id);  // 아이템 ID 출력
-    navigate("/diagram", { state: { itemId: item.id } });
+    // console.log("Clicked item ID:", item.id);
+    // navigate("/diagram", { state: { itemId: item.id } });
+    navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName } });
   };
 
   const renderRow = (item, level = 0) => {

@@ -2,20 +2,21 @@ const { sql } = require("../config/dbConfig");
 
 const listProcesses = async (req, res) => {
   const { projectId } = req.params;
-  console.log(`Received projectId: ${projectId}`);
+  // console.log(`Received projectId: ${projectId}`);
   try {
-    // 다이어그램 ID로 다이어그램 확인
+    // check diagram with project ID
     const diagramResult = await sql.query(`
       SELECT * FROM diagram WHERE project_id = ${projectId};
     `);
-    console.log(`Diagrams: `, diagramResult.recordset);
+    // console.log(`Diagrams: `, diagramResult.recordset);
 
-    // 프로젝트 ID로 다이어그램 관계 확인
+    // check relationship with project ID
     const relationResult = await sql.query(`
       SELECT * FROM diagram_relation WHERE project_id = ${projectId};
     `);
-    console.log(`Diagram relations: `, relationResult.recordset);
+    // console.log(`Diagram relations: `, relationResult.recordset);
 
+    // build recursive processes based on relationResult
     const result = await sql.query(`
       WITH RecursiveProcesses AS (
         SELECT 
@@ -56,19 +57,19 @@ const listProcesses = async (req, res) => {
       WHERE Rank = 1
       ORDER BY Level, id;
     `);
-    console.log(`Recursive Processes: `, result.recordset);    
+    // console.log(`Recursive Processes: `, result.recordset);    
 
     const processes = result.recordset;
     const processMap = {};
 
-    // 모든 프로세스를 processMap에 추가
+    // add all the processes to processMap
     processes.forEach(process => {
       processMap[process.id] = { ...process, children: [] };
     });
 
     const rootProcesses = [];
 
-    // 부모-자식 관계를 기반으로 트리 구조 빌드
+    // build tree based on parent-child relation
     processes.forEach(process => {
       if (process.parent_diagram_id) {
         if (processMap[process.parent_diagram_id]) {
@@ -79,7 +80,7 @@ const listProcesses = async (req, res) => {
       }
     });
 
-    console.log(`Root Processes: `, JSON.stringify(rootProcesses, null, 2));
+    // console.log(`Root Processes: `, JSON.stringify(rootProcesses, null, 2));
     res.json(rootProcesses);
   } catch (err) {
     console.error("Error listing processes", err);

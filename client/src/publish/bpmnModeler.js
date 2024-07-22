@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import axios from "axios";
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import '../styles/bpmn-js.css';
 import '../styles/diagram-js.css';
@@ -24,7 +26,10 @@ import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
 //search
 import bpmnSearchModule  from './features/search/provider';
 
-function BpmnEditor() {
+function BpmnTest() {
+	const location = useLocation();
+	const itemId = location.state?.itemId; // ----
+	const userName = location.state?.userName; // ----
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
@@ -36,6 +41,8 @@ function BpmnEditor() {
     let modelerInstance = null;
 
     useEffect(() => {
+		console.log("Received item ID:", itemId); // ----
+		console.log("Received User Name:", userName); // ---- 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -112,10 +119,12 @@ function BpmnEditor() {
             }
         });
         setModeler(modelerInstance);
+        console.log(
+			modeler?.get('elementRegistry'))
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML]);
+    }, [diagramXML, itemId]);
 
     const handleHidden = () => {
         setIsHidden(prev => !prev);
@@ -287,15 +296,23 @@ function BpmnEditor() {
     };
 
     const handleSave = async () => {
-        // Implement save functionality here
         if (modeler) {
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
-                console.log(err);
+                console.error("Error saving XML:", err);
             });
+    
             if (xml) {
-                // Save diagram in DB
-                console.log(xml);
-            };
+                console.log("Saved XML:", xml);
+				console.log("diagramId:", itemId)
+    
+                axios.post('/api/diagram/save', { xml: xml, diagramId: itemId, userName: userName })
+                    .then(response => {
+                        console.log("Diagram saved successfully:", response.data);
+                    })
+                    .catch(error => {
+                        console.error("Error saving diagram to the database:", error);
+                    });
+            }
         }
     };
 
@@ -369,4 +386,4 @@ function BpmnEditor() {
     }
 
 }
-export default BpmnEditor;
+export default BpmnTest;

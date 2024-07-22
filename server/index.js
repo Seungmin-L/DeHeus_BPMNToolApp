@@ -9,6 +9,7 @@ const projectsController = require('./src/controllers/projectsController');
 const processesController = require('./src/controllers/processesController');
 const diagramController = require('./src/controllers/diagramController');
 
+const attachmentsController = require('./src/controllers/attachmentsController');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,6 +25,9 @@ app.post('/api/diagram/save', diagramController.draftSave);
 
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
+app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
+app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
+app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.deleteAttachments);
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);

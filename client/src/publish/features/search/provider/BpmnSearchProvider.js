@@ -191,28 +191,26 @@ function arrayMatchAndSplit(array, pattern) {
     return tokens;
   }
   array.forEach(names => {
-    if (typeof names === 'string') {
-      var originalText = names;
-      var text = names.toLowerCase();
-      pattern = pattern.toLowerCase();
-      var i = text.indexOf(pattern);
+    var originalText = names;
+    var text = names.toLowerCase();
+    pattern = pattern.toLowerCase();
+    var i = text.indexOf(pattern);
 
-      if (i > -1) {
-        if (i !== 0) {
-          tokens.push({
-            normal: originalText.substr(0, i)
-          });
-        }
-
+    if (i > -1) {
+      if (i !== 0) {
         tokens.push({
-          matched: originalText.substr(i, pattern.length)
+          normal: originalText.substr(0, i)
         });
+      }
 
-        if (pattern.length + i < text.length) {
-          tokens.push({
-            normal: originalText.substr(pattern.length + i, text.length)
-          });
-        }
+      tokens.push({
+        matched: originalText.substr(i, pattern.length)
+      });
+
+      if (pattern.length + i < text.length) {
+        tokens.push({
+          normal: originalText.substr(pattern.length + i, text.length)
+        });
       }
     }
   });

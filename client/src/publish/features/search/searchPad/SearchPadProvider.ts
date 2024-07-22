@@ -10,6 +10,7 @@ export type SearchResult = {
   secondaryTokens: Token[];
   tertiaryTokens: Token[];
   fourthTokens: Token[];
+  fifthTokens: Token[];
   element: Element;
 };
 

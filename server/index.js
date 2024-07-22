@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 const authController = require('./src/controllers/authController');
 const projectsController = require('./src/controllers/projectsController');
 const processesController = require('./src/controllers/processesController');
+const diagramController = require('./src/controllers/diagramController');
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -17,6 +19,9 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 app.post('/api/authenticate', authController.authenticateUser);
+app.post('/api/diagram/save', diagramController.draftSave);
+// app.get()
+
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
 

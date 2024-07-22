@@ -47,7 +47,7 @@ async function connectDB() {
             await pool.request().query(tableCreateQuery);
             console.log('user table did not exist, created a new one.');
         } else {
-            console.log('user table already exists.');
+            // console.log('user table already exists.');
         }
     } catch (err) {
         console.error('Unable to connect to the database or create table:', err);

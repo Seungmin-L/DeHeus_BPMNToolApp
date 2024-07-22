@@ -217,4 +217,3 @@ function arrayMatchAndSplit(array, pattern) {
   return tokens;
 }
 
-

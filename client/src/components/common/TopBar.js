@@ -1,8 +1,16 @@
-import React from 'react';
-import { Navbar, Container, Form, FormControl, InputGroup, Nav, Dropdown } from 'react-bootstrap';
-import { FaSearch, FaUserCircle } from 'react-icons/fa';
-import logo from '../../assets/logos/logo_deheus.png';
 import { useMsal } from "@azure/msal-react";
+import React from "react";
+import {
+  Container,
+  Dropdown,
+  Form,
+  FormControl,
+  InputGroup,
+  Nav,
+  Navbar,
+} from "react-bootstrap";
+import { FaSearch, FaUserCircle } from "react-icons/fa";
+import logo from "../../assets/logos/logo_deheus.png";
 
 function TopBar({ onLogoClick, userName }) {
   const { instance } = useMsal();
@@ -16,9 +24,9 @@ function TopBar({ onLogoClick, userName }) {
   };
 
   return (
-    <Navbar style={{backgroundColor: '#d3e0ea'}} variant="light" expand="lg">
+    <Navbar style={{ backgroundColor: "#d3e0ea" }} variant="light" expand="lg">
       <Container fluid>
-        <Navbar.Brand onClick={onLogoClick} style={{ cursor: 'pointer' }}>
+        <Navbar.Brand onClick={onLogoClick} style={{ cursor: "pointer" }}>
           <img
             src={logo}
             height="30"
@@ -41,14 +49,24 @@ function TopBar({ onLogoClick, userName }) {
           </Form>
         </Nav>
         <Nav>
-          <Dropdown >
+          <Dropdown>
             <Dropdown.Toggle as={Nav.Item}>
-              <span style={{ marginRight: '10px', fontSize: '1rem', color: '#6c757d' }}>{userName}</span>
-              <FaUserCircle size={30} style={{ marginRight: '5px', color: '#fff' }} />
+              <span
+                style={{
+                  marginRight: "10px",
+                  fontSize: "1rem",
+                  color: "#6c757d",
+                }}
+              >
+                {userName}
+              </span>
+              <FaUserCircle
+                size={30}
+                style={{ marginRight: "5px", color: "#fff" }}
+              />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item href="/">---------</Dropdown.Item>
-              <Dropdown.Item href="/">---------</Dropdown.Item>
+              <Dropdown.Item href="/mypage">My Page</Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item onClick={logout}>Logout</Dropdown.Item>
             </Dropdown.Menu>

@@ -103,8 +103,7 @@ body {
   position: fixed !important;
   top: 20% !important;
   left: 200px !important;
-  width: 200px !important;
-  height: 100%;
+  height: 70%;
 }
 
 .hide{
@@ -172,5 +171,3 @@ code {
 .djs-minimap.open .toggle::before{
   content: "X";
 }
-
-

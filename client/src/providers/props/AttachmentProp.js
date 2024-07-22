@@ -4,6 +4,7 @@ import { useShowEntryEvent, isTextFieldEntryEdited, useError } from '@bpmn-io/pr
 import { useService } from 'bpmn-js-properties-panel';
 import { isFunction } from 'min-dash';
 import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
+import axios from 'axios';
 
 export default function (element) {
   return [
@@ -18,17 +19,43 @@ export default function (element) {
 
 function Attachment(props) {
   const { element, id } = props;
-
   const modeling = useService('modeling');
   const debounce = useService('debounceInput');
+  const nodeId = element.businessObject.id;
   // Get attachment 
   const getValue = () => {
-    return element.businessObject.attachment || [];
+    if (element.businessObject.attachment) {
+      if (typeof element.businessObject.attachment === 'string') {
+        return [...element.businessObject.attachment.split(',')];
+      }
+      return [...element.businessObject.attachment];
+    } else {
+      return [];
+    }
   };
   // Update property of the element and save it in the diagram file 
-  const setValue = value => {
+  const setValue = async (names, value) => {
+    // Function for retrieving attachment file names in the storage to be added
+    // axios.post(`/api/attachments/${diagramId}`, {
+    //   body: {
+    //     nodeId: nodeId,
+    //     file: value
+    //   }
+    // })
+    //   .then(res => console.log(res))
+    //   .catch(err => console.log(err));
     return modeling.updateProperties(element, {
-      attachment: value
+      attachment: names
+    });
+  };
+
+  const deleteValue = async (names, value) => {
+    // Function for retrieving attachment file names in the storage to be added
+    // axios.post(`/api/attachments/${diagramId}/${nodeId}/${value.name}`)
+    //   .then(res => console.log(res))
+    //   .catch(err => console.log(err));
+    return modeling.updateProperties(element, {
+      attachment: names
     });
   };
 
@@ -37,6 +64,7 @@ function Attachment(props) {
     element=${element}
     getValue=${getValue}
     setValue=${setValue}
+    deleteValue=${deleteValue}
     debounce=${debounce}
   />`;
 }
@@ -46,6 +74,7 @@ var classnames = require('classnames');
 
 function AttachmentList(props) {
   const {
+    element,
     id,
     onChange,
     onDelete,
@@ -54,12 +83,12 @@ function AttachmentList(props) {
     value = []
   } = props;
   const [localValue, setLocalValue] = hooks.useState(value || []);
+  const nodeId = element.businessObject.id;
   const onDeleteClick = e => {
     e.stopPropagation();
     e.preventDefault();
     if (localValue.length > 0) {
       onDelete(e.target.name);
-      // Function for deleting file in the storage to be added
       const newList = localValue.filter(el => { return el.name !== e.target.name });
       setLocalValue(newList);
     }
@@ -67,15 +96,20 @@ function AttachmentList(props) {
       handleHide();
     }
   }
-  // Download file on click
+  // View file on click
   const onClick = e => {
     e.stopPropagation();
+    // Function for geting selected attachment file
+      // axios.get(`/api/attachments/${diagramId}/${nodeId}/${e.target.name}`)
+      //   .then((res) => {
+      //     console.log(res.data);
+      //   })
+      //   .catch(err => console.log(err));
     let file = localValue.find(el => {
       return el.name === e.target.name;
     })
     const url = URL.createObjectURL(file);
     e.target.href = url;
-    // e.target.download = localValue.name;
   }
   const btnOnClick = e => {
     e.preventDefault();
@@ -123,9 +157,9 @@ function AttachmentList(props) {
                 class: "bio-properties-panel-attachment-container",
                 children: [
                   jsx("a", {
-                    name: el.name,
-                    title: el.name,
-                    children: jsx("p", { children: el.name.length > 20 ? el.name.substring(0, 21) + "..." : el.name }),
+                    name: el,
+                    title: el,
+                    children: jsx("p", { children: el.length > 20 ? el.substring(0, 21) + "..." : el }),
                     target: "_blank",
                     onClick: onClick,
                     class: "bio-properties-panel-a"
@@ -133,7 +167,7 @@ function AttachmentList(props) {
                   jsx("button", {
                     onClick: onDeleteClick,
                     class: "attachment-del-btn",
-                    name: el.name
+                    name: el
                   })
                 ]
               })
@@ -158,6 +192,7 @@ function AttachmentList(props) {
 // Create html element for file attachment
 function Attachmentfield(props) {
   const {
+    element,
     debounce,
     id,
     onChange,
@@ -179,18 +214,16 @@ function Attachmentfield(props) {
     if (e.target.files.length > 0) {
       let newFile = e.target.files[0];
       const newList = [...value];
-      if (value.length > 0) {
-        const duplicate = value.find(el => { return el.name === newFile.name }) || null;
+      if (newList.length > 0) {
+        const duplicate = newList.find(el => { return el === newFile.name }) || null;
         if (duplicate === null) {
           handleChangeCallback(e.target);
-          // Function for saving file in the storage to be added
-          newList.push(newFile);
+          newList.push(newFile.name);
           setLocalValue(newList);
         }
       } else {
         handleChangeCallback(e.target);
-        // Function for saving file in the storage to be added
-        newList.push(newFile);
+        newList.push(newFile.name);
         setLocalValue(newList);
       }
     }
@@ -245,6 +278,7 @@ function Attachmentfield(props) {
     }),
     (localValue.length > 0 && isShown) &&
     jsx(AttachmentList, {
+      element: element,
       id: id,
       onChange: handleChange,
       onDelete: handleDeleteCallback,
@@ -262,8 +296,10 @@ function AttachmentfieldEntry(props) {
     element,
     id,
     debounce,
+    getNames,
     getValue,
     setValue,
+    deleteValue,
     validate,
   } = props;
   const globalError = useError(id);
@@ -281,8 +317,8 @@ function AttachmentfieldEntry(props) {
     if (isFunction(validate)) {
       newValidationError = validate(newValue) || null;
     }
-    const newList = [...value, newValue];
-    setValue(newList, newValidationError);
+    const newList = [...value, newValue.name];
+    setValue(newList, newValue, newValidationError);
     setLocalError(newValidationError);
   };
 
@@ -291,8 +327,9 @@ function AttachmentfieldEntry(props) {
     if (isFunction(validate)) {
       newValidationError = validate(fileName) || null;
     }
-    const newList = value.filter(el => { return fileName !== el.name });
-    setValue(newList, newValidationError);
+    const newList = value.filter(el => { return fileName !== el });
+    // Delete file in DB
+    deleteValue(newList, fileName, newValidationError);
     setLocalError(newValidationError);
   };
 

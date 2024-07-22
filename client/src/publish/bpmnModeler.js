@@ -13,7 +13,9 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import Toolbar from './features/toolbar/toolbar';
-import Topbar from '../components/common/TopBar';
+import generateImage from '../util/generateImage';
+import generatePdf from '../util/generatePdf';
+import Topbar from '../components/common/TopBar'
 
 //custom properties module
 import attributePropertiesProviderModule from '../providers';
@@ -105,6 +107,7 @@ function BpmnTest() {
                 });
         }
         // Save diagram on every change
+        modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
 
         // Add Save shortcut (ctrl + s)
@@ -172,12 +175,20 @@ function BpmnTest() {
         container.addEventListener('drop', handleFileSelect, false);
     }
 
+    // Download exported file (SVG, XML)
     const setEncoded = (link, name, data) => {
         var encodedData = encodeURIComponent(data);
         if (data) {
             link.setAttribute('href', 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData);
             link.setAttribute('download', name);
         }
+        handleClose();
+    }
+
+    // Download exported image file (PNG, JPEG)
+    const downloadImage = (link, name, url) => {
+        link.setAttribute('href', url);
+        link.setAttribute('download', name);
         handleClose();
     }
 
@@ -204,6 +215,33 @@ function BpmnTest() {
             };
         }
     };
+
+    // Export diagram as png
+    const exportPng = async (id, name) => {
+        if (modeler) {
+            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (svg) {
+                const url = await generateImage('png', svg);
+                downloadImage(document.getElementById(id), name + '.png', url);
+            };
+        }
+    };
+
+    // Export diagram as pdf
+    const exportPdf = async (id, name) => {
+        if (modeler) {
+            const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
+                console.log(err);
+            });
+            if (svg) {
+                const url = await generateImage('png', svg);
+                generatePdf(url, name);
+            };
+            handleClose();
+        }
+    }
 
     // Save diagram
     const saveDiagram = async () => {
@@ -243,6 +281,14 @@ function BpmnTest() {
     const handleExportSvg = (e) => {
         e.stopPropagation();
         exportSvg(e.target.id,"diagram")
+    }
+    const handleExportPng = (e) => {
+        e.stopPropagation();
+        exportPng(e.target.id,"diagram")
+    }
+    const handleExportPdf = (e) => {
+        e.stopPropagation();
+        exportPdf(e.target.id, "diagram");
     }
     const handleClose = () => {
         setIsOpen(false);
@@ -308,7 +354,6 @@ function BpmnTest() {
             console.log('Please select at least three elements to distribute.');
         }
     };
-
     if (!isFileValid) {
         return (
             <ErrorPage />
@@ -317,7 +362,7 @@ function BpmnTest() {
         return (
             <div className='main-container' onClick={handleClose} >
                 <div className='model-header'>
-                    <Topbar></Topbar>
+                    <Topbar/>
                     <Toolbar
                         isOpen={isOpen} 
                         setIsOpen={setIsOpen}
@@ -325,6 +370,8 @@ function BpmnTest() {
                         onImport={onImportClick}
                         onExportXml={handleExportXml}
                         onExportSvg={handleExportSvg}
+                        onExportPng={handleExportPng}
+                        onExportPdf={handleExportPdf}
                         // more export calls here
                         onZoomIn={handleZoomIn}
                         onZoomOut={handleZoomOut}
@@ -341,7 +388,6 @@ function BpmnTest() {
                         importFile={importFile}
                         onFileChange = {onFileChange}
                     />
-                    {/* <button onClick={onImportClick} title='import BPMN diagram'><input type='file' accept='text/xml' style={{ display: 'none' }} ref={importFile} onChange={(e) => onFileChange(e)} />Import File</button> */}
                 </div>
                 <div className='model-body'>
                     <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>

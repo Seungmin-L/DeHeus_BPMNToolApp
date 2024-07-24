@@ -2,31 +2,30 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from "axios";
 import BpmnModeler from 'bpmn-js/lib/Modeler';
-import '../styles/bpmn-js.css';
-import '../styles/diagram-js.css';
-import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 import ColorPickerModule from 'bpmn-js-color-picker';
 import minimapModule from 'diagram-js-minimap';
-import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import ErrorPage from './ErrorPage';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
-import Toolbar from './features/toolbar/toolbar';
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
-import Topbar from '../components/common/TopBar'
-
 //custom properties module
 import attributePropertiesProviderModule from '../providers';
 import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
-
 //search
 import bpmnSearchModule  from './features/search/provider';
 //subprocess
 import DrilldownOverlayBehavior from './features/subprocess/';
+//toolbar
+import Toolbar from './features/toolbar/toolbar';
+import Topbar from '../components/common/TopBar'
+import 'diagram-js-minimap/assets/diagram-js-minimap.css';
+import '../styles/bpmn-js.css';
+import '../styles/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 
 function BpmnTest() {
 	const location = useLocation();
@@ -141,6 +140,7 @@ function BpmnTest() {
         }
     }, [diagramXML, itemId]);
 
+    // hide heirchy side bar
     const handleHidden = () => {
         setIsHidden(prev => !prev);
     }
@@ -274,6 +274,8 @@ function BpmnTest() {
             console.log("Invalid File");
         }
     }
+
+    // handle exports to files
     const handleExportXml = (e) => {
         e.stopPropagation();
         exportXml(e.target.id,"diagram")
@@ -293,25 +295,29 @@ function BpmnTest() {
     const handleClose = () => {
         setIsOpen(false);
     }
+
+    /**Tool bar functions */
+    // handle zoom in
     const handleZoomIn = () => {
         modeler?.get('zoomScroll').stepZoom(1);
     };
-
+    // handle zoom out
     const handleZoomOut = () => {
         modeler?.get('zoomScroll').stepZoom(-1);
     };
-
+    // handle undo
     const handleUndo = () => {
         modeler?.get('commandStack').undo();
         console.log(modeler?.get('commandStack'))
     };
-
+    // handle redo
     const handleRedo = () => {
         modeler?.get('commandStack').redo();
     };
-
+    // handle save
     const handleSave = async () => {
         if (modeler) {
+            // save bpmn diagram as xml
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
                 console.error("Error saving XML:", err);
             });
@@ -330,7 +336,7 @@ function BpmnTest() {
             }
         }
     };
-
+    // handle aligning elements
     const handleAlign = (alignment) => {
         const alignElements = modeler?.get('alignElements');
         const selection = modeler?.get('selection');
@@ -342,7 +348,7 @@ function BpmnTest() {
             console.log('Please select at least two elements to align.');
         }
     };
-
+    // handle distributing elements
     const handleDistribute = (direction) => {
         const distributeElements = modeler?.get('distributeElements');
         const selection = modeler?.get('selection');

@@ -1,3 +1,11 @@
+/*
+ * This file contains code adapted from the [bpmn-js] library.
+ * Source: [URL of the source code if available]
+ * 
+ * [bpmn-js] is licensed under the [bpmn.io License].
+ * You can find a copy of the license at [https://bpmn.io/license/].
+ */
+
 import inherits from 'inherits-browser';
 
 import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor';
@@ -187,9 +195,10 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
 
   button.addEventListener('click', function() {
 
-    canvas.setRootElement(canvas.findRoot(getPlaneIdFromShape(element)));
-
-    localStorage.setItem('subprocessId', element.id);
+    // canvas.setRootElement(canvas.findRoot(getPlaneIdFromShape(element)));
+    var planeId = getPlaneIdFromShape(element)
+    localStorage.setItem('planeId', planeId);
+    localStorage.setItem('subProcess',true);
     
     window.open('/publish/bpmnModeler', '_blank');
 

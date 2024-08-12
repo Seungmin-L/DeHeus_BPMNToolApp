@@ -195,9 +195,10 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
 
   button.addEventListener('click', function() {
 
-    canvas.setRootElement(canvas.findRoot(getPlaneIdFromShape(element)));
-
-    localStorage.setItem('subprocessId', element.id);
+    // canvas.setRootElement(canvas.findRoot(getPlaneIdFromShape(element)));
+    var planeId = getPlaneIdFromShape(element)
+    localStorage.setItem('planeId', planeId);
+    localStorage.setItem('subProcess',true);
     
     window.open('/publish/bpmnModeler', '_blank');
 

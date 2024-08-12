@@ -62,7 +62,9 @@ function ListSingleProject() {
     event.stopPropagation();
     // console.log("Clicked item ID:", item.id);
     // navigate("/diagram", { state: { itemId: item.id } });
-    navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName } });
+    navigate(`/publish/bpmnModeler/`);
+    // navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName } });
+    // navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id } });
   };
 
   const renderRow = (item, level = 0) => {

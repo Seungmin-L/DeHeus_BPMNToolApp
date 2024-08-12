@@ -24,7 +24,8 @@ function ListSingleProject() {
   const { projectId } = useParams();
   const isAuthenticated = useIsAuthenticated();
   const { accounts } = useMsal();
-  const userName = accounts[0].username;
+  //const userName = accounts[0].username;
+  const userName = useState("");
   const [processes, setProcesses] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
   const [isNavVisible, setIsNavVisible] = useState(false);
@@ -139,9 +140,9 @@ function ListSingleProject() {
     handleCloseModal();
   };
 
-  if (!isAuthenticated) {
-    return <NoAuth />;
-  }
+  // if (!isAuthenticated) {
+  //   return <NoAuth />;
+  // }
 
   return (
     <div>

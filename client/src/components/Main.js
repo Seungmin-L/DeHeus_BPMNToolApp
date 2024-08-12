@@ -37,9 +37,9 @@ function Main() {
     navigate(`/project/${projectId}`);
   };
 
-  if (!isAuthenticated) {
-    return <NoAuth />;
-  }
+  // if (!isAuthenticated) {
+  //   return <NoAuth />;
+  // }
 
   return (
     <div>

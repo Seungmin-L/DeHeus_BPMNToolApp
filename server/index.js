@@ -17,7 +17,8 @@ const PORT = process.env.PORT || 3001;
 connectDB();  // when the server starts, automatically connect to the database
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 app.post('/api/authenticate', authController.authenticateUser);
 app.post('/api/diagram/save', diagramController.draftSave);

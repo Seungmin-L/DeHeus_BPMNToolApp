@@ -16,7 +16,7 @@ import {
     getParameters,
     getParametersExtension,
     nextId
-  } from '../../util';
+  } from './util';
   
   import ParameterProps from './ParameterProps';
   
@@ -32,10 +32,18 @@ import {
   
     const items = parameters.map((parameter, index) => {
       const id = element.id + '-parameter-' + index;
+      let newLabel = '';
+      const name = parameter.get('name');
+      const value = parameter.get('value');
+      if(!parameter.get('value')){
+        newLabel = name;
+      } else {
+        newLabel = name + ' | ' + value;
+      }
   
-      return {
+      return { 
         id,
-        label: parameter.get('name') || '',
+        label: newLabel || '',
         entries: ParameterProps({
           idPrefix: id,
           element,
@@ -124,8 +132,8 @@ import {
       }
   
       // (3) create parameter
-      const newParameter = createElement('magic:Parameter', {
-        name: nextId('EX_'),
+      const newParameter = createElement('endtoend:Parameter', {
+        name: nextId('E2E_'),
         value: ''
       }, extension, bpmnFactory);
   

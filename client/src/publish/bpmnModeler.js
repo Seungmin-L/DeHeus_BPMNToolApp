@@ -15,6 +15,15 @@ import attributePropertiesProviderModule from '../providers';
 import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
+import endToEndPropertiesProviderModule from '../providers';
+import endtoendModdleDescriptor from '../providers/descriptor/endtoend.json';
+import functionPropertiesProviderModule from '../providers';
+import functionModdleDescriptor from '../providers/descriptor/function.json';
+import departmentPropertiesProviderModule from '../providers';
+import departmentModdleDescriptor from '../providers/descriptor/department.json';
+import domainPropertiesProviderModule from '../providers';
+import domainModdleDescriptor from '../providers/descriptor/domain.json';
+
 //search
 import bpmnSearchModule  from './features/search/provider';
 //subprocess
@@ -38,6 +47,7 @@ function BpmnTest() {
     const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
     const [isFileValid, setIsFileValid] = useState(true);
+    const [ hidePanel, setHidePanel ] = useState(false); 
     const saveKeys = ['s', 'S'];
     let modelerInstance = null;
 
@@ -58,16 +68,24 @@ function BpmnTest() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                attachmentPropertiesProviderModule,
-                attributePropertiesProviderModule,
+                // attachmentPropertiesProviderModule,
+                // attributePropertiesProviderModule,
+                endToEndPropertiesProviderModule,
+                functionPropertiesProviderModule,
+                departmentPropertiesProviderModule,
+                domainPropertiesProviderModule,
                 parameterPropertiesProviderModule,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
-                attribute: attributeModdleDescriptor,
-                parameter: parameterModdleDescriptor
+                // attribute: attributeModdleDescriptor,
+                endtoend: endtoendModdleDescriptor,
+                function: functionModdleDescriptor,
+                department: departmentModdleDescriptor,
+                domain: domainModdleDescriptor,
+                parameter: parameterModdleDescriptor,
             }
         });
         // Check file api availablitiy
@@ -117,6 +135,7 @@ function BpmnTest() {
                     setIsFileValid(false);
                 });
         }
+
         // Save diagram on every change
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
@@ -147,6 +166,7 @@ function BpmnTest() {
 
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
+        
         return () => {
             modeler?.destroy();
         }
@@ -374,6 +394,12 @@ function BpmnTest() {
             console.log('Please select at least three elements to distribute.');
         }
     };
+
+    // handle panel visibility
+    const toggleVisibility = () => {
+        setHidePanel(!hidePanel);
+    };
+
     if (!isFileValid) {
         return (
             <ErrorPage />
@@ -414,7 +440,13 @@ function BpmnTest() {
                         <button onClick={handleHidden} style={{ width: "50px" }}>{isHidden ? "Show" : "Hide"}</button>
                     </div>
                     <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
-                    <div id='properties-panel-parent' />
+                    <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
+                        <button className='hide-panel' onClick={toggleVisibility}>
+                            Details
+                        </button>
+                        <div id='properties-panel-parent'  />
+                    </div>
+
                 </div>
             </div>
         )

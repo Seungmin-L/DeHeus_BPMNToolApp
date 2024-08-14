@@ -7,7 +7,7 @@
  */
 
 // Import your custom list group entries.
-import parametersProps from './props/parameter/ParametersProp';
+import parametersProps from './props/Domain/ParametersProp';
 
 // Import the properties panel list group component.
 import { ListGroup } from '@bpmn-io/properties-panel';
@@ -24,7 +24,7 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function ParameterPropertiesProvider(propertiesPanel, injector, translate) {
+export default function DomainPropertiesProvider(propertiesPanel, injector, translate) {
 
   // API ////////
 
@@ -63,15 +63,15 @@ export default function ParameterPropertiesProvider(propertiesPanel, injector, t
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-ParameterPropertiesProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
+DomainPropertiesProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
 // Create the custom parameters list group.
 function createParametersGroup(element, injector, translate) {
 
   // Create a group called "parameters".
   const parametersGroup = {
-    id: 'parameters',
-    label: translate('Extended'),
+    id: 'domain',
+    label: translate('Domain'),
     component: ListGroup,
     ...parametersProps({ element, injector })
   };

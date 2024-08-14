@@ -45,7 +45,7 @@ function Attachment(props) {
   const setValue = async (names, value) => {
     reader(value, (err, res) => {
       const file = { name: value.name, data: res };
-      // Function for adding attachment file names in the storage to be added
+      // Function for adding an attachment file in the storage
       axios.post(`http://localhost:3001/api/attachments/${diagramId}`, {
         nodeId: nodeId,
         file: file,
@@ -60,7 +60,7 @@ function Attachment(props) {
   };
 
   const deleteValue = async (names, value) => {
-    // Function for retrieving attachment file names in the storage to be added
+    // Function for deleting attachment files
     axios.post(`http://localhost:3001/api/attachments/${diagramId}/${nodeId}/${value}`)
       .then(res => console.log({ msg: res.data.message, file: res.data.file }))
       .catch(err => console.log(err));
@@ -111,7 +111,7 @@ function AttachmentList(props) {
   // View file on click
   const onClick = e => {
     e.stopPropagation();
-    // Function for geting selected attachment file
+    // Function for getting selected attachment file
     axios.get(`/api/attachments/${diagramId}/${nodeId}/${e.target.name}`, {responseType: 'blob'})
       .then((res) => {
         console.log(res);

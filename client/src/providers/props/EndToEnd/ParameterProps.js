@@ -10,8 +10,6 @@ import { TextFieldEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import ExtensionList from './ExtensionList';
-
 
 export default function ParameterProps(props) {
 
@@ -27,18 +25,8 @@ export default function ParameterProps(props) {
       idPrefix,
       parameter
     },
-    {
-      id: idPrefix + '-value',
-      component: Value,
-      idPrefix,
-      parameter
-    },
-    {
-      id: idPrefix + '-extensions',
-      component: ExtensionList,
-      idPrefix,
-      parameter
-    }
+
+
   ];
 
   return entries;

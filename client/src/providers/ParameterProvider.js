@@ -1,3 +1,11 @@
+/*
+ * This file contains code adapted from the [bpmn-js] library.
+ * Source: [URL of the source code if available]
+ * 
+ * [bpmn-js] is licensed under the [bpmn.io License].
+ * You can find a copy of the license at [https://bpmn.io/license/].
+ */
+
 // Import your custom list group entries.
 import parametersProps from './props/parameter/ParametersProp';
 
@@ -63,7 +71,7 @@ function createParametersGroup(element, injector, translate) {
   // Create a group called "parameters".
   const parametersGroup = {
     id: 'parameters',
-    label: translate('Parameters'),
+    label: translate('Extended'),
     component: ListGroup,
     ...parametersProps({ element, injector })
   };

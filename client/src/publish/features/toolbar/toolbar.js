@@ -1,4 +1,3 @@
-import React, { useState, useRef, useEffect } from 'react';
 import './toolbar.css'
 // ICONS
 import AlignIcons from 'bpmn-js/lib/features/align-elements/AlignElementsIcons';

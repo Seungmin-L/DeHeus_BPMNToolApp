@@ -5,6 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 #root{
@@ -63,9 +64,48 @@ body {
   flex-direction: row;
 }
 
-#properties-panel-parent {
-  width: 250px;
+.properties_panel_open {
+  display: flex;
+  position: absolute;
+  right: 0;
+  transition: transform 0.5s ease-in-out;
+  transform: translateX(0);
+}
+
+.properties_panel_hidden {
+  display: flex;
+  position: absolute;
+  right: 0;
+  transition: transform 0.5s ease-in-out;
+  transform: translateX(100%); /* Move it completely off-screen to the right */
+}
+
+.hide-panel {
+  width: 150px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-90deg);
+  position: absolute;
+  right: 340px;
+  top: 50%;
+  border-top: 1px solid #ccc;
   border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: none ;
+  background-color: white; 
+  font-size: 15px;
+  font-weight:400;
+}
+
+
+#properties-panel-parent {
+  width: 400px;
+  height: 88vh;
+  border-left: 1px solid #ccc;
+  background-color: white;
+
   overflow: auto;
   &:empty {
     display: none;
@@ -165,7 +205,11 @@ code {
 .djs-minimap{
   border-radius: 5px !important;
   line-height: 15px;
-  z-index: 100;
+  z-index: 99;
+  display: flex;
+  position: absolute;
+  width: 130px;
+  margin-top: -15px;
 }
 
 .djs-minimap.open .toggle::before{

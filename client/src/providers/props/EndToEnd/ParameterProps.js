@@ -25,8 +25,12 @@ export default function ParameterProps(props) {
       idPrefix,
       parameter
     },
-
-
+    {
+      id: idPrefix + '-value',
+      component: Value,
+      idPrefix,
+      parameter
+    },
   ];
 
   return entries;

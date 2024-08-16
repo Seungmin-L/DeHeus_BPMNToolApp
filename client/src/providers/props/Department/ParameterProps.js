@@ -24,13 +24,7 @@ export default function ParameterProps(props) {
       component: Name,
       idPrefix,
       parameter
-    },
-    {
-      id: idPrefix + '-value',
-      component: Value,
-      idPrefix,
-      parameter
-    },
+    }
 
   ];
 

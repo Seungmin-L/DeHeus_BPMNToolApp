@@ -2,8 +2,8 @@ import { PublicClientApplication } from "@azure/msal-browser";
 
 const msalConfig = {
   auth: {
-    clientId: process.env.REACT_APP_AZURE_CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${process.env.REACT_APP_AZURE_TENANT_ID}`,
+    clientId: `315b8ac5-abc7-4d17-91d1-2c00cd85c027`,
+    authority: `https://login.microsoftonline.com/deheusvn.onmicrosoft.com`,
     redirectUri: "http://localhost:3000/main",
     postLogoutRedirectUri: "/",
     navigateToLoginRequestUrl: false,

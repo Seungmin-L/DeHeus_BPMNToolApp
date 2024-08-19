@@ -28,6 +28,7 @@ app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
 app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
 app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
+app.post('/api/attachments/:diagramId/:nodeId', attachmentsController.deleteAllAttachments);
 app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.deleteAttachments);
 
 app.listen(PORT, () => {

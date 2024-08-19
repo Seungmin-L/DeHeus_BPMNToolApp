@@ -33,6 +33,20 @@ const deleteAttachments = async (req, res) => {
     }
 }
 
+const deleteAllAttachments = async (req, res) => {
+    const { diagramId, nodeId } = req.params;
+    try {
+        await sql.query(`
+            DELETE FROM node_attachment 
+            WHERE diagram_id = ${diagramId} AND node_id = ${"'" + nodeId + "'"}
+        `);
+        res.status(200).json({ message: "Attachments deleted successfully" });
+    } catch (err) {
+        console.log("Error", err);
+        res.status(500).send("Error");
+    }
+}
+
 const addAttachments = async (req, res) => {
     const { diagramId } = req.params;
     const { nodeId, file, type } = req.body;
@@ -51,4 +65,4 @@ const addAttachments = async (req, res) => {
     }
 }
 
-module.exports = { getAttachment, deleteAttachments, addAttachments };
+module.exports = { getAttachment, deleteAttachments, addAttachments, deleteAllAttachments};

@@ -150,7 +150,8 @@ function BpmnTest() {
         // Save diagram on every change
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
-
+        modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
+        console.log(modelerInstance.get("eventBus"));
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
         modelerInstance.get('keyboard').addListener(function (context) {
@@ -300,6 +301,16 @@ function BpmnTest() {
             };
         }
     }
+    const onElementDelete = (nodeId) => {
+        if(nodeId === undefined){
+            console.log("undefined");
+            return;
+        }
+        axios.post(`http://localhost:3001/api/attachments/${itemId}/${nodeId}`)
+        .then(res => console.log(res.data))
+        .catch(err => console.error("Error fetching processes", err));
+    }
+
     const onImportClick = () => {
         importFile.current.click();
     }

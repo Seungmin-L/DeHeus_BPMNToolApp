@@ -1630,6 +1630,18 @@ textarea.bio-properties-panel-input {
     z-index: 999 !important;
 }
 
+@media screen and (min-width: 951px) and (max-width: 1200px){
+    .bio-properties-panel-attachments-container {
+        transform: translate(-100%, -60%);
+    }
+}
+
+@media screen and (max-width: 950px){
+    .bio-properties-panel-attachments-container {
+        transform: translate(-90%, -60%);
+    }
+}
+
 .bio-properties-panel-attachments-container h1 {
     font-size: 24px;
     font-weight: bold;

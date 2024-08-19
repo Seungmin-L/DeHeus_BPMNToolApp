@@ -151,7 +151,6 @@ function BpmnTest() {
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
         modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
-        console.log(modelerInstance.get("eventBus"));
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
         modelerInstance.get('keyboard').addListener(function (context) {

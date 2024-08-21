@@ -6,11 +6,14 @@
  * You can find a copy of the license at [https://bpmn.io/license/].
  */
 
-// Import your custom property entries.
-// The entry is a text input field with logic attached to create,
-// update and delete the "spell" property.
-import customProp from './props/attributesProp';
+// Import your custom list group entries.
+import parametersProps from './props/EndToEnd/ParametersProp';
+
+// Import the properties panel list group component.
+import { ListGroup } from '@bpmn-io/properties-panel';
+
 import { is } from 'bpmn-js/lib/util/ModelUtil';
+
 const LOW_PRIORITY = 500;
 
 
@@ -21,7 +24,7 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function AttributePropertiesProvider(propertiesPanel, translate) {
+export default function EndToEndPropertiesProvider(propertiesPanel, injector, translate) {
 
   // API ////////
 
@@ -44,9 +47,8 @@ export default function AttributePropertiesProvider(propertiesPanel, translate) 
      */
     return function(groups) {
 
-      // Add the "magic" group
       if (is(element, 'bpmn:BaseElement')) {
-        groups.push(createAttributeGroup(element, translate));
+        groups.push(createParametersGroup(element, injector, translate));
       }
 
       return groups;
@@ -56,24 +58,23 @@ export default function AttributePropertiesProvider(propertiesPanel, translate) 
 
   // registration ////////
 
-  // Register our custom magic properties provider.
   // Use a lower priority to ensure it is loaded after
   // the basic BPMN properties.
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-AttributePropertiesProvider.$inject = [ 'propertiesPanel', 'translate' ];
+EndToEndPropertiesProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
-// Create the custom attribute group
-function createAttributeGroup(element,translate) {
-  const customProperties = [];
-  // create a group called "Attributes".
-  const attrGroup = {
-    id: 'attribute',
-    label: translate('Attributes'),
-    entries: customProp(element),
-    
+// Create the custom parameters list group.
+function createParametersGroup(element, injector, translate) {
+
+  // Create a group called "parameters".
+  const parametersGroup = {
+    id: 'endtoend',
+    label: translate('EndToEnd'),
+    component: ListGroup,
+    ...parametersProps({ element, injector })
   };
 
-  return attrGroup;
+  return parametersGroup;
 }

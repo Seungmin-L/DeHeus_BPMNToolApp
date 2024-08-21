@@ -1,3 +1,11 @@
+/*
+ * This file contains code adapted from the [bpmn-js] library.
+ * Source: [URL of the source code if available]
+ * 
+ * [bpmn-js] is licensed under the [bpmn.io License].
+ * You can find a copy of the license at [https://bpmn.io/license/].
+ */
+
 import {
   map,
   filter,
@@ -216,4 +224,5 @@ function arrayMatchAndSplit(array, pattern) {
   });
   return tokens;
 }
+
 

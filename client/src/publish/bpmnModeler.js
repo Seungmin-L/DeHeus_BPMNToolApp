@@ -2,31 +2,39 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from "axios";
 import BpmnModeler from 'bpmn-js/lib/Modeler';
-import '../styles/bpmn-js.css';
-import '../styles/diagram-js.css';
-import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 import ColorPickerModule from 'bpmn-js-color-picker';
 import minimapModule from 'diagram-js-minimap';
-import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import ErrorPage from './ErrorPage';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import attachmentPropertiesProviderModule from '../providers';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
-import Toolbar from './features/toolbar/toolbar';
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
-import Topbar from '../components/common/TopBar'
-
 //custom properties module
 import attributePropertiesProviderModule from '../providers';
 import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
+import endToEndPropertiesProviderModule from '../providers';
+import endtoendModdleDescriptor from '../providers/descriptor/endtoend.json';
+import functionPropertiesProviderModule from '../providers';
+import functionModdleDescriptor from '../providers/descriptor/function.json';
+import departmentPropertiesProviderModule from '../providers';
+import departmentModdleDescriptor from '../providers/descriptor/department.json';
+import domainPropertiesProviderModule from '../providers';
+import domainModdleDescriptor from '../providers/descriptor/domain.json';
 
 //search
 import bpmnSearchModule  from './features/search/provider';
 //subprocess
 import DrilldownOverlayBehavior from './features/subprocess/';
+//toolbar
+import Toolbar from './features/toolbar/toolbar';
+import Topbar from '../components/common/TopBar'
+import 'diagram-js-minimap/assets/diagram-js-minimap.css';
+import '../styles/bpmn-js.css';
+import '../styles/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 
 function BpmnTest() {
 	const location = useLocation();
@@ -39,12 +47,13 @@ function BpmnTest() {
     const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
     const [isFileValid, setIsFileValid] = useState(true);
+    const [ hidePanel, setHidePanel ] = useState(false); 
     const saveKeys = ['s', 'S'];
     let modelerInstance = null;
 
     useEffect(() => {
-		console.log("Received item ID:", itemId); // ----
-		console.log("Received User Name:", userName); // ---- 
+		// console.log("Received item ID:", itemId); 
+		// console.log("Received User Name:", userName); 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -59,16 +68,24 @@ function BpmnTest() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                attachmentPropertiesProviderModule,
-                attributePropertiesProviderModule,
+                // attachmentPropertiesProviderModule,
+                // attributePropertiesProviderModule,
+                endToEndPropertiesProviderModule,
+                functionPropertiesProviderModule,
+                departmentPropertiesProviderModule,
+                domainPropertiesProviderModule,
                 parameterPropertiesProviderModule,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
-                attribute: attributeModdleDescriptor,
-                parameter: parameterModdleDescriptor
+                // attribute: attributeModdleDescriptor,
+                endtoend: endtoendModdleDescriptor,
+                function: functionModdleDescriptor,
+                department: departmentModdleDescriptor,
+                domain: domainModdleDescriptor,
+                parameter: parameterModdleDescriptor,
             }
         });
         // Check file api availablitiy
@@ -79,6 +96,12 @@ function BpmnTest() {
         } else {
             registerFileDrop(document.getElementById('modeler-container'));
         }
+        // if subprocess
+        var bpmnnXml = localStorage.getItem('bpmnXml');
+        if(bpmnnXml){
+            //set bpmn xml from local
+            setDiagramXML(bpmnnXml);
+        }
         // Import file or create a new diagram
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
@@ -88,8 +111,14 @@ function BpmnTest() {
                     }
                     modelerInstance.get("canvas").zoom("fit-viewport");
                     modelerInstance.get('keyboard').bind(document);
-
-
+                    // if subprocess
+                    if(localStorage.getItem('subProcess')){
+                        // get plane id from storage
+                        var planeId = localStorage.getItem('planeId');
+                        // set root from canvas
+                        var canvas = modelerInstance.get('canvas');
+                        canvas.setRootElement(canvas.findRoot(planeId));
+                    }
                 })
                 .catch(err => {
                     console.log(err);
@@ -106,6 +135,7 @@ function BpmnTest() {
                     setIsFileValid(false);
                 });
         }
+
         // Save diagram on every change
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
@@ -121,26 +151,28 @@ function BpmnTest() {
                 }
             }
         });
-        // sub process
         const eventBus = modelerInstance.get('eventBus');
         const elementRegistry = modelerInstance.get('elementRegistry');
 
-        // eventBus.on('element.click', function(e) {
-        //   const element = elementRegistry.get(e.element.id);
-        //   if (element.businessObject.$type === 'bpmn:SubProcess') {
-        //     // Open subprocess diagram in a new tab
-        //     window.open('/publish/bpmnModeler');
-        //   }
-        // });
+        eventBus.on('element.click', function(e) {
+            const element = elementRegistry.get(e.element.id);
+            const overlays = modelerInstance.get('overlays');
+            const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
+          
+            if (existingOverlays.length) {
+              console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
+            }
+        });
 
         setModeler(modelerInstance);
-        console.log(
-			modeler?.get('elementRegistry'))
+        // console.log(modeler?.get('elementRegistry'))
+        
         return () => {
             modeler?.destroy();
         }
     }, [diagramXML, itemId]);
 
+    // hide heirchy side bar
     const handleHidden = () => {
         setIsHidden(prev => !prev);
     }
@@ -251,6 +283,8 @@ function BpmnTest() {
             });
             if (xml) {
                 // Save diagram in DB
+                localStorage.setItem('bpmnXml', xml);
+                console.log("Saved xml:")
                 console.log(xml);
             };
         }
@@ -274,6 +308,8 @@ function BpmnTest() {
             console.log("Invalid File");
         }
     }
+
+    // handle exports to files
     const handleExportXml = (e) => {
         e.stopPropagation();
         exportXml(e.target.id,"diagram")
@@ -293,25 +329,29 @@ function BpmnTest() {
     const handleClose = () => {
         setIsOpen(false);
     }
+
+    /**Tool bar functions */
+    // handle zoom in
     const handleZoomIn = () => {
         modeler?.get('zoomScroll').stepZoom(1);
     };
-
+    // handle zoom out
     const handleZoomOut = () => {
         modeler?.get('zoomScroll').stepZoom(-1);
     };
-
+    // handle undo
     const handleUndo = () => {
         modeler?.get('commandStack').undo();
-        console.log(modeler?.get('commandStack'))
+        // console.log(modeler?.get('commandStack'))
     };
-
+    // handle redo
     const handleRedo = () => {
         modeler?.get('commandStack').redo();
     };
-
+    // handle save
     const handleSave = async () => {
         if (modeler) {
+            // save bpmn diagram as xml
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
                 console.error("Error saving XML:", err);
             });
@@ -330,7 +370,7 @@ function BpmnTest() {
             }
         }
     };
-
+    // handle aligning elements
     const handleAlign = (alignment) => {
         const alignElements = modeler?.get('alignElements');
         const selection = modeler?.get('selection');
@@ -342,7 +382,7 @@ function BpmnTest() {
             console.log('Please select at least two elements to align.');
         }
     };
-
+    // handle distributing elements
     const handleDistribute = (direction) => {
         const distributeElements = modeler?.get('distributeElements');
         const selection = modeler?.get('selection');
@@ -354,6 +394,12 @@ function BpmnTest() {
             console.log('Please select at least three elements to distribute.');
         }
     };
+
+    // handle panel visibility
+    const toggleVisibility = () => {
+        setHidePanel(!hidePanel);
+    };
+
     if (!isFileValid) {
         return (
             <ErrorPage />
@@ -394,7 +440,13 @@ function BpmnTest() {
                         <button onClick={handleHidden} style={{ width: "50px" }}>{isHidden ? "Show" : "Hide"}</button>
                     </div>
                     <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
-                    <div id='properties-panel-parent' />
+                    <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
+                        <button className='hide-panel' onClick={toggleVisibility}>
+                            Details
+                        </button>
+                        <div id='properties-panel-parent'  />
+                    </div>
+
                 </div>
             </div>
         )

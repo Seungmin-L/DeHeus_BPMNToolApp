@@ -1,4 +1,4 @@
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+// import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -17,14 +17,14 @@ import {
 import { MdOpenInNew } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 import LeftNavBar from "./common/LeftNavBar";
-import NoAuth from "./common/NoAuth";
+// import NoAuth from "./common/NoAuth";
 import TopBar from "./common/TopBar";
 
 function ListSingleProject() {
   const { projectId } = useParams();
-  const isAuthenticated = useIsAuthenticated();
-  const { accounts } = useMsal();
-  //const userName = accounts[0].username;
+  // const isAuthenticated = useIsAuthenticated();
+  // const { accounts } = useMsal();
+  // const userName = accounts[0].username;
   const userName = useState("");
   const [processes, setProcesses] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
@@ -33,11 +33,11 @@ function ListSingleProject() {
   const [options, setOptions] = useState([]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    // if (isAuthenticated) {
       axios
         .get(`/api/processes/${projectId}`)
         .then((response) => {
-          console.log("Fetched processes:", response.data);
+          // console.log("Fetched processes:", response.data);
           setProcesses(response.data); // 데이터를 트리 구조로 설정
           setOptions(response.data.map(process => ({
             id: process.id,
@@ -48,7 +48,8 @@ function ListSingleProject() {
           console.error("Error fetching processes", error);
         });
     }
-  }, [isAuthenticated, projectId]);
+  // }, [isAuthenticated, projectId]
+);
 
   const toggleRow = (id) => {
     setExpandedRows(

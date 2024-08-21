@@ -25,7 +25,7 @@ function App() {
           <Route path="/project/:projectId" element={<ListSingleProject />} />
           <Route path="/testingemail" element={<TestingEmail />} />
           {/* <Route path="/publish/:filename/:itemId" element={<Publish />} /> */}
-          <Route path="/publish/:filename" element={<Publish />} />
+          {/* <Route path="/publish/:filename" element={<Publish />} /> */}
           <Route path="*" element={<Error />} />
         </Routes>
       </Router>

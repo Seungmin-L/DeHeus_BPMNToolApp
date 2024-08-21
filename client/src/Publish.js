@@ -23,9 +23,9 @@ function Publish() {
     importFile();
   }, [filename]);
 
-  if (!isAuthenticated) {
-    return <NoAuth />;
-  }
+  // if (!isAuthenticated) {
+  //   return <NoAuth />;
+  // }
 
   if (error) {
     return <Error />;

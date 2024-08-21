@@ -31,6 +31,11 @@ app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
 app.post('/api/attachments/:diagramId/:nodeId', attachmentsController.deleteAllAttachments);
 app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.deleteAttachments);
 
+app.get('/', (req, res) => {
+  res.send('Welcome to the backend server!');
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
 });
+

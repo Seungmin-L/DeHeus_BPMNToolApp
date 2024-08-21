@@ -13,11 +13,12 @@ const draftSave = async (req, res) => {
     try {
         const { xml, diagramId, userName } = req.body;
 
-        const userQuery = await sql.query`SELECT id FROM [user] WHERE email = ${userName}`;
-        if (userQuery.recordset.length === 0) {
-            return res.status(404).send('User not found');
-        }
-        const user = userQuery.recordset[0].id;
+        // const userQuery = await sql.query`SELECT id FROM [user] WHERE email = ${userName}`;
+        // if (userQuery.recordset.length === 0) {
+        //     return res.status(404).send('User not found');
+        // }
+        // const user = userQuery.recordset[0].email;
+        const user = userName;
 
         const blobData = convertXMLToBlob(xml);
 

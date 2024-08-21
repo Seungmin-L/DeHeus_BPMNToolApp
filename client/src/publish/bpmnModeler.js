@@ -39,7 +39,8 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 function BpmnTest() {
 	const location = useLocation();
 	const itemId = location.state?.itemId; // ----
-	const userName = location.state?.userName; // ----
+	// const userName = location.state?.userName; // ----
+    const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);

@@ -22,14 +22,15 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 app.post('/api/authenticate', authController.authenticateUser);
 app.post('/api/diagram/save', diagramController.draftSave);
-// app.get()
-
-app.get('/api/projects', projectsController.listProjects);
-app.get('/api/processes/:projectId', processesController.listProcesses);
-app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
+app.post('/api/diagram/createSub', diagramController.createSubProcess);
 app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
 app.post('/api/attachments/:diagramId/:nodeId', attachmentsController.deleteAllAttachments);
 app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.deleteAttachments);
+
+// app.get()
+app.get('/api/projects', projectsController.listProjects);
+app.get('/api/processes/:projectId', processesController.listProcesses);
+app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the backend server!');

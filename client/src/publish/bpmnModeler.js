@@ -45,6 +45,7 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 function BpmnTest() {
 	const location = useLocation();
 	const itemId = location.state?.itemId; // ----
+    const projectId = location.state?.projectId;
 	// const userName = location.state?.userName; // ----
     const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
@@ -109,11 +110,11 @@ function BpmnTest() {
         // if subprocess
         localStorage.removeItem('bpmnXMl');
         localStorage.removeItem('subProcess');
-        var bpmnnXml = localStorage.getItem('bpmnXml');
-        if (bpmnnXml) {
-            //set bpmn xml from local
-            setDiagramXML(bpmnnXml);
-        }
+        // var bpmnnXml = localStorage.getItem('bpmnXml');
+        // if (bpmnnXml) {
+        //     //set bpmn xml from local
+        //     setDiagramXML(bpmnnXml);
+        // }
         // Import file or create a new diagram
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
@@ -170,7 +171,6 @@ function BpmnTest() {
             const element = elementRegistry.get(e.element.id);
             const overlays = modelerInstance.get('overlays');
             const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-
             if (existingOverlays.length) {
                 console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
             }

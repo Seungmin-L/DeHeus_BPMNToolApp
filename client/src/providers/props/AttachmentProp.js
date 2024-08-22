@@ -122,7 +122,6 @@ function AttachmentList(props) {
     // Function for getting selected attachment file
     axios.get(`/api/attachments/${diagramId}/${nodeId}/${e.target.name}`, {responseType: 'blob'})
       .then((res) => {
-        console.log(res);
         var url = URL.createObjectURL(res.data);
         window.open(url);
       })

@@ -27,30 +27,32 @@ async function connectDB() {
             SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'user';
         `;
         
+        // // 기존 sso와 관련된 토큰 값 등등 모든 데이터 값 포함한 쿼리
         const tableCreateQuery = `
             CREATE TABLE [user] (
-                id VARCHAR(255) PRIMARY KEY,          -- oid
-                email VARCHAR(255) NOT NULL,          -- preferred_username
-                name VARCHAR(255) NOT NULL,           -- name
-                tenant_id VARCHAR(255) NOT NULL,      -- tid
-                token_issue_time BIGINT NOT NULL,     -- iat
-                token_expiration_time BIGINT NOT NULL,-- exp
-                nonce VARCHAR(255),                   -- nonce
-                identity_provider VARCHAR(255),       -- idp
-                token_id VARCHAR(255),                -- uti
-                resource_id VARCHAR(255)              -- aud
+                id VARCHAR(255) NOT NULL,           -- oid
+                email VARCHAR(255) NOT NULL PRIMARY KEY,           -- preferred_username
+                name VARCHAR(255) NOT NULL,            -- name
+                tenant_id VARCHAR(255) NOT NULL,       -- tid
+                token_issue_time BIGINT NOT NULL,      -- iat
+                token_expiration_time BIGINT NOT NULL, -- exp
+                nonce VARCHAR(255),                    -- nonce
+                identity_provider VARCHAR(255),        -- idp
+                token_id VARCHAR(255),                 -- uti
+                resource_id VARCHAR(255),              -- aud
+                department VARCHAR(255)                -- department
             );
         `;
 
         const result = await pool.request().query(tableCheckQuery);
         if (result.recordset.length === 0) {
             await pool.request().query(tableCreateQuery);
-            console.log('user table did not exist, created a new one.');
+            console.log('Database Log: [user] table did not exist, created a new one.');
         } else {
-            // console.log('user table already exists.');
+            console.log('Database Log: [user] table already exists.');
         }
     } catch (err) {
-        console.error('Unable to connect to the database or create table:', err);
+        console.error('Database Error: Unable to connect to the database or create table:', err);
     }
 }
 

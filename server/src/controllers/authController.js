@@ -2,15 +2,15 @@ const jwt = require('jsonwebtoken');
 const sql = require('mssql');
 
 const authenticateUser = async (req, res) => {
-  // console.log("Received request:", req.body);
+  console.log("Received request:", req.body);
   const { token } = req.body;
 
   try {
     // token authentication & decoding
     const decodedToken = jwt.decode(token, { complete: true });
-    // console.log(decodedToken);
-    const email = decodedToken.payload.email;
-    // console.log(`User Email: ${email}`);
+    console.log(decodedToken);
+    const email = decodedToken.payload.unique_name;
+    console.log(`User Email: ${email}`);
 
     const userResult = await sql.query`SELECT * FROM [user] WHERE email = ${email}`;
     if (userResult.recordset.length === 0) {

@@ -10,6 +10,7 @@ import Main from "./components/Main";
 import MyPage from "./components/MyPage";
 import { msalInstance } from "./config/authConfig";
 import Publish from "./Publish";
+import TestingEmail from "./components/TestingEmail";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/publish/:filename" element={<Publish />} />
           <Route path="/project/:projectId" element={<ListSingleProject />} />
+          <Route path="/testingemail" element={<TestingEmail />} />
           {/* <Route path="/publish/:filename/:itemId" element={<Publish />} /> */}
           <Route path="/publish/:filename" element={<Publish />} />
           <Route path="*" element={<Error />} />

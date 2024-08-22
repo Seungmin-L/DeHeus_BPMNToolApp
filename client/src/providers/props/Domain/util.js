@@ -12,7 +12,7 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 export function getParametersExtension(element) {
   const businessObject = getBusinessObject(element);
-  return getExtension(businessObject, 'magic:Parameters');
+  return getExtension(businessObject, 'domain:Parameters');
 }
 
 export function getParameters(element) {
@@ -41,7 +41,7 @@ export function createElement(elementType, properties, parent, factory) {
 }
 
 export function createParameters(properties, parent, bpmnFactory) {
-  return createElement('magic:Parameters', properties, parent, bpmnFactory);
+  return createElement('domain:Parameters', properties, parent, bpmnFactory);
 }
 
 

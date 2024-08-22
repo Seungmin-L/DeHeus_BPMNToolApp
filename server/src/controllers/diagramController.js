@@ -5,6 +5,7 @@ function convertXMLToBlob(xmlString) {
     return Buffer.from(xmlString, 'utf-8');
 }
 
+// diagram load에 쓰일 예정
 function convertBlobtoXML() {
 
 }
@@ -12,14 +13,6 @@ function convertBlobtoXML() {
 const draftSave = async (req, res) => {
     try {
         const { xml, diagramId, userName } = req.body;
-
-        // const userQuery = await sql.query`SELECT id FROM [user] WHERE email = ${userName}`;
-        // if (userQuery.recordset.length === 0) {
-        //     return res.status(404).send('User not found');
-        // }
-        // const user = userQuery.recordset[0].email;
-        const user = userName;
-
         const blobData = convertXMLToBlob(xml);
 
        await sql.query`
@@ -30,10 +23,10 @@ const draftSave = async (req, res) => {
                 UPDATE SET 
                     file_data = ${blobData}, 
                     created_at = GETDATE(),
-                    created_by = ${user}
+                    created_by = ${userName}
             WHEN NOT MATCHED THEN
                 INSERT (diagram_id, file_data, file_type, created_by, created_at)
-                VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${user}, GETDATE());
+                VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${userName}, GETDATE());
         `;
 
         res.status(200).json({ message: "Diagram draft saved successfully", diagramId: diagramId });

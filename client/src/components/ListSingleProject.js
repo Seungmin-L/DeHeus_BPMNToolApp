@@ -22,10 +22,10 @@ import TopBar from "./common/TopBar";
 
 function ListSingleProject() {
   const { projectId } = useParams();
-  // const isAuthenticated = useIsAuthenticated();
-  // const { accounts } = useMsal();
-  // const userName = accounts[0].username;
-  const userName = useState("");
+  const isAuthenticated = useIsAuthenticated();
+  const { accounts } = useMsal();
+  const userName = accounts[0].username;
+  // const userName = useState("");
   const [processes, setProcesses] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
   const [isNavVisible, setIsNavVisible] = useState(false);
@@ -61,11 +61,11 @@ function ListSingleProject() {
 
   const handleOpenClick = (event, item) => {
     event.stopPropagation();
-    console.log("Clicked item ID:", item.id);
-    // navigate("/diagram", { state: { itemId: item.id } });
+    // console.log("Clicked item ID:", item.id);
     // navigate(`/publish/bpmnModeler/`);
-    // navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName } });
-    navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id } });
+    
+    // 아래의 navigate는 올바른 publish 버전을 불러오게끔 백에 요청해서 반환받은 링크로 연결되게 수정해야 합니다~!
+    navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName } });
   };
 
   const renderRow = (item, level = 0) => {

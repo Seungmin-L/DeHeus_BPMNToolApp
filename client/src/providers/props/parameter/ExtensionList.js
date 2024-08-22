@@ -51,7 +51,7 @@ export default function ExtensionList(props) {
     // (1) ensure extensions
     if (!extensions) {
       extensions = createElement(
-        'magic:Extensions',
+        'extended:Extensions',
         { },
         businessObject,
         bpmnFactory
@@ -69,7 +69,7 @@ export default function ExtensionList(props) {
 
     // (2) add extension
     const extension = createElement(
-      'magic:Extension',
+      'extended:Extension',
       { key: undefined },
       extensions,
       bpmnFactory

@@ -31,13 +31,14 @@ body {
   background-color: hsl(240, 33%, 98%);
   width: 100px;
   padding: 10px 5px;
-  top: 100px;
-  left: 125px;
+  top: 96px;
+  right: 65px;
   position: absolute;
   list-style: none;
   text-decoration: none;
   border-radius: 5px;
   z-index: 99999;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 .export-options li{

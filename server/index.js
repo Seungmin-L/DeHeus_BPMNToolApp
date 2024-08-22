@@ -30,6 +30,7 @@ app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.
 // app.get()
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
+app.get('/api/allProcesses/:projectId', processesController.allProcesses);
 app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
 
 app.get('/', (req, res) => {

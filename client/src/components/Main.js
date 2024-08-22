@@ -35,6 +35,7 @@ function Main() {
   };
 
   const handleProjectClick = (projectId) => {
+    localStorage.setItem("ProjectID", projectId);
     navigate(`/project/${projectId}`);
   };
 

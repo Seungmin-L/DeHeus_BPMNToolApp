@@ -22,7 +22,6 @@ const createSubProcess = async (req, res) => {
             AND
             parent_node_id = ${"'" + elementId + "'"}
         `);
-        console.log(result.recordset);
         if(result.recordset.length === 0){
             sql.query(`
                 DECLARE @NewValue INT;
@@ -34,7 +33,7 @@ const createSubProcess = async (req, res) => {
                 SELECT @NewValue as lastDiagramId;
             `, (err, results) => {
                 if(err) throw err;
-                res.status(200).json({message: "Diagram created successfully", data: results.recordset[0].lastDiagramId});
+                res.status(200).json({message: "Diagram created successfully", data: results.recordset[0].lastDiagramId , projectId: projectId});
             });
         }else{
             res.status(200).json({message: "Diagram already exists", data: result.recordset[0].id});

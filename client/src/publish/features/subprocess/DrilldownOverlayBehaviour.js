@@ -201,7 +201,6 @@ DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
     localStorage.setItem('planeId', planeId);
     localStorage.setItem('subProcess', true);
     const name = element.businessObject.name;
-    
     if(name){
       axios.post(`http://localhost:3001/api/diagram/createSub`, {
           diagramId: diagramId,

@@ -41,12 +41,14 @@ import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import '../styles/bpmn-js.css';
 import '../styles/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import Sidebar from './features/sidebar/Sidebar';
+import { BsArrowBarRight } from 'react-icons/bs';
 
 function BpmnTest() {
-	const location = useLocation();
-	const itemId = location.state?.itemId; // ----
-    const projectId = location.state?.projectId;
-	// const userName = location.state?.userName; // ----
+    const location = useLocation();
+    const itemId = location.state?.itemId; // ----
+    const projectId = localStorage.getItem("ProjectID");
+    // const userName = location.state?.userName; // ----
     const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
@@ -302,13 +304,13 @@ function BpmnTest() {
         }
     }
     const onElementDelete = (nodeId) => {
-        if(nodeId === undefined){
+        if (nodeId === undefined) {
             console.log("undefined");
             return;
         }
         axios.post(`http://localhost:3001/api/attachments/${itemId}/${nodeId}`)
-        .then(res => console.log(res.data))
-        .catch(err => console.error("Error fetching processes", err));
+            .then(res => console.log(res.data))
+            .catch(err => console.error("Error fetching processes", err));
     }
 
     const onImportClick = () => {
@@ -428,9 +430,7 @@ function BpmnTest() {
         )
     } else {
         return (
-            <div className='main-container' onClick={handleClose}
-                style={{ "--width": window.innerWidth + "px", "--height": window.innerHeight + "px"}}
-            >
+            <div className='main-container' onClick={handleClose}>
                 <div className='model-header'>
                     <Topbar />
                     <Toolbar
@@ -460,9 +460,12 @@ function BpmnTest() {
                     />
                 </div>
                 <div className='model-body'>
-                    <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>
-                        <button onClick={handleHidden} style={{ width: "50px" }}>{isHidden ? "Show" : "Hide"}</button>
-                    </div>
+                    {isHidden ?
+                        <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden}/>
+                        :
+                        <Sidebar handleHidden={handleHidden} projectId={projectId} diagramId={itemId} />
+                    }
+
                     <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
                     <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
                         <button className='hide-panel' onClick={toggleVisibility}>

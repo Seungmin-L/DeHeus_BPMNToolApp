@@ -65,7 +65,7 @@ function ListSingleProject() {
     // console.log("Clicked item ID:", item.id);
     // navigate(`/publish/bpmnModeler/`);
     // 아래의 navigate는 올바른 publish 버전을 불러오게끔 백에 요청해서 반환받은 링크로 연결되게 수정해야 합니다~!
-    navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName, projectId: projectId } });
+    navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName } });
   };
 
   const renderRow = (item, level = 0) => {

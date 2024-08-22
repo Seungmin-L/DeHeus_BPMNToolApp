@@ -11,21 +11,12 @@ import attachmentModdleDescriptor from '../providers/descriptor/attachment.json'
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
 //custom properties module
-import attributePropertiesProviderModule from '../providers';
-import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
-import endToEndPropertiesProviderModule from '../providers';
-import endtoendModdleDescriptor from '../providers/descriptor/endtoend.json';
-import functionPropertiesProviderModule from '../providers';
-import functionModdleDescriptor from '../providers/descriptor/function.json';
-import departmentPropertiesProviderModule from '../providers';
-import departmentModdleDescriptor from '../providers/descriptor/department.json';
-import domainPropertiesProviderModule from '../providers';
-import domainModdleDescriptor from '../providers/descriptor/domain.json';
-
+import dropdownPropertiesProvider from '../providers';
+import dropdownDescriptor from '../providers/descriptor/dropdown';
 //search
-import bpmnSearchModule  from './features/search/provider';
+import bpmnSearchModule from './features/search/provider';
 //subprocess
 import DrilldownOverlayBehavior from './features/subprocess/';
 //toolbar
@@ -37,23 +28,24 @@ import '../styles/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 
 function BpmnTest() {
-	const location = useLocation();
-	const itemId = location.state?.itemId; // ----
-	const userName = location.state?.userName; // ----
+    const location = useLocation();
+    const itemId = location.state?.itemId; // ----
+    const userName = location.state?.userName; // ----
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
+    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing)
     const [isHidden, setIsHidden] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
     const [isFileValid, setIsFileValid] = useState(true);
-    const [ hidePanel, setHidePanel ] = useState(false); 
+    const [hidePanel, setHidePanel] = useState(false);
     const saveKeys = ['s', 'S'];
     let modelerInstance = null;
 
     useEffect(() => {
-		// console.log("Received item ID:", itemId); 
-		// console.log("Received User Name:", userName); 
+        // console.log("Received item ID:", itemId); 
+        // console.log("Received User Name:", userName); 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -68,24 +60,15 @@ function BpmnTest() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                // attachmentPropertiesProviderModule,
-                // attributePropertiesProviderModule,
-                endToEndPropertiesProviderModule,
-                functionPropertiesProviderModule,
-                departmentPropertiesProviderModule,
-                domainPropertiesProviderModule,
                 parameterPropertiesProviderModule,
+                dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
-                // attribute: attributeModdleDescriptor,
-                endtoend: endtoendModdleDescriptor,
-                function: functionModdleDescriptor,
-                department: departmentModdleDescriptor,
-                domain: domainModdleDescriptor,
-                parameter: parameterModdleDescriptor,
+                extended: parameterModdleDescriptor,
+                dropdown: dropdownDescriptor,
             }
         });
         // Check file api availablitiy
@@ -97,11 +80,11 @@ function BpmnTest() {
             registerFileDrop(document.getElementById('modeler-container'));
         }
         // if subprocess
-        var bpmnnXml = localStorage.getItem('bpmnXml');
-        if(bpmnnXml){
-            //set bpmn xml from local
-            setDiagramXML(bpmnnXml);
-        }
+        // var bpmnnXml = localStorage.getItem('bpmnXml');
+        // if (bpmnnXml) {
+        //     //set bpmn xml from local
+        //     setDiagramXML(bpmnnXml);
+        // }
         // Import file or create a new diagram
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
@@ -112,7 +95,7 @@ function BpmnTest() {
                     modelerInstance.get("canvas").zoom("fit-viewport");
                     modelerInstance.get('keyboard').bind(document);
                     // if subprocess
-                    if(localStorage.getItem('subProcess')){
+                    if (localStorage.getItem('subProcess')) {
                         // get plane id from storage
                         var planeId = localStorage.getItem('planeId');
                         // set root from canvas
@@ -154,19 +137,22 @@ function BpmnTest() {
         const eventBus = modelerInstance.get('eventBus');
         const elementRegistry = modelerInstance.get('elementRegistry');
 
-        eventBus.on('element.click', function(e) {
+        eventBus.on('element.click', function (e) {
             const element = elementRegistry.get(e.element.id);
             const overlays = modelerInstance.get('overlays');
             const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-          
+
             if (existingOverlays.length) {
-              console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
+                console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
             }
         });
 
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
-        
+
+        //set user's role for the modeler
+        setUserRole("readOnly");
+
         return () => {
             modeler?.destroy();
         }
@@ -312,15 +298,15 @@ function BpmnTest() {
     // handle exports to files
     const handleExportXml = (e) => {
         e.stopPropagation();
-        exportXml(e.target.id,"diagram")
+        exportXml(e.target.id, "diagram")
     }
     const handleExportSvg = (e) => {
         e.stopPropagation();
-        exportSvg(e.target.id,"diagram")
+        exportSvg(e.target.id, "diagram")
     }
     const handleExportPng = (e) => {
         e.stopPropagation();
-        exportPng(e.target.id,"diagram")
+        exportPng(e.target.id, "diagram")
     }
     const handleExportPdf = (e) => {
         e.stopPropagation();
@@ -355,11 +341,11 @@ function BpmnTest() {
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
                 console.error("Error saving XML:", err);
             });
-    
+
             if (xml) {
                 console.log("Saved XML:", xml);
-				console.log("diagramId:", itemId)
-    
+                console.log("diagramId:", itemId)
+
                 axios.post('/api/diagram/save', { xml: xml, diagramId: itemId, userName: userName })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
@@ -408,9 +394,10 @@ function BpmnTest() {
         return (
             <div className='main-container' onClick={handleClose} >
                 <div className='model-header'>
-                    <Topbar/>
+                    <Topbar />
                     <Toolbar
-                        isOpen={isOpen} 
+                        mode={userRole} // "readOnly" or "contributor" or "editing"
+                        isOpen={isOpen}
                         setIsOpen={setIsOpen}
                         onSave={handleSave}
                         onImport={onImportClick}
@@ -432,7 +419,7 @@ function BpmnTest() {
                         onDistributeHorizontally={() => handleDistribute('horizontal')}
                         onDistributeVertically={() => handleDistribute('vertical')}
                         importFile={importFile}
-                        onFileChange = {onFileChange}
+                        onFileChange={onFileChange}
                     />
                 </div>
                 <div className='model-body'>
@@ -444,7 +431,7 @@ function BpmnTest() {
                         <button className='hide-panel' onClick={toggleVisibility}>
                             Details
                         </button>
-                        <div id='properties-panel-parent'  />
+                        <div id='properties-panel-parent' />
                     </div>
 
                 </div>

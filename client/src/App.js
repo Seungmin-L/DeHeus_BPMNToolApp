@@ -21,11 +21,11 @@ function App() {
           <Route path="/main" element={<Main />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/mypage" element={<MyPage />} />
-          <Route path="/publish/:filename" element={<Publish />} />
+          {/* <Route path="/publish/:filename" element={<Publish />} /> */}
           <Route path="/project/:projectId" element={<ListSingleProject />} />
           <Route path="/testingemail" element={<TestingEmail />} />
-          {/* <Route path="/publish/:filename/:itemId" element={<Publish />} /> */}
-          <Route path="/publish/:filename" element={<Publish />} />
+          <Route path="/publish/:filename/:itemId" element={<Publish />} />
+          {/* <Route path="/publish/:filename" element={<Publish />} /> */}
           <Route path="*" element={<Error />} />
         </Routes>
       </Router>

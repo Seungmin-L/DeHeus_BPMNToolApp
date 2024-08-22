@@ -19,6 +19,7 @@
     "canvg": "^4.0.2",
     "client": "file:",
     "diagram-js-minimap": "^5.1.0",
+    "emailjs-com": "^3.2.0",
     "min-dash": "^4.2.1",
     "pdfmake": "^0.2.10",
     "react": "^18.3.1",

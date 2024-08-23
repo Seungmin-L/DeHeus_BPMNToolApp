@@ -195,6 +195,7 @@ DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
   button.setAttribute('title', title);
 
   button.addEventListener('click', function () {
+    const projectId = window.location.pathname.split("/")[2];
     const diagramId = window.location.pathname.split("/")[3];
     // canvas.setRootElement(canvas.findRoot(getPlaneIdFromShape(element)));
     var planeId = getPlaneIdFromShape(element)
@@ -208,7 +209,7 @@ DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
           elementId: element.id
       })
       .then((res) => {
-        window.open(`/publish/bpmnModeler/${res.data.data}`, '_blank');
+        window.open(`/project/${projectId}/${res.data.data}`, '_blank');
       })
       .catch(err => console.error(err));
     }else{

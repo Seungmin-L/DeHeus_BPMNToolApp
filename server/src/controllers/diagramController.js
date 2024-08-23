@@ -30,10 +30,9 @@ const createSubProcess = async (req, res) => {
                 SET @NewValue = SCOPE_IDENTITY();
                 INSERT INTO diagram_relation (project_id, parent_diagram_id, parent_node_id, child_diagram_id)
                 VALUES (${projectId},  ${diagramId}, ${"'" + elementId + "'"}, @NewValue);
-                SELECT @NewValue as lastDiagramId;
             `, (err, results) => {
                 if(err) throw err;
-                res.status(200).json({message: "Diagram created successfully", data: results.recordset[0].lastDiagramId , projectId: projectId});
+                res.status(200).json({message: "Diagram created successfully", data: processName, projectId: projectId});
             });
         }else{
             res.status(200).json({message: "Diagram already exists", data: result.recordset[0].id});

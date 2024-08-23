@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/backgrounds/home_background.png";
 import logo from "../assets/logos/logo_deheus.png";
-// import { verifyUserRegistration, handleLoginRedirect, acquireToken, handleLogout } from '../utils/authUtils';  // sso login & token
+import { verifyUserRegistration, handleLoginRedirect, acquireToken, handleLogout } from '../utils/authUtils';  // sso login & token
 
 
 function Home() {
@@ -14,14 +14,14 @@ function Home() {
   const isAuthenticated = useIsAuthenticated();
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (account && localStorage.getItem('msalAccount')) {
-  //       verifyUserRegistration(localStorage.getItem('msalToken'), navigate, setLoginError, () => handleLogout(instance, navigate));
-  //   }
-  // }, [account, isAuthenticated, accounts]);
+  useEffect(() => {
+    if (account && localStorage.getItem('msalAccount')) {
+        verifyUserRegistration(localStorage.getItem('msalToken'), navigate, setLoginError, () => handleLogout(instance, navigate));
+    }
+  }, [account, isAuthenticated, accounts]);
 
   const handleLogin = async () => {
-    // await handleLoginRedirect(instance, accounts, account, navigate, setLoginError, acquireToken);
+    await handleLoginRedirect(instance, accounts, account, navigate, setLoginError, acquireToken);
     navigate("/main");
   };
 

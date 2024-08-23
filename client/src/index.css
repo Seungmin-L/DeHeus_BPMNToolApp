@@ -192,6 +192,10 @@ body {
   transition: .2s ease-in-out;
 }
 
+.process-list-item:hover{
+  background-color: hsl(225, 10%, 90%) !important;
+}
+
 .color-picker ul{
   display: flex;
 }

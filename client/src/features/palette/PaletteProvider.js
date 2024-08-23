@@ -6,7 +6,7 @@ import {
  * @typedef {import('diagram-js/lib/features/palette/Palette').default} Palette
  * @typedef {import('diagram-js/lib/features/create/Create').default} Create
  * @typedef {import('diagram-js/lib/core/ElementFactory').default} ElementFactory
- * @typedef {import('../space-tool/BpmnSpaceTool').default} SpaceTool
+ * @typedef {import('bpmn-js/lib/features/space-tool/BpmnSpaceTool').default} SpaceTool
  * @typedef {import('diagram-js/lib/features/lasso-tool/LassoTool').default} LassoTool
  * @typedef {import('diagram-js/lib/features/hand-tool/HandTool').default} HandTool
  * @typedef {import('diagram-js/lib/features/global-connect/GlobalConnect').default} GlobalConnect

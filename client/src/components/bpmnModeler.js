@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import ColorPickerModule from 'bpmn-js-color-picker';
@@ -25,26 +25,27 @@ import domainPropertiesProviderModule from '../providers';
 import domainModdleDescriptor from '../providers/descriptor/domain.json';
 
 //search
-import bpmnSearchModule from './features/search/provider';
+import bpmnSearchModule from '../features/search/provider';
 //subprocess
-import DrilldownOverlayBehavior from './features/subprocess/';
+import DrilldownOverlayBehavior from '../features/subprocess';
 //replace popup
-import PopupMenuModule from './features/popup';
-import ReplaceModule from './features/replace';
+import PopupMenuModule from '../features/popup';
+import ReplaceModule from '../features/replace';
 //palette
-import PaletteModule from './features/palette';
+import PaletteModule from '../features/palette';
 
 //toolbar
-import Toolbar from './features/toolbar/toolbar';
-import Topbar from '../components/common/TopBar'
+import Toolbar from '../features/toolbar/toolbar';
+import Topbar from './common/TopBar'
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import '../styles/bpmn-js.css';
 import '../styles/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
-import Sidebar from './features/sidebar/Sidebar';
+import Sidebar from '../features/sidebar/Sidebar';
 import { BsArrowBarRight } from 'react-icons/bs';
 
-function BpmnTest() {
+function BpmnEditor() {
+    const navigate = useNavigate();
     const location = useLocation();
     const itemId = location.state?.itemId; // ----
     const projectId = localStorage.getItem("ProjectID");
@@ -423,6 +424,9 @@ function BpmnTest() {
     const toggleVisibility = () => {
         setHidePanel(!hidePanel);
     };
+    const toMain = () => {
+        navigate("/main");
+    }
 
     if (!isFileValid) {
         return (
@@ -432,7 +436,7 @@ function BpmnTest() {
         return (
             <div className='main-container' onClick={handleClose}>
                 <div className='model-header'>
-                    <Topbar />
+                    <Topbar onLogoClick={toMain}/>
                     <Toolbar
                         isOpen={isOpen}
                         setIsOpen={setIsOpen}
@@ -463,7 +467,7 @@ function BpmnTest() {
                     {isHidden ?
                         <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden}/>
                         :
-                        <Sidebar handleHidden={handleHidden} projectId={projectId} diagramId={itemId} />
+                        <Sidebar handleHidden={handleHidden} />
                     }
 
                     <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
@@ -480,4 +484,4 @@ function BpmnTest() {
     }
 
 }
-export default BpmnTest;
+export default BpmnEditor;

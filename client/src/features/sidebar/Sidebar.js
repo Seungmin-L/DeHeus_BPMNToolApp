@@ -9,8 +9,8 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function Sidebar(props) {
-    const { handleHidden } = props;
-    const { projectId, diagramId } = useParams();
+    const { handleHidden, diagramId, userName } = props;
+    const { projectId } = useParams();
     const [processes, setProcesses] = useState(null);
     const [expandedRows, setExpandedRows] = useState([]);
     const navigate = useNavigate();
@@ -52,8 +52,27 @@ export default function Sidebar(props) {
         }
     }
 
-    const handleOpenClick = (id) => {
-        navigate(`/project/${projectId}/${id}`, { state: { itemId: id, projectId: projectId } });
+    const handleOpenClick = async (id) => {
+        try {
+            const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${id}`);
+            // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
+            // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
+    
+            const { diagramName, fileData } = response.data;  // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
+            // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
+            // console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
+    
+            const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
+            // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
+    
+            // 다이어그램 모델러 페이지로 이동
+            // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+            localStorage.setItem("DiagramID", id);
+            navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: fileData } });
+        } catch (error) {
+            console.error("Error fetching diagram data:", error);
+            alert('Failed to open the diagram.');
+        }
     }
 
     const renderRow = (process, level = 0) => {
@@ -99,14 +118,13 @@ export default function Sidebar(props) {
         )
     }
     useEffect(() => {
-        console.log(diagramId);
         axios.get(`/api/processes/${projectId}`)
             .then((res) => {
                 setProcesses(res.data);
                 getCurrentDiagram(res.data);
             })
             .catch((err) => console.error(err));
-    }, [diagramId]);
+    }, [diagramId, processes]);
     return (
         <div className='hierarchy-sidebar'>
             <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)" }}>

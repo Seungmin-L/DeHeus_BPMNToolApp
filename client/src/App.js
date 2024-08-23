@@ -22,7 +22,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/project/:projectId" element={<ListSingleProject />} />
-          <Route path="/project/:projectId/:diagramId" element={<BpmnEditor />} />
+          <Route path="/project/:projectId/:diagramName" element={<BpmnEditor />} />
           <Route path="/testingemail" element={<TestingEmail />} />
           <Route path="*" element={<Error />} />
         </Routes>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from "axios";
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import ColorPickerModule from 'bpmn-js-color-picker';
@@ -39,14 +39,14 @@ function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
     const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
-    const projectId = localStorage.getItem("ProjectID");
+    const { projectId } = useParams();
     // const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
-	const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
+    const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
     const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
-    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing)
+    const [userRole, setUserRole] = useState('editing'); // for toolbar view (readOnly, contributor, editing)
     const [isHidden, setIsHidden] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
@@ -57,9 +57,9 @@ function BpmnEditor() {
 
     useEffect(() => {
         // 아래는 디버깅 용도 로그입니다~!!!
-		// console.log("Received Diagram ID:", diagramId); 
-		// console.log("Received User Name:", userName); 
-		// console.log("Received File Data:", fileData); 
+        // console.log("Received Diagram ID:", diagramId); 
+        // console.log("Received User Name:", userName); 
+        // console.log("Received File Data:", fileData); 
 
         // 아래 코드는 내가 임의로 작성해 둔 건데, server/src/controllers/diagramController.js 파일에서 api response로 가지고 온 xml 정보 (diagram_published 테이블의 file data 컬럼에 해당)를 다이어그램 모델러로 띄우면 됩니다~!!! 라인 193도 함께 주석 처리 완료!!!
         // if (projectName && diagramName && publishDate) {
@@ -117,6 +117,14 @@ function BpmnEditor() {
         //     setDiagramXML(bpmnnXml);
         // }
         // Import file or create a new diagram
+
+        window.onload = () => {
+            const data = JSON.parse(window.name);
+            console.log(data);
+        };
+        if (fileData) {
+            setDiagramXML(fileData);
+        }
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
                 .then(({ warnings }) => {
@@ -125,14 +133,6 @@ function BpmnEditor() {
                     }
                     modelerInstance.get("canvas").zoom("fit-viewport");
                     modelerInstance.get('keyboard').bind(document);
-                    // if subprocess
-                    if (localStorage.getItem('subProcess')) {
-                        // get plane id from storage
-                        var planeId = localStorage.getItem('planeId');
-                        // set root from canvas
-                        var canvas = modelerInstance.get('canvas');
-                        canvas.setRootElement(canvas.findRoot(planeId));
-                    }
                 })
                 .catch(err => {
                     // console.log(err);
@@ -153,7 +153,7 @@ function BpmnEditor() {
 
         // Save diagram on every change
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
-        modelerInstance.on('commandStack.changed', saveDiagram);
+        // modelerInstance.on('commandStack.changed', saveDiagram);
         modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
@@ -182,7 +182,7 @@ function BpmnEditor() {
         // console.log(modeler?.get('elementRegistry'))
 
         //set user's role for the modeler
-        setUserRole("readOnly");
+        // setUserRole("readOnly");
 
         return () => {
             modeler?.destroy();
@@ -300,10 +300,15 @@ function BpmnEditor() {
                 console.log(err);
             });
             if (xml) {
-                // Save diagram in DB
-                localStorage.setItem('bpmnXml', xml);
-                console.log("Saved xml:")
                 console.log(xml);
+                // Save diagram in DB
+                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
+                    .then(response => {
+                        console.log("Diagram saved successfully:", response.data);
+                    })
+                    .catch(error => {
+                        console.error("Error saving diagram to the database:", error);
+                    });
             };
         }
     }
@@ -312,7 +317,7 @@ function BpmnEditor() {
             console.log("undefined");
             return;
         }
-        axios.post(`http://localhost:3001/api/attachments/${itemId}/${nodeId}`)
+        axios.post(`http://localhost:3001/api/attachments/${diagramId}/${nodeId}`)
             .then(res => console.log(res.data))
             .catch(err => console.error("Error fetching processes", err));
     }
@@ -386,9 +391,8 @@ function BpmnEditor() {
 
             if (xml) {
                 console.log("Saved XML:", xml);
-				console.log("diagramId:", diagramId)
-    
-                axios.post('/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
+                console.log("diagramId:", diagramId);
+                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })
@@ -439,7 +443,7 @@ function BpmnEditor() {
         return (
             <div className='main-container' onClick={handleClose}>
                 <div className='model-header'>
-                    <Topbar onLogoClick={toMain}/>
+                    <Topbar onLogoClick={toMain} />
                     <Toolbar
                         mode={userRole} // "readOnly" or "contributor" or "editing"
                         isOpen={isOpen}
@@ -469,9 +473,9 @@ function BpmnEditor() {
                 </div>
                 <div className='model-body'>
                     {isHidden ?
-                        <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden}/>
+                        <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
                         :
-                        <Sidebar handleHidden={handleHidden} />
+                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userName} />
                     }
 
                     <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />

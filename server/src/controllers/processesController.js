@@ -57,7 +57,7 @@ const listProcesses = async (req, res) => {
       WHERE Rank = 1
       ORDER BY Level, id;
     `);
-    console.log(`Recursive Processes: `, result.recordset);
+    // console.log(`Recursive Processes: `, result.recordset);
 
     const processes = result.recordset;
     const processMap = {};
@@ -87,4 +87,18 @@ const listProcesses = async (req, res) => {
   }
 };
 
-module.exports = { listProcesses };
+const addProcess = async (req, res) => {
+  const { projectId, processName } = req.body;
+  try {
+    await sql.query(`
+      INSERT INTO diagram (project_id, name, created_at) 
+      VALUES (${projectId}, ${"'" + processName + "'"}, GETDATE());
+  `);
+    res.status(200).json({ message: "Process created successfully", data: processName, projectId: projectId });
+  } catch (err) {
+    console.error("Error creating process", err);
+    res.status(500).send("Error creating process");
+  }
+}
+
+module.exports = { listProcesses, addProcess };

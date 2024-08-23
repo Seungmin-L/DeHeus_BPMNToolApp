@@ -21,6 +21,9 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 
 app.post('/api/authenticate', authController.authenticateUser);
+app.post('/api/project/add', projectsController.addProject);
+app.post('/api/processes/add', processesController.addProcess);
+app.post('/api/diagram/add', diagramController.addDiagram);
 app.post('/api/diagram/save', diagramController.draftSave);
 app.post('/api/diagram/createSub', diagramController.createSubProcess);
 app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);

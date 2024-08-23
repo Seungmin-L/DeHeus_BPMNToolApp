@@ -11,19 +11,10 @@ import attachmentModdleDescriptor from '../providers/descriptor/attachment.json'
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
 //custom properties module
-import attributePropertiesProviderModule from '../providers';
-import attributeModdleDescriptor from '../providers/descriptor/attributes.json';
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
-import endToEndPropertiesProviderModule from '../providers';
-import endtoendModdleDescriptor from '../providers/descriptor/endtoend.json';
-import functionPropertiesProviderModule from '../providers';
-import functionModdleDescriptor from '../providers/descriptor/function.json';
-import departmentPropertiesProviderModule from '../providers';
-import departmentModdleDescriptor from '../providers/descriptor/department.json';
-import domainPropertiesProviderModule from '../providers';
-import domainModdleDescriptor from '../providers/descriptor/domain.json';
-
+import dropdownPropertiesProvider from '../providers';
+import dropdownDescriptor from '../providers/descriptor/dropdown';
 //search
 import bpmnSearchModule from '../features/search/provider';
 //subprocess
@@ -54,6 +45,7 @@ function BpmnEditor() {
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
+    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing)
     const [isHidden, setIsHidden] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
@@ -78,14 +70,9 @@ function BpmnEditor() {
                 BpmnPropertiesPanelModule,
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
-                // minimapModule,
-                attachmentPropertiesProviderModule,
-                // attributePropertiesProviderModule,
-                endToEndPropertiesProviderModule,
-                functionPropertiesProviderModule,
-                departmentPropertiesProviderModule,
-                domainPropertiesProviderModule,
+                minimapModule,
                 parameterPropertiesProviderModule,
+                dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
                 PaletteModule,
@@ -94,12 +81,8 @@ function BpmnEditor() {
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
-                // attribute: attributeModdleDescriptor,
-                endtoend: endtoendModdleDescriptor,
-                function: functionModdleDescriptor,
-                department: departmentModdleDescriptor,
-                domain: domainModdleDescriptor,
-                parameter: parameterModdleDescriptor,
+                extended: parameterModdleDescriptor,
+                dropdown: dropdownDescriptor,
             }
         });
         // Check file api availablitiy
@@ -111,8 +94,6 @@ function BpmnEditor() {
             registerFileDrop(document.getElementById('modeler-container'));
         }
         // if subprocess
-        localStorage.removeItem('bpmnXMl');
-        localStorage.removeItem('subProcess');
         // var bpmnnXml = localStorage.getItem('bpmnXml');
         // if (bpmnnXml) {
         //     //set bpmn xml from local
@@ -181,6 +162,9 @@ function BpmnEditor() {
 
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
+
+        //set user's role for the modeler
+        setUserRole("readOnly");
 
         return () => {
             modeler?.destroy();
@@ -438,6 +422,7 @@ function BpmnEditor() {
                 <div className='model-header'>
                     <Topbar onLogoClick={toMain}/>
                     <Toolbar
+                        mode={userRole} // "readOnly" or "contributor" or "editing"
                         isOpen={isOpen}
                         setIsOpen={setIsOpen}
                         onSave={handleSave}

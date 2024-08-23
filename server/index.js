@@ -9,6 +9,7 @@ const projectsController = require('./src/controllers/projectsController');
 const processesController = require('./src/controllers/processesController');
 const diagramController = require('./src/controllers/diagramController');
 const attachmentsController = require('./src/controllers/attachmentsController');
+const adminController = require('./src/controllers/adminController');
 const userController = require('./src/controllers/userController');
 
 const app = express();
@@ -31,11 +32,9 @@ app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.g
 app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
 app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.deleteAttachments);
 
-app.get('/api/admin/users', userController.getUserList)
-app.get('/api/admin/users/:identifier', userController.getUserData);
-
-// app.post('/api/admin/update-role', userController.updateRole);
-app.post('/api/admin/save-user-data', userController.saveUserData);
+app.get('/api/admin/users', adminController.getUserList)
+app.get('/api/admin/users/:identifier', adminController.getUserData);
+app.post('/api/admin/save-user-data', adminController.saveUserData);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the backend server!');

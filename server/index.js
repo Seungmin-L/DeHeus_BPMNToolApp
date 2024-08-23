@@ -32,6 +32,8 @@ app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.g
 app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
 app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.deleteAttachments);
 
+app.get('/api/mypage/user/:identifier', userController.getUserInfo)
+
 app.get('/api/admin/users', adminController.getUserList)
 app.get('/api/admin/users/:identifier', adminController.getUserData);
 app.post('/api/admin/save-user-data', adminController.saveUserData);

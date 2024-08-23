@@ -1,4 +1,4 @@
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+// import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,6 +19,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import LeftNavBar from "./common/LeftNavBar";
 import NoAuth from "./common/NoAuth";
 import TopBar from "./common/TopBar";
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 
 function ListSingleProject() {
   const { projectId } = useParams();
@@ -37,7 +38,7 @@ function ListSingleProject() {
       axios
         .get(`/api/processes/${projectId}`)
         .then((response) => {
-          console.log("Fetched processes:", response.data);
+          // console.log("Fetched processes:", response.data);
           setProcesses(response.data); // 데이터를 트리 구조로 설정
           setOptions(response.data.map(process => ({
             id: process.id,
@@ -48,7 +49,8 @@ function ListSingleProject() {
           console.error("Error fetching processes", error);
         });
     }
-  }, [isAuthenticated, projectId]);
+  }, [isAuthenticated, projectId]
+);
 
   const toggleRow = (id) => {
     setExpandedRows(
@@ -62,12 +64,12 @@ function ListSingleProject() {
     event.stopPropagation();
     // console.log("Clicked item ID:", item.id);
     // navigate(`/publish/bpmnModeler/`);
-    
     // 아래의 navigate는 올바른 publish 버전을 불러오게끔 백에 요청해서 반환받은 링크로 연결되게 수정해야 합니다~!
-    navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName } });
+    navigate(`/project/${projectId}/${item.id}`, { state: { itemId: item.id, userName: userName } });
   };
 
   const renderRow = (item, level = 0) => {
+    if(level > 2)return;
     const isExpanded = expandedRows.includes(item.id);
     const hasChildren = item.children && item.children.length > 0;
 
@@ -142,9 +144,9 @@ function ListSingleProject() {
     handleCloseModal();
   };
 
-  // if (!isAuthenticated) {
-  //   return <NoAuth />;
-  // }
+  if (!isAuthenticated) {
+    return <NoAuth />;
+  }
 
   return (
     <div>

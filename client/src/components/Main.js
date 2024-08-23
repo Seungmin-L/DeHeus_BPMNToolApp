@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import NoAuth from "./common/NoAuth";
 import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
 import { formatProjectDates } from '../utils/utils';
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
@@ -27,19 +27,21 @@ function Main() {
         console.error("Error fetching projects", error);
       });
     }
-  }, [isAuthenticated, accounts]);
+  }, [isAuthenticated, accounts]
+);
 
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);
   };
 
   const handleProjectClick = (projectId) => {
+    localStorage.setItem("ProjectID", projectId);
     navigate(`/project/${projectId}`);
   };
 
-  // if (!isAuthenticated) {
-  //   return <NoAuth />;
-  // }
+  if (!isAuthenticated) {
+    return <NoAuth />;
+  }
 
   return (
     <div>

@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/backgrounds/home_background.png";
 import logo from "../assets/logos/logo_deheus.png";
-import { verifyUserRegistration, handleLoginRedirect, acquireToken, handleLogout } from '../utils/authUtils';
+import { verifyUserRegistration, handleLoginRedirect, acquireToken, handleLogout } from '../utils/authUtils';  // sso login & token
 
 
 function Home() {
@@ -22,6 +22,7 @@ function Home() {
 
   const handleLogin = async () => {
     await handleLoginRedirect(instance, accounts, account, navigate, setLoginError, acquireToken);
+    navigate("/main");
   };
 
   return (

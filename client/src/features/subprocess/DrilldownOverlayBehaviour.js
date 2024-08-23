@@ -12,6 +12,7 @@ import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor';
 import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 import { classes, domify } from 'min-dom';
 import { getPlaneIdFromShape } from 'bpmn-js/lib/util/DrilldownUtil';
+import axios from 'axios';
 
 /**
  * @typedef {import('diagram-js/lib/core/Canvas').default} Canvas
@@ -38,7 +39,7 @@ var EMPTY_MARKER = 'bjs-drilldown-empty';
  * @param {Translate} translate
  */
 export default function DrilldownOverlayBehavior(
-    canvas, eventBus, elementRegistry, overlays, translate
+  canvas, eventBus, elementRegistry, overlays, translate
 ) {
   CommandInterceptor.call(this, eventBus);
 
@@ -49,7 +50,7 @@ export default function DrilldownOverlayBehavior(
   this._translate = translate;
   var self = this;
 
-  this.executed('shape.toggleCollapse', LOW_PRIORITY, function(context) {
+  this.executed('shape.toggleCollapse', LOW_PRIORITY, function (context) {
     var shape = context.shape;
 
     // Add overlay to the collapsed shape
@@ -61,7 +62,7 @@ export default function DrilldownOverlayBehavior(
   }, true);
 
 
-  this.reverted('shape.toggleCollapse', LOW_PRIORITY, function(context) {
+  this.reverted('shape.toggleCollapse', LOW_PRIORITY, function (context) {
     var shape = context.shape;
 
     // Add overlay to the collapsed shape
@@ -73,11 +74,11 @@ export default function DrilldownOverlayBehavior(
   }, true);
 
 
-  this.executed([ 'shape.create', 'shape.move', 'shape.delete' ], LOW_PRIORITY,
-    function(context) {
+  this.executed(['shape.create', 'shape.move', 'shape.delete'], LOW_PRIORITY,
+    function (context) {
       var oldParent = context.oldParent,
-          newParent = context.newParent || context.parent,
-          shape = context.shape;
+        newParent = context.newParent || context.parent,
+        shape = context.shape;
 
       // Add overlay to the collapsed shape
       if (self._canDrillDown(shape)) {
@@ -90,11 +91,11 @@ export default function DrilldownOverlayBehavior(
     }, true);
 
 
-  this.reverted([ 'shape.create', 'shape.move', 'shape.delete' ], LOW_PRIORITY,
-    function(context) {
+  this.reverted(['shape.create', 'shape.move', 'shape.delete'], LOW_PRIORITY,
+    function (context) {
       var oldParent = context.oldParent,
-          newParent = context.newParent || context.parent,
-          shape = context.shape;
+        newParent = context.newParent || context.parent,
+        shape = context.shape;
 
       // Add overlay to the collapsed shape
       if (self._canDrillDown(shape)) {
@@ -107,10 +108,10 @@ export default function DrilldownOverlayBehavior(
     }, true);
 
 
-  eventBus.on('import.render.complete', function() {
-    elementRegistry.filter(function(e) {
+  eventBus.on('import.render.complete', function () {
+    elementRegistry.filter(function (e) {
       return self._canDrillDown(e);
-    }).map(function(el) {
+    }).map(function (el) {
       self._addOverlay(el);
     });
   });
@@ -122,7 +123,7 @@ inherits(DrilldownOverlayBehavior, CommandInterceptor);
 /**
  * @param {Shape} shape
  */
-DrilldownOverlayBehavior.prototype._updateDrilldownOverlay = function(shape) {
+DrilldownOverlayBehavior.prototype._updateDrilldownOverlay = function (shape) {
   var canvas = this._canvas;
 
   if (!shape) {
@@ -141,7 +142,7 @@ DrilldownOverlayBehavior.prototype._updateDrilldownOverlay = function(shape) {
  *
  * @return {boolean}
  */
-DrilldownOverlayBehavior.prototype._canDrillDown = function(element) {
+DrilldownOverlayBehavior.prototype._canDrillDown = function (element) {
   var canvas = this._canvas;
 
   return is(element, 'bpmn:SubProcess') && canvas.findRoot(getPlaneIdFromShape(element));
@@ -153,7 +154,7 @@ DrilldownOverlayBehavior.prototype._canDrillDown = function(element) {
  *
  * @param {Parent} element The collapsed root or shape.
  */
-DrilldownOverlayBehavior.prototype._updateOverlayVisibility = function(element) {
+DrilldownOverlayBehavior.prototype._updateOverlayVisibility = function (element) {
   var overlays = this._overlays;
 
   var businessObject = getBusinessObject(element);
@@ -177,10 +178,10 @@ DrilldownOverlayBehavior.prototype._updateOverlayVisibility = function(element) 
  *
  * @param {Shape} element The collapsed shape.
  */
-DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
+DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
   var canvas = this._canvas,
-      overlays = this._overlays,
-      bo = getBusinessObject(element);
+    overlays = this._overlays,
+    bo = getBusinessObject(element);
 
   var existingOverlays = overlays.get({ element: element, type: 'drilldown' });
 
@@ -189,20 +190,31 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
   }
 
   var button = domify('<button type="button" class="bjs-drilldown">' + ARROW_DOWN_SVG + '</button>'),
-      elementName = bo.get('name') || bo.get('id'),
-      title = this._translate('Open {element}', { element: elementName });
+    elementName = bo.get('name') || bo.get('id'),
+    title = this._translate('Open {element}', { element: elementName });
   button.setAttribute('title', title);
 
-  button.addEventListener('click', function() {
-
+  button.addEventListener('click', function () {
+    const projectId = window.location.pathname.split("/")[2];
+    const diagramId = window.location.pathname.split("/")[3];
     // canvas.setRootElement(canvas.findRoot(getPlaneIdFromShape(element)));
     var planeId = getPlaneIdFromShape(element)
     localStorage.setItem('planeId', planeId);
-    localStorage.setItem('subProcess',true);
-    
-    window.open('/publish/bpmnModeler', '_blank');
-
-
+    localStorage.setItem('subProcess', true);
+    const name = element.businessObject.name;
+    if(name){
+      axios.post(`http://localhost:3001/api/diagram/createSub`, {
+          diagramId: diagramId,
+          processName: name,
+          elementId: element.id
+      })
+      .then((res) => {
+        window.open(`/project/${projectId}/${res.data.data}`, '_blank');
+      })
+      .catch(err => console.error(err));
+    }else{
+      alert("To create a subprocess, there must be a name for it");
+    }
   });
 
   overlays.add(element, 'drilldown', {
@@ -216,7 +228,7 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
   this._updateOverlayVisibility(element);
 };
 
-DrilldownOverlayBehavior.prototype._removeOverlay = function(element) {
+DrilldownOverlayBehavior.prototype._removeOverlay = function (element) {
   var overlays = this._overlays;
 
   overlays.remove({

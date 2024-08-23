@@ -2,7 +2,7 @@ import './toolbar.css'
 // ICONS
 import AlignIcons from 'bpmn-js/lib/features/align-elements/AlignElementsIcons';
 import DistributeIcons from 'bpmn-js/lib/features/distribute-elements/DistributeElementsIcons';
-import Icons from '../../../resources/toolbar/toolbar-icons';
+import Icons from '../../resources/toolbar/toolbar-icons';
 
 function Toolbar({
   onSave,

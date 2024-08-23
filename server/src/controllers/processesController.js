@@ -5,15 +5,15 @@ const listProcesses = async (req, res) => {
   // console.log(`Received projectId: ${projectId}`);
   try {
     // check diagram with project ID
-    const diagramResult = await sql.query(`
-      SELECT * FROM diagram WHERE project_id = ${projectId};
-    `);
+    // const diagramResult = await sql.query(`
+    //   SELECT * FROM diagram WHERE project_id = ${projectId};
+    // `);
     // console.log(`Diagrams: `, diagramResult.recordset);
 
     // check relationship with project ID
-    const relationResult = await sql.query(`
-      SELECT * FROM diagram_relation WHERE project_id = ${projectId};
-    `);
+    // const relationResult = await sql.query(`
+    //   SELECT * FROM diagram_relation WHERE project_id = ${projectId};
+    // `);
     // console.log(`Diagram relations: `, relationResult.recordset);
 
     // build recursive processes based on relationResult
@@ -57,7 +57,7 @@ const listProcesses = async (req, res) => {
       WHERE Rank = 1
       ORDER BY Level, id;
     `);
-    // console.log(`Recursive Processes: `, result.recordset);    
+    console.log(`Recursive Processes: `, result.recordset);
 
     const processes = result.recordset;
     const processMap = {};
@@ -79,7 +79,6 @@ const listProcesses = async (req, res) => {
         rootProcesses.push(processMap[process.id]);
       }
     });
-
     // console.log(`Root Processes: `, JSON.stringify(rootProcesses, null, 2));
     res.json(rootProcesses);
   } catch (err) {

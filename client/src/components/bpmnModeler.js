@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import ColorPickerModule from 'bpmn-js-color-picker';
@@ -16,21 +16,32 @@ import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
 import dropdownPropertiesProvider from '../providers';
 import dropdownDescriptor from '../providers/descriptor/dropdown';
 //search
-import bpmnSearchModule from './features/search/provider';
+import bpmnSearchModule from '../features/search/provider';
 //subprocess
-import DrilldownOverlayBehavior from './features/subprocess/';
+import DrilldownOverlayBehavior from '../features/subprocess';
+//replace popup
+import PopupMenuModule from '../features/popup';
+import ReplaceModule from '../features/replace';
+//palette
+import PaletteModule from '../features/palette';
+
 //toolbar
-import Toolbar from './features/toolbar/toolbar';
-import Topbar from '../components/common/TopBar'
+import Toolbar from '../features/toolbar/toolbar';
+import Topbar from './common/TopBar'
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import '../styles/bpmn-js.css';
 import '../styles/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import Sidebar from '../features/sidebar/Sidebar';
+import { BsArrowBarRight } from 'react-icons/bs';
 
-function BpmnTest() {
+function BpmnEditor() {
+    const navigate = useNavigate();
     const location = useLocation();
     const itemId = location.state?.itemId; // ----
-    const userName = location.state?.userName; // ----
+    const projectId = localStorage.getItem("ProjectID");
+    // const userName = location.state?.userName; // ----
+    const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
@@ -64,6 +75,9 @@ function BpmnTest() {
                 dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
+                PaletteModule,
+                PopupMenuModule,
+                ReplaceModule
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
@@ -122,7 +136,7 @@ function BpmnTest() {
         // Save diagram on every change
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
         modelerInstance.on('commandStack.changed', saveDiagram);
-
+        modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
         modelerInstance.get('keyboard').addListener(function (context) {
@@ -141,7 +155,6 @@ function BpmnTest() {
             const element = elementRegistry.get(e.element.id);
             const overlays = modelerInstance.get('overlays');
             const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-
             if (existingOverlays.length) {
                 console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
             }
@@ -275,6 +288,16 @@ function BpmnTest() {
             };
         }
     }
+    const onElementDelete = (nodeId) => {
+        if (nodeId === undefined) {
+            console.log("undefined");
+            return;
+        }
+        axios.post(`http://localhost:3001/api/attachments/${itemId}/${nodeId}`)
+            .then(res => console.log(res.data))
+            .catch(err => console.error("Error fetching processes", err));
+    }
+
     const onImportClick = () => {
         importFile.current.click();
     }
@@ -385,6 +408,9 @@ function BpmnTest() {
     const toggleVisibility = () => {
         setHidePanel(!hidePanel);
     };
+    const toMain = () => {
+        navigate("/main");
+    }
 
     if (!isFileValid) {
         return (
@@ -392,9 +418,9 @@ function BpmnTest() {
         )
     } else {
         return (
-            <div className='main-container' onClick={handleClose} >
+            <div className='main-container' onClick={handleClose}>
                 <div className='model-header'>
-                    <Topbar />
+                    <Topbar onLogoClick={toMain}/>
                     <Toolbar
                         mode={userRole} // "readOnly" or "contributor" or "editing"
                         isOpen={isOpen}
@@ -423,21 +449,24 @@ function BpmnTest() {
                     />
                 </div>
                 <div className='model-body'>
-                    <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>
-                        <button onClick={handleHidden} style={{ width: "50px" }}>{isHidden ? "Show" : "Hide"}</button>
-                    </div>
+                    {isHidden ?
+                        <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden}/>
+                        :
+                        <Sidebar handleHidden={handleHidden} />
+                    }
+
                     <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
                     <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
                         <button className='hide-panel' onClick={toggleVisibility}>
                             Details
                         </button>
                         <div id='properties-panel-parent' />
-                    </div>
 
+                    </div>
                 </div>
             </div>
         )
     }
 
 }
-export default BpmnTest;
+export default BpmnEditor;

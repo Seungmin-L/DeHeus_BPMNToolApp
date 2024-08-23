@@ -8,7 +8,6 @@ const authController = require('./src/controllers/authController');
 const projectsController = require('./src/controllers/projectsController');
 const processesController = require('./src/controllers/processesController');
 const diagramController = require('./src/controllers/diagramController');
-
 const attachmentsController = require('./src/controllers/attachmentsController');
 
 const app = express();
@@ -20,6 +19,7 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
+
 app.post('/api/authenticate', authController.authenticateUser);
 app.post('/api/diagram/save', diagramController.draftSave);
 app.post('/api/diagram/createSub', diagramController.createSubProcess);
@@ -30,6 +30,8 @@ app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.
 // app.get()
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
+app.get('/api/diagrams/get-diagram-with-project/:projectId/:diagramId', diagramController.getDiagramData);
+
 app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
 
 app.get('/', (req, res) => {

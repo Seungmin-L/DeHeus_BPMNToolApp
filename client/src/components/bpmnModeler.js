@@ -38,9 +38,10 @@ import { BsArrowBarRight } from 'react-icons/bs';
 function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
-    const itemId = location.state?.itemId; // ----
+    const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
     const projectId = localStorage.getItem("ProjectID");
-    // const userName = location.state?.userName; // ----
+    // const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
+	const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
     const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
@@ -55,8 +56,24 @@ function BpmnEditor() {
     let modelerInstance = null;
 
     useEffect(() => {
-        // console.log("Received item ID:", itemId); 
-        // console.log("Received User Name:", userName); 
+        // 아래는 디버깅 용도 로그입니다~!!!
+		// console.log("Received Diagram ID:", diagramId); 
+		// console.log("Received User Name:", userName); 
+		// console.log("Received File Data:", fileData); 
+
+        // 아래 코드는 내가 임의로 작성해 둔 건데, server/src/controllers/diagramController.js 파일에서 api response로 가지고 온 xml 정보 (diagram_published 테이블의 file data 컬럼에 해당)를 다이어그램 모델러로 띄우면 됩니다~!!! 라인 193도 함께 주석 처리 완료!!!
+        // if (projectName && diagramName && publishDate) {
+        //     axios.get(`/api/diagrams/get-diagram-with-project/${diagramId}`)
+        //         .then(response => {
+        //             const { fileData } = response.data;
+        //             setDiagramXML(fileData);
+        //         })
+        //         .catch(error => {
+        //             console.error("Error fetching diagram data:", error);
+        //             setIsFileValid(false);
+        //         });
+        // }
+
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -118,7 +135,8 @@ function BpmnEditor() {
                     }
                 })
                 .catch(err => {
-                    console.log(err);
+                    // console.log(err);
+                    console.error("Error rendering diagram:", err);
                     setIsFileValid(false);
                 });
         } else {
@@ -169,7 +187,8 @@ function BpmnEditor() {
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, itemId]);
+    }, [diagramXML, diagramId]);
+    // }, [diagramXML, projectName, diagramName, publishDate]);  // 생각한 변수는 이 정도인데 필요한 대로 수정하시면 될 것 같습니다~!!!
 
     // hide heirchy side bar
     const handleHidden = () => {
@@ -367,9 +386,9 @@ function BpmnEditor() {
 
             if (xml) {
                 console.log("Saved XML:", xml);
-                console.log("diagramId:", itemId)
-
-                axios.post('/api/diagram/save', { xml: xml, diagramId: itemId, userName: userName })
+				console.log("diagramId:", diagramId)
+    
+                axios.post('/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })

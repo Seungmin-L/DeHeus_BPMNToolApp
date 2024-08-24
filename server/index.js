@@ -36,7 +36,7 @@ app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.
 app.get('/api/mypage/user/:identifier', userController.getUserInfo)
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
-app.get('/api/diagrams/get-diagram-with-project/:projectId/:diagramId', diagramController.getDiagramData);
+app.get('/api/diagrams/get-diagram-with-project/:projectId/:diagramId/:userRole/:userEmail', diagramController.getDiagramData);
 
 app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
 

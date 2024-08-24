@@ -41,13 +41,16 @@ function BpmnEditor() {
     const location = useLocation();
     const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
     const { projectId } = useParams();
-    // const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
+    const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
-    const userName = "vnapp.pbmn@deheus.com"
+    // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
-    const [userRole, setUserRole] = useState('editing'); // for toolbar view (readOnly, contributor, editing)
+    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing)
+    const [editor, setEditor] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
@@ -56,8 +59,31 @@ function BpmnEditor() {
     const saveKeys = ['s', 'S'];
     let modelerInstance = null;
 
+    // fetches contribution. if the user is editor the user role will be set to contributor, if not readOnly
+    const fetchEditor = async () => {
+        try {
+            const response = await axios.get('/api/contribution/editor', {
+                params: { projectId, userName }
+            });
+            setEditor(response.data.editor);
+            if (response.data.editor && userRole !== "editing") {
+                setUserRole("contributor");
+            } else if (!response.data.editor && userRole !== "editing") {
+                setUserRole("readOnly");
+            }
+        } catch (err) {
+            if (err.response && err.response.status === 404) {
+                setError('No contribution found');
+            } else {
+                setError('Error fetching editor');
+            }
+        } finally {
+            setLoading(false);
+        }
+
+    };
     useEffect(() => {
-        // 아래는 디버깅 용도 로그입니다~!!!
+        // 아래는 디버깅 용도 로그입니다~!!
         // console.log("Received Diagram ID:", diagramId); 
         // console.log("Received User Name:", userName); 
         // console.log("Received File Data:", fileData); 
@@ -74,10 +100,13 @@ function BpmnEditor() {
         //             setIsFileValid(false);
         //         });
         // }
+        fetchEditor();
+
 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
+        
         modelerInstance = new BpmnModeler({
             container: container.current,
             keyboard: { bindTo: document },
@@ -193,16 +222,31 @@ function BpmnEditor() {
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
 
-        //set user's role for the modeler
-        // setUserRole("readOnly");
+        updatePaletteVisibility();
 
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, diagramId]);
+    }, [diagramXML, editor, diagramId, projectId, userName, userRole]);
     // }, [diagramXML, projectName, diagramName, publishDate]);  // 생각한 변수는 이 정도인데 필요한 대로 수정하시면 될 것 같습니다~!!!
 
-    // hide heirchy side bar
+    useEffect(() => {
+        if (modelerInstance) {
+            const canvas = modelerInstance.get('canvas');
+            const eventBus = modelerInstance.get('eventBus');
+
+            if (userRole !== "editing") {
+                // Disable interactions
+                canvas.zoom('fit-viewport');
+                eventBus.fire('interaction.disable');
+            } else {
+                // Enable interactions
+                eventBus.fire('interaction.enable');
+            }
+        }
+    }, [userRole]);
+
+    // hide hierarchy side bar
     const handleHidden = () => {
         setIsHidden(prev => !prev);
     }
@@ -374,7 +418,19 @@ function BpmnEditor() {
     const handleClose = () => {
         setIsOpen(false);
     }
+    // handle checkIn
+    const handleCheckIn = () => {
+        setUserRole("editing");
+        console.log(userRole);
+    }
+    // handle contributor
+    const handleContributor = () => {
 
+    }
+    // handle share
+    const handleShare = () => {
+
+    }
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -413,6 +469,8 @@ function BpmnEditor() {
                     });
             }
         }
+        setUserRole("contributor");
+
     };
     // handle aligning elements
     const handleAlign = (alignment) => {
@@ -439,6 +497,7 @@ function BpmnEditor() {
         }
     };
 
+
     // handle panel visibility
     const toggleVisibility = () => {
         setHidePanel(!hidePanel);
@@ -446,6 +505,24 @@ function BpmnEditor() {
     const toMain = () => {
         navigate("/main");
     }
+
+    // Function to hide the element if the user is not editing
+    function updatePaletteVisibility() {
+        const palette = document.querySelector('.djs-palette.two-column.open');
+        const columnPalette = document.querySelector('.djs-palette.open');
+        if (palette) {
+            if (userRole !== 'editing') {
+                palette.style.display = 'none';
+            }
+        } else if (columnPalette) {
+            if (userRole !== 'editing') {
+                columnPalette.style.display = 'none';
+            }
+        } else {
+            console.error('Element not found');
+        }
+    }
+
 
     if (!isFileValid) {
         return (
@@ -481,6 +558,9 @@ function BpmnEditor() {
                         onDistributeVertically={() => handleDistribute('vertical')}
                         importFile={importFile}
                         onFileChange={onFileChange}
+                        onCheckIn={handleCheckIn}
+                        onContributor={handleContributor}
+                        onShare={handleShare}
                     />
                 </div>
                 <div className='model-body'>
@@ -490,7 +570,11 @@ function BpmnEditor() {
                         <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userName} />
                     }
 
-                    <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
+                    <div
+                        id='modeler-container'
+                        className={"" + (isHidden ? 'sidebar-hidden' : '')}
+                        ref={container}
+                    />
                     <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
                         <button className='hide-panel' onClick={toggleVisibility}>
                             Details

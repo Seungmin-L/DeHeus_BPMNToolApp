@@ -118,7 +118,6 @@ body {
 }
 
 #modeler-container{
-  /* width: calc(100vw - 450px); */
   width: 100%;
   height: 100%;
   position: relative;
@@ -131,8 +130,21 @@ body {
 }
 
 .hierarchy-sidebar{
-  width: 200px;
+  width: 300px;
   border: 1px solid hsl(225, 10%, 75%);
+  animation: appear 100ms ease-in-out;
+  span{
+    font-size: 14px;
+  }
+}
+
+@keyframes appear {
+  0%{
+    transform: translateX(-100%);
+  }
+  100%{
+    transform: translateX(0);
+  }
 }
 
 .djs-container{
@@ -143,19 +155,46 @@ body {
 .djs-palette.two-column.open{
   position: fixed !important;
   top: 20% !important;
-  left: 200px !important;
+  left: 270px !important;
   height: 70%;
 }
 
-.hide{
-  width: 50px;
+.sidebar-hidden{
+  .djs-palette.two-column.open{
+    left: 10px !important;
+    transform: translateY(10px);
+  }
 }
 
-.sidebar-hidden{
-  width: calc(100% - 50px) !important;
-  .djs-palette.two-column.open{
-    left: 50px !important;
-  }
+.sidebar-btn{
+  width: 30px;
+  height: 30px;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sidebar-btn.hidden{
+  width: 50px;
+  height: 30px;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  position: absolute;
+  background-color: white;
+  border: 1px solid black;
+  z-index: 99;
+  left: 10px;
+  transform: translateY(10px);
+}
+
+.sidebar-btn:hover, .sidebar-btn.hidden:hover{
+  background-color: hsl(225, 10%, 75%);
+  transition: .2s ease-in-out;
+}
+
+.process-list-item:hover{
+  background-color: hsl(225, 10%, 90%) !important;
 }
 
 .color-picker ul{

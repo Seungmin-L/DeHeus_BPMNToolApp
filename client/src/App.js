@@ -9,23 +9,23 @@ import ListSingleProject from "./components/ListSingleProject";
 import Main from "./components/Main";
 import MyPage from "./components/MyPage";
 import { msalInstance } from "./config/authConfig";
-import Publish from "./Publish";
 import TestingEmail from "./components/TestingEmail";
+import BpmnEditor from "./components/bpmnModeler";
+import { NavigationHelper } from "./util/navigation";
 
 function App() {
   return (
     <MsalProvider instance={msalInstance}>
       <Router>
+        <NavigationHelper/>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/main" element={<Main />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/mypage" element={<MyPage />} />
-          {/* <Route path="/publish/:filename" element={<Publish />} /> */}
           <Route path="/project/:projectId" element={<ListSingleProject />} />
+          <Route path="/project/:projectId/:diagramName" element={<BpmnEditor />} />
           <Route path="/testingemail" element={<TestingEmail />} />
-          <Route path="/publish/:filename/:itemId" element={<Publish />} />
-          {/* <Route path="/publish/:filename" element={<Publish />} /> */}
           <Route path="*" element={<Error />} />
         </Routes>
       </Router>

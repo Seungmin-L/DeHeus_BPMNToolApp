@@ -42,7 +42,7 @@ export default function AttachmentPropertiesProvider(propertiesPanel, translate)
     return function(groups) {
 
       // Add the "attachment" group
-      if (is(element, 'bpmn:Task')) {
+      if (is(element, 'bpmn:BaseElement')) {
         groups.push(createAttachGroup(element, translate));
       }
 

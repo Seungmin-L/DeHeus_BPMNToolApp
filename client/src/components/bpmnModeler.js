@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from "axios";
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import ColorPickerModule from 'bpmn-js-color-picker';
@@ -16,25 +16,38 @@ import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
 import dropdownPropertiesProvider from '../providers';
 import dropdownDescriptor from '../providers/descriptor/dropdown';
 //search
-import bpmnSearchModule from './features/search/provider';
+import bpmnSearchModule from '../features/search/provider';
 //subprocess
-import DrilldownOverlayBehavior from './features/subprocess/';
+import DrilldownOverlayBehavior from '../features/subprocess';
+//replace popup
+import PopupMenuModule from '../features/popup';
+import ReplaceModule from '../features/replace';
+//palette
+import PaletteModule from '../features/palette';
+
 //toolbar
-import Toolbar from './features/toolbar/toolbar';
-import Topbar from '../components/common/TopBar'
+import Toolbar from '../features/toolbar/toolbar';
+import Topbar from './common/TopBar'
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import '../styles/bpmn-js.css';
 import '../styles/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import Sidebar from '../features/sidebar/Sidebar';
+import { BsArrowBarRight } from 'react-icons/bs';
+import { navigateTo } from '../util/navigation';
 
-function BpmnTest() {
+function BpmnEditor() {
+    const navigate = useNavigate();
     const location = useLocation();
-    const itemId = location.state?.itemId; // ----
-    const userName = location.state?.userName; // ----
+    const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
+    const { projectId } = useParams();
+    // const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
+    const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
+    const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
-    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing)
+    const [userRole, setUserRole] = useState('editing'); // for toolbar view (readOnly, contributor, editing)
     const [isHidden, setIsHidden] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
@@ -44,8 +57,24 @@ function BpmnTest() {
     let modelerInstance = null;
 
     useEffect(() => {
-        // console.log("Received item ID:", itemId); 
+        // 아래는 디버깅 용도 로그입니다~!!!
+        // console.log("Received Diagram ID:", diagramId); 
         // console.log("Received User Name:", userName); 
+        // console.log("Received File Data:", fileData); 
+
+        // 아래 코드는 내가 임의로 작성해 둔 건데, server/src/controllers/diagramController.js 파일에서 api response로 가지고 온 xml 정보 (diagram_published 테이블의 file data 컬럼에 해당)를 다이어그램 모델러로 띄우면 됩니다~!!! 라인 193도 함께 주석 처리 완료!!!
+        // if (projectName && diagramName && publishDate) {
+        //     axios.get(`/api/diagrams/get-diagram-with-project/${diagramId}`)
+        //         .then(response => {
+        //             const { fileData } = response.data;
+        //             setDiagramXML(fileData);
+        //         })
+        //         .catch(error => {
+        //             console.error("Error fetching diagram data:", error);
+        //             setIsFileValid(false);
+        //         });
+        // }
+
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -64,6 +93,9 @@ function BpmnTest() {
                 dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
+                PaletteModule,
+                PopupMenuModule,
+                ReplaceModule
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
@@ -86,6 +118,25 @@ function BpmnTest() {
         //     setDiagramXML(bpmnnXml);
         // }
         // Import file or create a new diagram
+
+        window.addEventListener("message", (e) => {
+            if (e.origin !== window.location.origin) return;
+            const data = e.data;
+            if (data) {
+                const { id, url, userName } = data;
+                if (id && url && userName) {
+                    console.log(data);
+                    if (data.fileData) {
+                        navigateTo(url, id, userName, data.fileData);
+                    } else {
+                        navigateTo(url, id, userName);
+                    }
+                }
+            }
+        });
+        if (fileData) {
+            setDiagramXML(fileData);
+        }
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
                 .then(({ warnings }) => {
@@ -94,17 +145,10 @@ function BpmnTest() {
                     }
                     modelerInstance.get("canvas").zoom("fit-viewport");
                     modelerInstance.get('keyboard').bind(document);
-                    // if subprocess
-                    if (localStorage.getItem('subProcess')) {
-                        // get plane id from storage
-                        var planeId = localStorage.getItem('planeId');
-                        // set root from canvas
-                        var canvas = modelerInstance.get('canvas');
-                        canvas.setRootElement(canvas.findRoot(planeId));
-                    }
                 })
                 .catch(err => {
-                    console.log(err);
+                    // console.log(err);
+                    console.error("Error rendering diagram:", err);
                     setIsFileValid(false);
                 });
         } else {
@@ -121,8 +165,8 @@ function BpmnTest() {
 
         // Save diagram on every change
         modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
-        modelerInstance.on('commandStack.changed', saveDiagram);
-
+        // modelerInstance.on('commandStack.changed', saveDiagram);
+        modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
         // Add Save shortcut (ctrl + s)
         modelerInstance.get('editorActions').register('save', saveDiagram);
         modelerInstance.get('keyboard').addListener(function (context) {
@@ -141,7 +185,6 @@ function BpmnTest() {
             const element = elementRegistry.get(e.element.id);
             const overlays = modelerInstance.get('overlays');
             const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-
             if (existingOverlays.length) {
                 console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
             }
@@ -151,12 +194,13 @@ function BpmnTest() {
         // console.log(modeler?.get('elementRegistry'))
 
         //set user's role for the modeler
-        setUserRole("readOnly");
+        // setUserRole("readOnly");
 
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, itemId]);
+    }, [diagramXML, diagramId]);
+    // }, [diagramXML, projectName, diagramName, publishDate]);  // 생각한 변수는 이 정도인데 필요한 대로 수정하시면 될 것 같습니다~!!!
 
     // hide heirchy side bar
     const handleHidden = () => {
@@ -268,13 +312,28 @@ function BpmnTest() {
                 console.log(err);
             });
             if (xml) {
-                // Save diagram in DB
-                localStorage.setItem('bpmnXml', xml);
-                console.log("Saved xml:")
                 console.log(xml);
+                // Save diagram in DB
+                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
+                    .then(response => {
+                        console.log("Diagram saved successfully:", response.data);
+                    })
+                    .catch(error => {
+                        console.error("Error saving diagram to the database:", error);
+                    });
             };
         }
     }
+    const onElementDelete = (nodeId) => {
+        if (nodeId === undefined) {
+            console.log("undefined");
+            return;
+        }
+        axios.post(`http://localhost:3001/api/attachments/${diagramId}/${nodeId}`)
+            .then(res => console.log(res.data))
+            .catch(err => console.error("Error fetching processes", err));
+    }
+
     const onImportClick = () => {
         importFile.current.click();
     }
@@ -344,9 +403,8 @@ function BpmnTest() {
 
             if (xml) {
                 console.log("Saved XML:", xml);
-                console.log("diagramId:", itemId)
-
-                axios.post('/api/diagram/save', { xml: xml, diagramId: itemId, userName: userName })
+                console.log("diagramId:", diagramId);
+                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })
@@ -385,6 +443,9 @@ function BpmnTest() {
     const toggleVisibility = () => {
         setHidePanel(!hidePanel);
     };
+    const toMain = () => {
+        navigate("/main");
+    }
 
     if (!isFileValid) {
         return (
@@ -392,9 +453,9 @@ function BpmnTest() {
         )
     } else {
         return (
-            <div className='main-container' onClick={handleClose} >
+            <div className='main-container' onClick={handleClose}>
                 <div className='model-header'>
-                    <Topbar />
+                    <Topbar onLogoClick={toMain} />
                     <Toolbar
                         mode={userRole} // "readOnly" or "contributor" or "editing"
                         isOpen={isOpen}
@@ -423,21 +484,24 @@ function BpmnTest() {
                     />
                 </div>
                 <div className='model-body'>
-                    <div className={'hierarchy-sidebar ' + (isHidden ? "hide" : "")}>
-                        <button onClick={handleHidden} style={{ width: "50px" }}>{isHidden ? "Show" : "Hide"}</button>
-                    </div>
+                    {isHidden ?
+                        <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
+                        :
+                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userName} />
+                    }
+
                     <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
                     <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
                         <button className='hide-panel' onClick={toggleVisibility}>
                             Details
                         </button>
                         <div id='properties-panel-parent' />
-                    </div>
 
+                    </div>
                 </div>
             </div>
         )
     }
 
 }
-export default BpmnTest;
+export default BpmnEditor;

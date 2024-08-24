@@ -34,6 +34,7 @@ import '../styles/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 import Sidebar from '../features/sidebar/Sidebar';
 import { BsArrowBarRight } from 'react-icons/bs';
+import { navigateTo } from '../util/navigation';
 
 function BpmnEditor() {
     const navigate = useNavigate();
@@ -118,10 +119,21 @@ function BpmnEditor() {
         // }
         // Import file or create a new diagram
 
-        window.onload = () => {
-            const data = JSON.parse(window.name);
-            console.log(data);
-        };
+        window.addEventListener("message", (e) => {
+            if (e.origin !== window.location.origin) return;
+            const data = e.data;
+            if (data) {
+                const { id, url, userName } = data;
+                if (id && url && userName) {
+                    console.log(data);
+                    if (data.fileData) {
+                        navigateTo(url, id, userName, data.fileData);
+                    } else {
+                        navigateTo(url, id, userName);
+                    }
+                }
+            }
+        });
         if (fileData) {
             setDiagramXML(fileData);
         }

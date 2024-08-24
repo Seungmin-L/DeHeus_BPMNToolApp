@@ -13,8 +13,7 @@ import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 import { classes, domify } from 'min-dom';
 import { getPlaneIdFromShape } from 'bpmn-js/lib/util/DrilldownUtil';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { useMsal } from '@azure/msal-react';
+import { navigateTo, getLocation } from '../../util/navigation';
 
 /**
  * @typedef {import('diagram-js/lib/core/Canvas').default} Canvas
@@ -156,6 +155,7 @@ DrilldownOverlayBehavior.prototype._canDrillDown = function (element) {
  *
  * @param {Parent} element The collapsed root or shape.
  */
+var hooks = require('../../../node_modules/@bpmn-io/properties-panel/preact/hooks');
 DrilldownOverlayBehavior.prototype._updateOverlayVisibility = function (element) {
   var overlays = this._overlays;
 
@@ -198,9 +198,9 @@ DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
 
   button.addEventListener('click', function () {
     const projectId = window.location.pathname.split("/")[2];
-    const diagramId = localStorage.getItem("DiagramID");
     const name = element.businessObject.name;
-    const userName = localStorage.getItem("username");
+    const { userName, diagramId } = getLocation();
+    console.log(userName, diagramId);
     if (name) {
       axios.post(`http://localhost:3001/api/diagram/createSub`, {
         projectId: projectId,
@@ -232,10 +232,12 @@ DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
             // console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
           } else {
             console.log(res.data);
-            const data = JSON.stringify(res.data.data);
-            window.name = data;
             const url = `/project/${projectId}/${res.data.data.name.replace(/ /g, '-')}`;
-            window.open(url, '_blank');
+            const newWindow = window.open(url, "_blank");
+            const data = {id: res.data.data.id, url: url, userName: userName}
+            newWindow.addEventListener("load", () => {
+              newWindow.postMessage(data, window.location.origin);
+            });
           }
         })
         .catch(err => console.error(err));

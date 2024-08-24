@@ -11,11 +11,13 @@ import MyPage from "./components/MyPage";
 import { msalInstance } from "./config/authConfig";
 import TestingEmail from "./components/TestingEmail";
 import BpmnEditor from "./components/bpmnModeler";
+import { NavigationHelper } from "./util/navigation";
 
 function App() {
   return (
     <MsalProvider instance={msalInstance}>
       <Router>
+        <NavigationHelper/>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/main" element={<Main />} />

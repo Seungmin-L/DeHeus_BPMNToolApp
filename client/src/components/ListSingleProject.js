@@ -86,8 +86,6 @@ function ListSingleProject() {
 
         // 다이어그램 모델러 페이지로 이동
         // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
-        localStorage.setItem("DiagramID", item.id);
-        localStorage.setItem("username", userName);
         navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
     } catch (error) {
         console.error("Error fetching diagram data:", error);

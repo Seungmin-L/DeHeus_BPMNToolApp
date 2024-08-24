@@ -1,4 +1,5 @@
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -21,12 +22,31 @@ import TopBar from "./common/TopBar";
 
 function Admin() {
   const isAuthenticated = useIsAuthenticated();
-  const [userName, setUserName] = useState("");
   const { accounts } = useMsal();
+  const [users, setUsers] = useState([]);
+  const [userName, setUserName] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [removedProjects, setRemovedProjects] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated && accounts.length > 0) {
       setUserName(accounts[0].username);
+
+      axios.get("/api/admin/users")
+        .then(response => {
+          setUsers(response.data);
+        })
+        .catch(error => {
+          console.error("Error fetching users", error);
+        });
+
+      axios.get("/api/projects")
+        .then(response => {
+          setProjects(response.data);
+        })
+        .catch(error => {
+          console.error("Error fetching projects", error);
+        });
     }
   }, [isAuthenticated, accounts]);
 
@@ -35,260 +55,35 @@ function Admin() {
     setIsNavVisible(!isNavVisible);
   };
 
-  //라인 38~283 은 목데이터 라인입니다
-  //MOCKDATAAAAA~~~~ please fetch the project list!
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      projectName: "Project1",
-    },
-    {
-      id: 2,
-      projectName: "Project2",
-    },
-    {
-      id: 3,
-      projectName: "Project3",
-    },
-    {
-      id: 4,
-      projectName: "Project4",
-    },
-    {
-      id: 5,
-      projectName: "Project5",
-    },
-    {
-      id: 6,
-      projectName: "Project6",
-    },
-    {
-      id: 7,
-      projectName: "Project7",
-    },
-  ]);
-  // MOCKDATAAAAA~~~~~~~~~ please fetch the user data! Contribution 같은 건 데이터 포맷 정리가 필요해요, 생각하고 추후에 상의해주세용!
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      email: "user1@example.com",
-      name: "Bob Smith",
-      position: "Manager",
-      lastUpdate: "2023-09-01",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram2", remainingTime: 8 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 2,
-      email: "user2@example.com",
-      name: "Chris Yoo",
-      position: "Developer",
-      lastUpdate: "2023-08-25",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 3,
-      email: "user1@example.com",
-      name: "Bob Smith",
-      position: "Manager",
-      lastUpdate: "2023-09-01",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 4,
-      email: "user2@example.com",
-      name: "Chris Yoo",
-      position: "Developer",
-      lastUpdate: "2023-08-25",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 5,
-      email: "user1@example.com",
-      name: "Bob Smith",
-      position: "Manager",
-      lastUpdate: "2023-09-01",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 6,
-      email: "user2@example.com",
-      name: "Chris Yoo",
-      position: "Developer",
-      lastUpdate: "2023-08-25",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 7,
-      email: "user1@example.com",
-      name: "Bob Smith",
-      position: "Manager",
-      lastUpdate: "2023-09-01",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 8,
-      email: "user2@example.com",
-      name: "Chris Yoo",
-      position: "Developer",
-      lastUpdate: "2023-08-25",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 11,
-      email: "user1@example.com",
-      name: "Bob Smith",
-      position: "Manager",
-      lastUpdate: "2023-09-01",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-    {
-      id: 10,
-      email: "user2@example.com",
-      name: "Chris Yoo",
-      position: "Developer",
-      lastUpdate: "2023-08-25",
-      projects: [
-        { projectId: 1, role: "Read-only" },
-        { projectId: 2, role: "Editor" },
-        { projectId: 4, role: "Editor" },
-      ],
-      contributions: [
-        "Project1->Process2->Diagram3",
-        "Project4->Process1->Diagram4",
-      ],
-      checkedOut: [
-        { diagram: "Project1->Process2->Diagram3", remainingTime: 5 },
-        { diagram: "Project2->Process2->Diagram12", remainingTime: 14 },
-        { diagram: "Project4->Process1->Diagram4", remainingTime: 2 },
-      ],
-    },
-  ]);
-
   const [showModal, setShowModal] = useState(false);
   const [tempUser, setTempUser] = useState(null);
 
+
   const handleShowModal = (user) => {
-    const clonedUser = JSON.parse(JSON.stringify(user));
-    setTempUser(clonedUser);
-    setShowModal(true);
+    console.log("Selected user:", user);
+
+    const userIdentifier = user.email.split('@')[0];
+
+    axios.get(`/api/admin/users/${userIdentifier}`)
+    .then(response => {
+        // console.log("Fetched user details:", response.data);  // debugging console log
+
+        const existingProjects = response.data.projects.map(project => ({
+            projectId: project.projectId,
+            projectName: project.projectName,
+            role: project.role
+        }));
+
+        setTempUser({
+            ...response.data,
+            existingProjects: existingProjects
+        });
+
+        setShowModal(true);
+    })
+    .catch(error => {
+        console.error("Error fetching user details", error);
+    });
   };
 
   const handleCloseModal = () => {
@@ -306,40 +101,83 @@ function Admin() {
       });
       return { ...tempUser, projects: updatedProjects };
     });
-    console.log("temp Role changed");
+
+    // console.log("Role change stored in tempUser but not saved to DB yet");  // debugging console log
   };
 
   const handleRemoveProject = (projectIndex) => {
+    const projectToRemove = tempUser.projects[projectIndex];
     const updatedProjects = tempUser.projects.filter(
       (_, index) => index !== projectIndex
     );
+
     setTempUser({ ...tempUser, projects: updatedProjects });
-    console.log("temp Removed");
+
+    setRemovedProjects((prevRemovedProjects) => [
+      ...prevRemovedProjects,
+      projectToRemove.projectId,
+    ]);
+
+    // console.log("Project removed:", projectToRemove);  // debugging console log
+    // console.log("Updated Removed Projects:", [...removedProjects, projectToRemove.projectId]);  // debugging console log
   };
 
-  const handleSaveChanges = () => {
-    const userIndex = users.findIndex((user) => user.id === tempUser.id);
-    const updatedUsers = [...users];
-    updatedUsers[userIndex] = tempUser;
-    setUsers(updatedUsers);
-    console.log("Save function here");
-    // 수정하고 세이브 버튼 눌렀을때 백 데이터 업데이트하는 펑션 여기에 추가하시면 됩니다.
 
-    setShowModal(false);
-    setTempUser(null);
-  };
-
-  const handleAddProject = (projId) => {
+  const handleAddProject = (projId, projName) => {
     const newProject = {
       projectId: projId,
+      projectName: projName,
       role: "Read-only",
     };
-
+  
     setTempUser((prevTempUser) => ({
       ...prevTempUser,
       projects: [...prevTempUser.projects, newProject],
     }));
   };
+  
+  const handleSaveChanges = () => {
+    const existingProjects = tempUser.existingProjects || [];
+    const projects = tempUser.projects || [];
+
+    const projectUpdates = projects.filter(project => 
+      !existingProjects.some(p => p.projectId === project.projectId)
+    );
+
+    const removedProjects = existingProjects.filter(existingProject => 
+      !projects.some(project => project.projectId === existingProject.projectId)
+    ).map(project => project.projectId);
+
+    const roleChanges = projects.filter((project, index) => {
+      const originalProject = existingProjects.find(p => p.projectId === project.projectId);
+      return originalProject && originalProject.role !== project.role;
+    }).map(project => ({
+      projectId: project.projectId,
+      role: project.role
+    }));
+
+    // console.log("Final Removed Projects:", removedProjects);  // debugging console log
+    // console.log("Role Changes:", roleChanges);  // debugging console log
+    // console.log("Project Updates:", projectUpdates);  // debugging console log
+
+    axios.post('/api/admin/save-user-data', {
+      userEmail: tempUser.email,
+      projectUpdates,
+      removedProjects,
+      roleChanges,
+    })
+    .then(response => {
+      console.log("User data saved successfully");
+    })
+    .catch(error => {
+      console.error("Error saving user data", error);
+    });
+
+    setShowModal(false);
+    setTempUser(null);
+    setRemovedProjects([]);
+  };
+  
 
   return (
     <div>
@@ -359,7 +197,7 @@ function Admin() {
                     <th>No</th>
                     <th>Email</th>
                     <th>Name</th>
-                    <th>Position</th>
+                    <th>Department</th>
                     <th>
                       <BsThreeDots />
                     </th>
@@ -375,7 +213,7 @@ function Admin() {
                       <td>{index + 1}</td>
                       <td>{user.email}</td>
                       <td>{user.name}</td>
-                      <td>{user.position}</td>
+                      <td>{user.department}</td>
                       <td>
                         <FaFile
                           style={{ cursor: "pointer" }}
@@ -432,11 +270,11 @@ function Admin() {
                       className="d-flex align-items-center"
                     >
                       <Form.Label style={{ width: "50%", paddingLeft: "25px" }}>
-                        Position
+                        Department
                       </Form.Label>
                       <Form.Control
                         type="text"
-                        value={tempUser.position || ""}
+                        value={tempUser.department || ""}
                         readOnly
                         style={{
                           boxShadow: "none",
@@ -452,34 +290,35 @@ function Admin() {
                       </Form.Label>
                       <Dropdown>
                         <Dropdown.Toggle
-                          variant="success"
-                          id="dropdown-basic"
-                          className="d-flex mb-1"
-                          style={{
-                            border: "none",
-                            height: "27px",
-                            background: "transparent",
-                          }}
-                        >
-                          <BsPlusCircle
-                            size={17}
-                            style={{ color: "#2A85E2" }}
-                          />
+                            variant="success"
+                            id="dropdown-basic"
+                            className="d-flex mb-1"
+                            style={{
+                              border: "none",
+                              height: "27px",
+                              background: "transparent",
+                            }}
+                          >
+                          <BsPlusCircle size={17} style={{ color: "#2A85E2" }} />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                          {projects.map((project) => (
-                            <Dropdown.Item
-                              key={project.id}
-                              onClick={() => handleAddProject(project.id)}
-                            >
-                              {project.projectName}
-                            </Dropdown.Item>
-                          ))}
+                          {projects && projects.length > 0 ? (
+                            projects.map((project) => (
+                              <Dropdown.Item
+                                key={project.id}
+                                onClick={() => handleAddProject(project.id, project.name)}
+                              >
+                                {project.name}
+                              </Dropdown.Item>
+                            ))
+                          ) : (
+                            <Dropdown.Item disabled>No projects available</Dropdown.Item>
+                          )}
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>
                     <ListGroup>
-                      {tempUser &&
+                      {tempUser.projects && tempUser.projects.length > 0 ? (
                         tempUser.projects.map((project, index) => (
                           <ListGroup.Item
                             key={index}
@@ -487,10 +326,7 @@ function Admin() {
                             style={{ paddingLeft: "30px" }}
                           >
                             <div style={{ width: "55%" }}>
-                              {
-                                projects.find((p) => p.id === project.projectId)
-                                  .projectName
-                              }
+                              {project.projectName}
                             </div>
                             <div
                               className="d-flex align-items-center"
@@ -529,7 +365,10 @@ function Admin() {
                               />
                             </div>
                           </ListGroup.Item>
-                        ))}
+                        ))
+                      ) : (
+                        <ListGroup.Item>No projects available</ListGroup.Item>
+                      )}
                     </ListGroup>
                   </Form.Group>
                   <Form.Group>
@@ -566,12 +405,12 @@ function Admin() {
             </Modal.Body>
             <Modal.Footer className="justify-content-center">
               <Button
-                style={{ backgroundColor: "#2A85E2" }}
-                onClick={handleSaveChanges}
-              >
-                Save
-              </Button>
-            </Modal.Footer>
+              style={{ backgroundColor: "#2A85E2" }}
+              onClick={handleSaveChanges}
+            >
+              Save
+            </Button>
+          </Modal.Footer>
           </Modal>
         </div>
       </div>

@@ -9,7 +9,6 @@ import ListSingleProject from "./components/ListSingleProject";
 import Main from "./components/Main";
 import MyPage from "./components/MyPage";
 import { msalInstance } from "./config/authConfig";
-import Publish from "./Publish";
 import TestingEmail from "./components/TestingEmail";
 import BpmnEditor from "./components/bpmnModeler";
 import { NavigationHelper } from "./util/navigation";

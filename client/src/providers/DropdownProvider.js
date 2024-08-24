@@ -1,12 +1,4 @@
-/*
- * This file contains code adapted from the [bpmn-js] library.
- * Source: [URL of the source code if available]
- * 
- * [bpmn-js] is licensed under the [bpmn.io License].
- * You can find a copy of the license at [https://bpmn.io/license/].
- */
-
-import attachmentProp from './props/AttachmentProp';
+import dropdownProps from './props/Dropdown/DropdownProps';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
@@ -20,7 +12,9 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function AttachmentPropertiesProvider(propertiesPanel, translate) {
+export default function DropdownPropertiesProvider(propertiesPanel, translate) {
+
+  // API ////////
 
   /**
    * Return the groups provided for the given element.
@@ -41,9 +35,9 @@ export default function AttachmentPropertiesProvider(propertiesPanel, translate)
      */
     return function(groups) {
 
-      // Add the "attachment" group
+      // Add the "magic" group
       if (is(element, 'bpmn:BaseElement')) {
-        groups.push(createAttachGroup(element, translate));
+        groups.push(createMagicGroup(element, translate));
       }
 
       return groups;
@@ -53,23 +47,23 @@ export default function AttachmentPropertiesProvider(propertiesPanel, translate)
 
   // registration ////////
 
-  // Register our custom properties provider.
+  // Register our custom magic properties provider.
   // Use a lower priority to ensure it is loaded after
   // the basic BPMN properties.
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-AttachmentPropertiesProvider.$inject = [ 'propertiesPanel', 'translate' ];
+DropdownPropertiesProvider.$inject = [ 'propertiesPanel', 'translate' ];
 
-// Create the custom attachment group
-function createAttachGroup(element, translate) {
+// Create the custom magic group
+function createMagicGroup(element, translate) {
 
-  // create a group called "Attachment".
-  const attachGroup = {
-    id: 'attachment',
-    label: translate('Attachment'),
-    entries: attachmentProp(element)
+  // create a group called "Magic properties".
+  const magicGroup = {
+    id: 'dropdown',
+    label: translate('Properties'),
+    entries: dropdownProps(element),  
   };
 
-  return attachGroup;
+  return magicGroup;
 }

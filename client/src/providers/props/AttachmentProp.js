@@ -25,11 +25,19 @@ export default function (element) {
   ];
 }
 
+function reader(file, callback) {
+  const fr = new FileReader();
+  fr.onload = () => callback(null, fr.result);
+  fr.onerror = (err) => callback(err);
+  fr.readAsDataURL(file);
+}
+
 function Attachment(props) {
   const { element, id } = props;
   const modeling = useService('modeling');
   const debounce = useService('debounceInput');
   const nodeId = element.businessObject.id;
+  const diagramId = window.location.pathname.split("/")[3];
   // Get attachment 
   const getValue = () => {
     if (element.businessObject.attachment) {
@@ -43,25 +51,27 @@ function Attachment(props) {
   };
   // Update property of the element and save it in the diagram file 
   const setValue = async (names, value) => {
-    // Function for retrieving attachment file names in the storage to be added
-    // axios.post(`/api/attachments/${diagramId}`, {
-    //   body: {
-    //     nodeId: nodeId,
-    //     file: value
-    //   }
-    // })
-    //   .then(res => console.log(res))
-    //   .catch(err => console.log(err));
+    reader(value, (err, res) => {
+      const file = { name: value.name, data: res };
+      // Function for adding an attachment file in the storage
+      axios.post(`http://localhost:3001/api/attachments/${diagramId}`, {
+        nodeId: nodeId,
+        file: file,
+        type: value.type
+      })
+        .then(res => console.log({ msg: res.data.message, file: res.data.file }))
+        .catch(err => console.log(err));
+    });
     return modeling.updateProperties(element, {
       attachment: names
     });
   };
 
   const deleteValue = async (names, value) => {
-    // Function for retrieving attachment file names in the storage to be added
-    // axios.post(`/api/attachments/${diagramId}/${nodeId}/${value.name}`)
-    //   .then(res => console.log(res))
-    //   .catch(err => console.log(err));
+    // Function for deleting attachment files
+    axios.post(`http://localhost:3001/api/attachments/${diagramId}/${nodeId}/${value}`)
+      .then(res => console.log({ msg: res.data.message, file: res.data.file }))
+      .catch(err => console.log(err));
     return modeling.updateProperties(element, {
       attachment: names
     });
@@ -74,6 +84,7 @@ function Attachment(props) {
     setValue=${setValue}
     deleteValue=${deleteValue}
     debounce=${debounce}
+    diagramId=${diagramId}
   />`;
 }
 
@@ -82,6 +93,7 @@ var classnames = require('classnames');
 
 function AttachmentList(props) {
   const {
+    diagramId,
     element,
     id,
     onChange,
@@ -107,17 +119,13 @@ function AttachmentList(props) {
   // View file on click
   const onClick = e => {
     e.stopPropagation();
-    // Function for geting selected attachment file
-      // axios.get(`/api/attachments/${diagramId}/${nodeId}/${e.target.name}`)
-      //   .then((res) => {
-      //     console.log(res.data);
-      //   })
-      //   .catch(err => console.log(err));
-    let file = localValue.find(el => {
-      return el.name === e.target.name;
-    })
-    const url = URL.createObjectURL(file);
-    e.target.href = url;
+    // Function for getting selected attachment file
+    axios.get(`/api/attachments/${diagramId}/${nodeId}/${e.target.name}`, {responseType: 'blob'})
+      .then((res) => {
+        var url = URL.createObjectURL(res.data);
+        window.open(url);
+      })
+      .catch(err => console.log(err));
   }
   const btnOnClick = e => {
     e.preventDefault();
@@ -205,6 +213,7 @@ function Attachmentfield(props) {
     id,
     onChange,
     onDelete,
+    diagramId,
     value = []
   } = props;
   const [localValue, setLocalValue] = hooks.useState(value || []);
@@ -292,7 +301,8 @@ function Attachmentfield(props) {
       onDelete: handleDeleteCallback,
       value: localValue,
       resetFile: resetFile,
-      handleHide: handleHide
+      handleHide: handleHide,
+      diagramId: diagramId
     })
     ]
   });
@@ -301,6 +311,7 @@ function Attachmentfield(props) {
 // Create html element for field wrapper
 function AttachmentfieldEntry(props) {
   const {
+    diagramId,
     element,
     id,
     debounce,
@@ -351,7 +362,8 @@ function AttachmentfieldEntry(props) {
       onChange: onChange,
       value: value,
       element: element,
-      onDelete: onDelete
+      onDelete: onDelete,
+      diagramId: diagramId
     }, element), error && jsx("div", {
       class: "bio-properties-panel-error",
       children: error

@@ -13,7 +13,7 @@ import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 import { classes, domify } from 'min-dom';
 import { getPlaneIdFromShape } from 'bpmn-js/lib/util/DrilldownUtil';
 import axios from 'axios';
-import { navigateTo, getLocation } from '../../util/navigation';
+import { getLocation } from '../../util/navigation';
 
 /**
  * @typedef {import('diagram-js/lib/core/Canvas').default} Canvas

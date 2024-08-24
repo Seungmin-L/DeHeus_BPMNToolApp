@@ -7,31 +7,19 @@
  */
 
 import AttachmentPropertiesProvider from './AttachmentPropertiesProvider';
-import AttributePropertiesProvider from './attributePropertiesProvider';
 import ParameterPropertiesProvider from './ParameterProvider';
-import EndToEndPropertiesProvider from './EndToEndProvider';
-import FunctionPropertiesProvider from './FunctionProvider';
-import DepartmentPropertiesProvider from './DepartmentProvider';
-import DomainPropertiesProvider from './DomainProvider';
+import DropdownPropertiesProvider from './DropdownProvider';
 
 
 export default {
   // initiate custom modules for properties panel
   __init__: [ 
     'attachmentPropertiesProvider',
-    // 'attributePropertiesProvider',
-    'endToEndPropertiesProvider',
-    'functionPropertiesProvider',
-    'departmentPropertiesProvider',
-    'domainPropertiesProvider',
+    'dropdownPropertiesProvider',
     'parameterPropertiesProvider',
   ],
   attachmentPropertiesProvider: [ 'type', AttachmentPropertiesProvider ],
-  // attributePropertiesProvider: [ 'type', AttributePropertiesProvider ],
-  endToEndPropertiesProvider: [ 'type', EndToEndPropertiesProvider ],
-  functionPropertiesProvider: [ 'type', FunctionPropertiesProvider ],
-  departmentPropertiesProvider: [ 'type', DepartmentPropertiesProvider ],
-  domainPropertiesProvider: [ 'type', DomainPropertiesProvider ],
+  dropdownPropertiesProvider: [ 'type', DropdownPropertiesProvider ],
   parameterPropertiesProvider: [ 'type', ParameterPropertiesProvider ],
 
 };

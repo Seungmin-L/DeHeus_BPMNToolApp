@@ -11,6 +11,7 @@ const diagramController = require('./src/controllers/diagramController');
 const attachmentsController = require('./src/controllers/attachmentsController');
 const adminController = require('./src/controllers/adminController');
 const userController = require('./src/controllers/userController');
+const {getContribution}  = require('./src/controllers/contributionController');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -42,6 +43,8 @@ app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.g
 app.get('/api/admin/users', adminController.getUserList)
 app.get('/api/admin/users/:identifier', adminController.getUserData);
 app.post('/api/admin/save-user-data', adminController.saveUserData);
+
+app.get('/api/contribution/editor', getContribution);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the backend server!');

@@ -225,7 +225,7 @@ code {
 
 /* CSS for ICONS */
 
-.entry.bpmn-icon-connection-multi:before {
+/* .entry.bpmn-icon-connection-multi:before {
   content: "";
   display: inline-block;
   height: 20px; 
@@ -237,7 +237,7 @@ code {
 
 .entry.bpmn-icon-connection-multi:hover:before {
   filter: brightness(0) saturate(100%) invert(28%) sepia(99%) saturate(4094%) hue-rotate(190deg) brightness(102%) contrast(104%);
-}
+} */
 
 /*CSS for sidebar*/
 

@@ -9,7 +9,7 @@ const getUserList = async (req, res) => {
       console.error("Error fetching user list", err);
       res.status(500).send("Error fetching user list");
     }
-  };
+};
 
 
 const getUserData = async (req, res) => {

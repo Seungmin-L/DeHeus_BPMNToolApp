@@ -10,4 +10,25 @@ const listProjects = async (req, res) => {
   }
 };
 
-module.exports = { listProjects };
+const addProject = (req, res) => {
+  const { projectName } = req.body;
+  try {
+    sql.query(`
+      INSERT INTO project
+      (name, last_update)
+      VALUES (${"'" + projectName + "'"}, GETDATE())
+    `)
+      .then((result) => {
+        res.status(200).send("Project created succesfully");
+      })
+      .catch(err => {
+        console.error(err);
+        res.status(500).send("Server error occurred");
+      });
+  } catch (err) {
+    console.error("Error creating project", err);
+    res.status(500).send("Error creating projects");
+  }
+}
+
+module.exports = { listProjects, addProject };

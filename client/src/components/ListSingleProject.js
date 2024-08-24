@@ -77,14 +77,14 @@ function ListSingleProject() {
 
         const { diagramName, fileData } = response.data;  // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
         // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
-        // console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
+        console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
 
         const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
         // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
 
         // 다이어그램 모델러 페이지로 이동
         // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
-        navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+        navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
     } catch (error) {
         console.error("Error fetching diagram data:", error);
         alert('Failed to open the diagram.');
@@ -155,15 +155,40 @@ function ListSingleProject() {
   const handleCloseModal = () => setShowModal(false);
 
   const handleCreate = () => {
-    if (formType === "Process") {
+    if (formType === "Process" && processName !== "") {
+      axios.post(`http://localhost:3001/api/processes/add`, {
+        projectId: projectId,
+        processName: processName
+      })
+      .then(res => {
+        console.log(res.data);
+        window.location.reload();
+      })
+      .catch(err => {
+        console.error(err);
+      });
       console.log("Creating Process:", processName);
     } else {
-      console.log(
-        "Creating Diagram:",
-        diagramName,
-        "for Process:",
-        selectedProcess
-      );
+      if(diagramName !== "" && selectedProcess !== ""){
+        console.log(
+          "Creating Diagram:",
+          diagramName,
+          "for Process:",
+          selectedProcess
+        );
+        axios.post(`http://localhost:3001/api/diagram/add`, {
+          projectId: projectId,
+          diagramName: diagramName,
+          diagramId: selectedProcess
+        })
+        .then(res => {
+          console.log(res.data);
+          window.location.reload();
+        })
+        .catch(err => {
+          console.error(err);
+        });
+      }
     }
     handleCloseModal();
   };

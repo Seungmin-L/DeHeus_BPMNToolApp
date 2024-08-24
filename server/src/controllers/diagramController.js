@@ -9,7 +9,40 @@ function convertXMLToBlob(xmlString) {
 // 다이어그램 로드랑 연결되는 컨버트 함수
 function convertBlobtoXML(file_data) {
     // blob to xml
-    return file_data.toString('utf8');
+    return file_data.toString('utf-8');
+}
+
+const createSubProcess = async (req, res) => {
+    try {
+        const { projectId, diagramId, processName, elementId } = req.body;
+        const result = await sql.query(`
+            SELECT child_diagram_id as id
+            FROM diagram_relation
+            WHERE parent_diagram_id = ${diagramId} 
+            AND
+            parent_node_id = ${"'" + elementId + "'"}
+        `);
+        if (result.recordset.length === 0) {
+            sql.query(`
+                DECLARE @NewValue INT;
+                INSERT INTO diagram (project_id, name, created_at) 
+                VALUES (${projectId}, ${"'" + processName + "'"}, GETDATE());
+                SET @NewValue = SCOPE_IDENTITY();
+                INSERT INTO diagram_relation (project_id, parent_diagram_id, parent_node_id, child_diagram_id)
+                VALUES (${projectId},  ${diagramId}, ${"'" + elementId + "'"}, @NewValue);
+                SELECT @NewValue as lastDiagramId
+            `, (err, results) => {
+                if (err) throw err;
+                res.status(200).json({ message: "Diagram created successfully", data: {name: processName, id: results.recordset[0].lastDiagramId}, projectId: projectId });
+            });
+        } else {
+            res.status(200).json({ message: "Diagram already exists", data: result.recordset[0]});
+        }
+
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).send("Failed to create diagram draft");
+    }
 }
 
 const draftSave = async (req, res) => {
@@ -38,16 +71,33 @@ const draftSave = async (req, res) => {
     }
 };
 
+const addDiagram = async (req, res) => {
+    const { projectId, diagramName, diagramId } = req.body;
+    try {
+        await sql.query(`
+            DECLARE @NewValue INT;
+            INSERT INTO diagram (project_id, name, created_at) 
+            VALUES (${projectId}, ${"'" + diagramName + "'"}, GETDATE());
+            SET @NewValue = SCOPE_IDENTITY();
+            INSERT INTO diagram_relation (project_id, parent_diagram_id, child_diagram_id)
+            VALUES (${projectId}, ${diagramId}, @NewValue);
+        `);
+        res.status(200).json({ message: "Diagram created successfully" });
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).send("Failed to create diagram");
+    }
+}
 
 async function getLatestPublishedDiagram(projectId, diagramId) {
     try {
         const request = new sql.Request();
         const query = `
-            SELECT TOP 1 
-                dp.file_data, 
-                dp.file_type, 
-                dp.published_at, 
-                d.name AS diagramName
+            SELECT TOP 1
+    dp.file_data,
+        dp.file_type,
+        dp.published_at,
+        d.name AS diagramName
             FROM diagram_published dp
             JOIN diagram d ON dp.diagram_id = d.id
             WHERE d.project_id = @projectId 
@@ -103,5 +153,4 @@ async function getDiagramData(req, res) {
 
 
 
-module.exports = { draftSave, getDiagramData };
-  
+module.exports = { draftSave, getDiagramData, createSubProcess, addDiagram };

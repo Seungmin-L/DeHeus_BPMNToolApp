@@ -12,6 +12,8 @@ import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor';
 import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 import { classes, domify } from 'min-dom';
 import { getPlaneIdFromShape } from 'bpmn-js/lib/util/DrilldownUtil';
+import axios from 'axios';
+import { navigateTo, getLocation } from '../../util/navigation';
 
 /**
  * @typedef {import('diagram-js/lib/core/Canvas').default} Canvas
@@ -193,16 +195,54 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
       title = this._translate('Open {element}', { element: elementName });
   button.setAttribute('title', title);
 
-  button.addEventListener('click', function() {
+  button.addEventListener('click', function () {
+    const projectId = window.location.pathname.split("/")[2];
+    const name = element.businessObject.name;
+    const { userName, diagramId } = getLocation();
+    console.log(userName, diagramId);
+    if (name) {
+      axios.post(`http://localhost:3001/api/diagram/createSub`, {
+        projectId: projectId,
+        diagramId: diagramId,
+        processName: name,
+        elementId: element.id
+      })
+        .then((res) => {
+          if (res.data.message.endsWith("exists")) {
+            console.log(res.data);
+            axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${res.data.data.id}`)
+              .then((response) => {
+                const { diagramName, fileData } = response.data;
+                const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
+                console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
 
-    // canvas.setRootElement(canvas.findRoot(getPlaneIdFromShape(element)));
-    var planeId = getPlaneIdFromShape(element)
-    localStorage.setItem('planeId', planeId);
-    localStorage.setItem('subProcess',true);
-    
-    window.open('/publish/bpmnModeler', '_blank');
+                // 다이어그램 모델러 페이지로 이동
+                // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+                // navigate(generatedUrl, { state: { itemId: diagramId, userName: userName, fileData: fileData } });
+              }).catch((error) => {
+                console.error("Error fetching diagram data:", error);
+                alert('Failed to open the diagram.');
+              })
+            // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
+            // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
 
-
+            // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
+            // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
+            // console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
+          } else {
+            console.log(res.data);
+            const url = `/project/${projectId}/${res.data.data.name.replace(/ /g, '-')}`;
+            const newWindow = window.open(url, "_blank");
+            const data = {id: res.data.data.id, url: url, userName: userName}
+            newWindow.addEventListener("load", () => {
+              newWindow.postMessage(data, window.location.origin);
+            });
+          }
+        })
+        .catch(err => console.error(err));
+    } else {
+      alert("To create a subprocess, there must be a name for it");
+    }
   });
 
   overlays.add(element, 'drilldown', {

@@ -43,7 +43,6 @@ function BpmnEditor() {
     const { projectId } = useParams();
     const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
-    // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);

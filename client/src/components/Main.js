@@ -16,11 +16,16 @@ function Main() {
   const [isNavVisible, setIsNavVisible] = useState(false);
   const navigate = useNavigate();
 
+
+  // listing the projects based on user role
   useEffect(() => {
     if (isAuthenticated && accounts.length > 0) {
-      setUserName(accounts[0].username);
-      
-      axios.get("/api/projects").then(response => {
+      const userName = accounts[0].username;
+      setUserName(userName);
+
+      axios.get("/api/projects", {
+        params: { userName }
+      }).then(response => {
         const formattedProjects = formatProjectDates(response.data);
         setProjects(formattedProjects);
       }).catch(error => {
@@ -28,6 +33,7 @@ function Main() {
       });
     }
   }, [isAuthenticated, accounts]);
+
 
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);

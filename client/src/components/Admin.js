@@ -19,6 +19,7 @@ import {
 import { FaFile } from "react-icons/fa";
 import LeftNavBar from "./common/LeftNavBar";
 import TopBar from "./common/TopBar";
+import { convertUTCToLocal } from '../utils/utils';
 
 function Admin() {
   const isAuthenticated = useIsAuthenticated();
@@ -58,7 +59,6 @@ function Admin() {
   const [showModal, setShowModal] = useState(false);
   const [tempUser, setTempUser] = useState(null);
 
-
   const handleShowModal = (user) => {
     console.log("Selected user:", user);
 
@@ -66,17 +66,21 @@ function Admin() {
 
     axios.get(`/api/admin/users/${userIdentifier}`)
     .then(response => {
-        // console.log("Fetched user details:", response.data);  // debugging console log
-
         const existingProjects = response.data.projects.map(project => ({
             projectId: project.projectId,
             projectName: project.projectName,
             role: project.role
         }));
 
+        const availableProjects = response.data.availableProjects.map(project => ({
+            projectId: project.id,
+            projectName: project.name
+        }));
+
         setTempUser({
             ...response.data,
-            existingProjects: existingProjects
+            existingProjects: existingProjects,
+            availableProjects: availableProjects
         });
 
         setShowModal(true);
@@ -85,6 +89,7 @@ function Admin() {
         console.error("Error fetching user details", error);
     });
   };
+
 
   const handleCloseModal = () => {
     setTempUser(null);
@@ -220,7 +225,7 @@ function Admin() {
                           onClick={() => handleShowModal(user)}
                         />
                       </td>
-                      <td>{user.lastUpdate}</td>
+                      <td>{convertUTCToLocal(user.lastUpdate)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -302,13 +307,13 @@ function Admin() {
                           <BsPlusCircle size={17} style={{ color: "#2A85E2" }} />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                          {projects && projects.length > 0 ? (
-                            projects.map((project) => (
+                          {tempUser && tempUser.availableProjects && tempUser.availableProjects.length > 0 ? (
+                            tempUser.availableProjects.map((project) => (
                               <Dropdown.Item
-                                key={project.id}
-                                onClick={() => handleAddProject(project.id, project.name)}
+                                key={project.projectId}
+                                onClick={() => handleAddProject(project.projectId, project.projectName)}
                               >
-                                {project.name}
+                                {project.projectName}
                               </Dropdown.Item>
                             ))
                           ) : (

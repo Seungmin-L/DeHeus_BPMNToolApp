@@ -210,15 +210,24 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
         .then((res) => {
           if (res.data.message.endsWith("exists")) {
             console.log(res.data);
-            axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${res.data.data.id}`)
+            axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${res.data.data.id}/editor/${userName}`)
               .then((response) => {
-                const { diagramName, fileData } = response.data;
-                const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
-                console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
-
-                // 다이어그램 모델러 페이지로 이동
-                // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
-                // navigate(generatedUrl, { state: { itemId: diagramId, userName: userName, fileData: fileData } });
+                if (!response.data.message) {
+                  const { diagramName, fileData } = response.data;
+                  const url = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
+                  const data = { id: res.data.data.id, url: url, userName: userName, fileData: fileData }
+                  const newWindow = window.open(url, "_blank");
+                  newWindow.addEventListener("load", () => {
+                    newWindow.postMessage(data, window.location.origin);
+                  });
+                }else{
+                  const url = `/project/${projectId}/${name.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
+                  const data = { id: res.data.data.id, url: url, userName: userName }
+                  const newWindow = window.open(url, "_blank");
+                  newWindow.addEventListener("load", () => {
+                    newWindow.postMessage(data, window.location.origin);
+                  });
+                }
               }).catch((error) => {
                 console.error("Error fetching diagram data:", error);
                 alert('Failed to open the diagram.');
@@ -233,7 +242,7 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
             console.log(res.data);
             const url = `/project/${projectId}/${res.data.data.name.replace(/ /g, '-')}`;
             const newWindow = window.open(url, "_blank");
-            const data = {id: res.data.data.id, url: url, userName: userName}
+            const data = { id: res.data.data.id, url: url, userName: userName };
             newWindow.addEventListener("load", () => {
               newWindow.postMessage(data, window.location.origin);
             });

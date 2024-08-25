@@ -50,6 +50,7 @@ function BpmnEditor() {
     const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
     const { projectId, itemName } = useParams();
     const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
+    // const userName = "rmit@pbmn.com";
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
     // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
@@ -131,7 +132,7 @@ function BpmnEditor() {
             console.error("An error occurred while fetching the diagram path:", err.message);
         }
     };
-
+        }
 
     useEffect(() => {
         // console.log(location.state);
@@ -296,6 +297,17 @@ function BpmnEditor() {
             setDiagramXML(null);
         }
     }, [fileData]);
+
+    useEffect(() => {
+        const minimapElement = document.querySelector('.djs-minimap');
+        if (minimapElement) {
+          if (!hidePanel) {
+            minimapElement.classList.remove('hidePanelFalse');
+          } else {
+            minimapElement.classList.add('hidePanelFalse');
+          }
+        }
+      }, [hidePanel]);
 
     // hide hierarchy side bar
     const handleHidden = () => {
@@ -525,8 +537,10 @@ function BpmnEditor() {
                 alert("Error sending email");
             });
     }
-
-
+    //handle publish
+    const handlePublish=()=> {
+        
+    }
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -656,6 +670,8 @@ function BpmnEditor() {
                         onFileChange={onFileChange}
                         onCheckIn={handleShowCheckInModal}
                         onContributor={handleContributor}
+                        onShare={handleShare}
+                        onPublish={handlePublish}
                         onShare={handleShowPublishModal}
                     />
                 </div>

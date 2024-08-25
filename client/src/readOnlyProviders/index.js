@@ -7,11 +7,17 @@
  */
 
 import ReadOnlyAttachmentProvider from './ReadOnlyAttachmentProvider';
+import ReadOnlyDropdownProvider from './ReadOnlyDropdownProvider';
+import ReadOnlyParameterProvider from './ReadOnlyParameterProvider';
 
 export default {
   // initiate custom modules for properties panel
   __init__: [ 
-    'readOnlyAttachmentProvider'
+    'readOnlyAttachmentProvider',
+    'readOnlyDropdownProvider',
+    'readOnlyParameterProvider'
   ],
-  readOnlyAttachmentProvider: [ 'type', ReadOnlyAttachmentProvider]
+  readOnlyAttachmentProvider: [ 'type', ReadOnlyAttachmentProvider],
+  readOnlyDropdownProvider: [ 'type', ReadOnlyDropdownProvider],
+  readOnlyParameterProvider: ['type', ReadOnlyParameterProvider]
 };

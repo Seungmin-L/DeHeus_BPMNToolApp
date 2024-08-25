@@ -6,7 +6,11 @@
  * You can find a copy of the license at [https://bpmn.io/license/].
  */
 
-import attachmentProp from './Attachment/ReadOnlyAttachmentProp';
+// Import your custom list group entries.
+import parametersProps from './parameter/ParametersProp';
+
+// Import the properties panel list group component.
+import { ListGroup } from '@bpmn-io/properties-panel';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
@@ -20,7 +24,9 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function ReadOnlyAttachmentProvider(propertiesPanel, translate) {
+export default function ReadOnlyParameterProvider(propertiesPanel, injector, translate) {
+
+  // API ////////
 
   /**
    * Return the groups provided for the given element.
@@ -41,9 +47,8 @@ export default function ReadOnlyAttachmentProvider(propertiesPanel, translate) {
      */
     return function(groups) {
 
-      // Add the "attachment" group
       if (is(element, 'bpmn:BaseElement')) {
-        groups.push(createAttachGroup(element, translate));
+        groups.push(createParametersGroup(element, injector, translate));
       }
 
       return groups;
@@ -53,23 +58,23 @@ export default function ReadOnlyAttachmentProvider(propertiesPanel, translate) {
 
   // registration ////////
 
-  // Register our custom properties provider.
   // Use a lower priority to ensure it is loaded after
   // the basic BPMN properties.
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-ReadOnlyAttachmentProvider.$inject = [ 'propertiesPanel', 'translate' ];
+ReadOnlyParameterProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
-// Create the custom attachment group
-function createAttachGroup(element, translate) {
+// Create the custom parameters list group.
+function createParametersGroup(element, injector, translate) {
 
-  // create a group called "Attachment".
-  const attachGroup = {
-    id: 'attachment',
-    label: translate('Attachment'),
-    entries: attachmentProp(element)
+  // Create a group called "parameters".
+  const parametersGroup = {
+    id: 'parameters',
+    label: translate('Extended'),
+    component: ListGroup,
+    ...parametersProps({ element, injector })
   };
 
-  return attachGroup;
+  return parametersGroup;
 }

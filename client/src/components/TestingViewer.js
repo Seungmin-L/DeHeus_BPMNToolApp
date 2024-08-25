@@ -35,8 +35,9 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 import Sidebar from '../features/sidebar/Sidebar';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { navigateTo } from '../util/navigation';
+import { init } from '@emailjs/browser';
 
-function BpmnEditor() {
+function BpmnViewer() {
     const navigate = useNavigate();
     const location = useLocation();
     const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
@@ -47,34 +48,16 @@ function BpmnEditor() {
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
-    const [userRole, setUserRole] = useState('editing'); // for toolbar view (readOnly, contributor, editing)
+    const [userRole, setUserRole] = useState('readOnly'); // for toolbar view (readOnly, contributor, editing)
     const [isHidden, setIsHidden] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [diagramXML, setDiagramXML] = useState(null);
     const [isFileValid, setIsFileValid] = useState(true);
     const [hidePanel, setHidePanel] = useState(false);
-    const saveKeys = ['s', 'S'];
+    const searchKeys = ['f', 'F'];
     let modelerInstance = null;
-
+    let priority = 10000;
     useEffect(() => {
-        // 아래는 디버깅 용도 로그입니다~!!!
-        // console.log("Received Diagram ID:", diagramId); 
-        // console.log("Received User Name:", userName); 
-        // console.log("Received File Data:", fileData); 
-
-        // 아래 코드는 내가 임의로 작성해 둔 건데, server/src/controllers/diagramController.js 파일에서 api response로 가지고 온 xml 정보 (diagram_published 테이블의 file data 컬럼에 해당)를 다이어그램 모델러로 띄우면 됩니다~!!! 라인 193도 함께 주석 처리 완료!!!
-        // if (projectName && diagramName && publishDate) {
-        //     axios.get(`/api/diagrams/get-diagram-with-project/${diagramId}`)
-        //         .then(response => {
-        //             const { fileData } = response.data;
-        //             setDiagramXML(fileData);
-        //         })
-        //         .catch(error => {
-        //             console.error("Error fetching diagram data:", error);
-        //             setIsFileValid(false);
-        //         });
-        // }
-
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -87,16 +70,12 @@ function BpmnEditor() {
             additionalModules: [
                 BpmnPropertiesPanelModule,
                 BpmnPropertiesProviderModule,
-                ColorPickerModule,
                 minimapModule,
-                attachmentPropertiesProviderModule,
                 parameterPropertiesProviderModule,
                 dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
-                PaletteModule,
-                PopupMenuModule,
-                ReplaceModule
+                { dragging: ['value', { init: function () { } }] }
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
@@ -104,21 +83,6 @@ function BpmnEditor() {
                 dropdown: dropdownDescriptor,
             }
         });
-        // Check file api availablitiy
-        if (!window.FileList || !window.FileReader) {
-            window.alert(
-                'Looks like you use an older browser that does not support drag and drop. ' +
-                'Try using Chrome, Firefox or the Internet Explorer > 10.');
-        } else {
-            registerFileDrop(document.getElementById('modeler-container'));
-        }
-        // if subprocess
-        // var bpmnnXml = localStorage.getItem('bpmnXml');
-        // if (bpmnnXml) {
-        //     //set bpmn xml from local
-        //     setDiagramXML(bpmnnXml);
-        // }
-        // Import file or create a new diagram
 
         window.addEventListener("message", (e) => {
             if (e.origin !== window.location.origin) return;
@@ -137,7 +101,10 @@ function BpmnEditor() {
         });
         if (fileData) {
             setDiagramXML(fileData);
+        }else{
+            setDiagramXML(null);
         }
+        // Import file
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
                 .then(({ warnings }) => {
@@ -152,45 +119,26 @@ function BpmnEditor() {
                     console.error("Error rendering diagram:", err);
                     setIsFileValid(false);
                 });
-        } else {
-            modelerInstance.createDiagram()
-                .then(() => {
-                    modelerInstance.get("canvas").zoom("fit-viewport");
-                    modelerInstance.get('keyboard').bind(document);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setIsFileValid(false);
-                });
         }
+        const eventBus = modelerInstance.get('eventBus');
+        const keyboard = modelerInstance.get('keyboard');
+        eventBus.on(['element.click', 'element.dblclick'], priority, () => {
+            return false;
+        });
 
-        // Save diagram on every change
-        modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
-        // modelerInstance.on('commandStack.changed', saveDiagram);
-        modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
-        // Add Save shortcut (ctrl + s)
-        modelerInstance.get('editorActions').register('save', saveDiagram);
-        modelerInstance.get('keyboard').addListener(function (context) {
+        keyboard.addListener(priority, () => {
+            return false;
+        });
+
+        keyboard.addListener(20000, function (context) {
             var event = context.keyEvent;
             if (event.ctrlKey || event.metaKey) {
-                if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
-                    modelerInstance.get('editorActions').trigger('save');
+                if (searchKeys.indexOf(event.key) !== -1 || searchKeys.indexOf(event.code) !== -1) {
+                    modelerInstance.get('editorActions').trigger('find');
                     return true;
                 }
             }
         });
-        const eventBus = modelerInstance.get('eventBus');
-        const elementRegistry = modelerInstance.get('elementRegistry');
-
-        eventBus.on('element.click', function (e) {
-            const element = elementRegistry.get(e.element.id);
-            const overlays = modelerInstance.get('overlays');
-            const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-            if (existingOverlays.length) {
-                console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
-            }
-        });
-
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
 
@@ -206,36 +154,6 @@ function BpmnEditor() {
     // hide heirchy side bar
     const handleHidden = () => {
         setIsHidden(prev => !prev);
-    }
-    // File drag & drop
-    const registerFileDrop = (container) => {
-        const handleFileSelect = (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-
-            var files = e.dataTransfer.files;
-            var file = files[0];
-            var reader = new FileReader();
-            if (file) {
-                reader.onload = (e) => {
-                    var xml = e.target.result;
-                    setDiagramXML(xml);
-                };
-
-                reader.readAsText(file);
-            } else {
-                console.log("Invalid File");
-            }
-        }
-
-        const handleDragOver = (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'copy';
-        }
-
-        container.addEventListener('dragover', handleDragOver, false);
-        container.addEventListener('drop', handleFileSelect, false);
     }
 
     // Download exported file (SVG, XML)
@@ -255,7 +173,23 @@ function BpmnEditor() {
         handleClose();
     }
 
-    // Export diagram as xml
+    const onFileChange = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        var file = e.target.files[0];
+        var reader = new FileReader();
+        if (file) {
+            reader.onload = (e) => {
+                var xml = e.target.result;
+                setDiagramXML(xml);
+            };
+
+            reader.readAsText(file);
+        } else {
+            console.log("Invalid File");
+        }
+    }
+
     const exportXml = async (id) => {
         if (modeler) {
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
@@ -306,55 +240,9 @@ function BpmnEditor() {
         }
     }
 
-    // Save diagram
-    const saveDiagram = async () => {
-        if (modelerInstance) {
-            const { xml } = await modelerInstance.saveXML({ format: true }).catch(err => {
-                console.log(err);
-            });
-            if (xml) {
-                console.log(xml);
-                // Save diagram in DB
-                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
-                    .then(response => {
-                        console.log("Diagram saved successfully:", response.data);
-                    })
-                    .catch(error => {
-                        console.error("Error saving diagram to the database:", error);
-                    });
-            };
-        }
-    }
-    const onElementDelete = (nodeId) => {
-        if (nodeId === undefined) {
-            console.log("undefined");
-            return;
-        }
-        axios.post(`http://localhost:3001/api/attachments/${diagramId}/${nodeId}`)
-            .then(res => console.log(res.data))
-            .catch(err => console.error("Error fetching processes", err));
-    }
-
     const onImportClick = () => {
         importFile.current.click();
     }
-    const onFileChange = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        var file = e.target.files[0];
-        var reader = new FileReader();
-        if (file) {
-            reader.onload = (e) => {
-                var xml = e.target.result;
-                setDiagramXML(xml);
-            };
-
-            reader.readAsText(file);
-        } else {
-            console.log("Invalid File");
-        }
-    }
-
     // handle exports to files
     const handleExportXml = (e) => {
         e.stopPropagation();
@@ -484,7 +372,7 @@ function BpmnEditor() {
                         onFileChange={onFileChange}
                     />
                 </div>
-                <div className='model-body'>
+                <div className='model-body disabled'>
                     {isHidden ?
                         <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
                         :
@@ -492,7 +380,7 @@ function BpmnEditor() {
                     }
 
                     <div id='modeler-container' className={"" + (isHidden ? 'sidebar-hidden' : '')} ref={container} />
-                    <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
+                    <div className={hidePanel ? 'properties_panel_hidden disabled' : 'properties_panel_open disabled'}>
                         <button className='hide-panel' onClick={toggleVisibility}>
                             Details
                         </button>
@@ -505,4 +393,4 @@ function BpmnEditor() {
     }
 
 }
-export default BpmnEditor;
+export default BpmnViewer;

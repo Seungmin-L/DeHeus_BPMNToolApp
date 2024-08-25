@@ -74,7 +74,7 @@ export default function Sidebar(props) {
 
                 // 다이어그램 모델러 페이지로 이동
                 // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
-                navigate(generatedUrl, { state: { itemId: id, userName: userName } });
+                navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: null } });
             }
         } catch (error) {
             console.error("Error fetching diagram data:", error);

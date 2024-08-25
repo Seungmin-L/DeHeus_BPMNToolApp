@@ -1,6 +1,6 @@
 {
     "name": "Magic",
-    "prefix": "magic",
+    "prefix": "extended",
     "uri": "http://magic",
     "xml": {
       "tagAlias": "lowerCase"

@@ -14,7 +14,9 @@ import generatePdf from '../util/generatePdf';
 //custom properties module
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
+import readOnlyParameterProviderModule from '../readOnlyProviders';
 import dropdownPropertiesProvider from '../providers';
+import readOnlyDropdownProviderModule from '../readOnlyProviders';
 import dropdownDescriptor from '../providers/descriptor/dropdown';
 //search
 import bpmnSearchModule from '../features/search/provider';
@@ -161,16 +163,17 @@ function BpmnEditor() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                userRole !== 'editing' ? readOnlyAttachmentProviderModule : attachmentPropertiesProviderModule,
-                userRole === 'editing' && parameterPropertiesProviderModule,
-                userRole === 'editing' && dropdownPropertiesProvider,
+                userRole === 'editing' ? readOnlyAttachmentProviderModule : attachmentPropertiesProviderModule,
+                userRole === 'editing' ? readOnlyParameterProviderModule : parameterPropertiesProviderModule,
+                userRole === 'editing' ? readOnlyDropdownProviderModule : dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
                 PaletteModule,
                 PopupMenuModule,
                 ReplaceModule,
                 userRole !== 'editing' && {
-                    dragging: ['value', { init: function () { } }]
+                    dragging: ['value', { init: function () { } }],
+                    create: ['value', {}]
                 }
             ],
             moddleExtensions: {
@@ -303,7 +306,7 @@ function BpmnEditor() {
         } else {
             setDiagramXML(null);
         }
-    }, [fileData]);
+    }, [fileData, diagramXML]);
 
     useEffect(() => {
         const minimapElement = document.querySelector('.djs-minimap');
@@ -690,11 +693,11 @@ function BpmnEditor() {
                         className={"" + (isHidden ? 'sidebar-hidden' : '')}
                         ref={container}
                     />
-                    <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
+                    <div className={userRole === 'editing' ? (hidePanel ? 'properties_panel_hidden' : 'properties_panel_open') : (hidePanel ? 'properties_panel_hidden disabled' : 'properties_panel_open disabled')}>
                         <button className='hide-panel' onClick={toggleVisibility}>
                             Details
                         </button>
-                        <div id='properties-panel-parent' className={userRole === 'editor' ? '' : 'disabled'} />
+                        <div id='properties-panel-parent' />
 
                     </div>
                 </div>

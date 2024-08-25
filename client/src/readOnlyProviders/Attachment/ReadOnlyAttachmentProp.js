@@ -13,7 +13,7 @@ import { useService } from 'bpmn-js-properties-panel';
 import { isFunction } from 'min-dash';
 import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
 import axios from 'axios';
-import { getLocation } from '../util/navigation';
+import { getLocation } from '../../util/navigation';
 
 export default function (element) {
   return [
@@ -154,18 +154,13 @@ function Attachmentfield(props) {
   }, [value]);
   return jsxs("div", {
     class: "bio-properties-panel-attachment-field",
-    children: [localValue.length > 0 ?
+    children: [localValue.length > 0 &&
       jsx("button", {
         ref: ref,
         name: id,
         class: "bio-properties-panel-attachment-btn",
         onClick: handleShow,
         children: "View attachments..."
-      }) :
-      jsx("p", {
-        name: id,
-        class: "bio-properties-panel-attachment-btn",
-        children: "No attachment"
       }),
     (localValue.length > 0 && isShown) &&
     jsx(AttachmentList, {

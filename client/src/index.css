@@ -245,7 +245,7 @@ code {
 .djs-minimap{
   border-radius: 5px !important;
   line-height: 15px;
-  z-index: 99;
+  z-index: 1;
   display: flex;
   position: absolute;
   width: 130px;

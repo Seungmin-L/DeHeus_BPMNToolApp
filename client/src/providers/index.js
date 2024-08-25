@@ -9,7 +9,7 @@
 import AttachmentPropertiesProvider from './AttachmentPropertiesProvider';
 import ParameterPropertiesProvider from './ParameterProvider';
 import DropdownPropertiesProvider from './DropdownProvider';
-
+import ReadOnlyAttachmentProvider from '../readOnlyProviders/ReadOnlyAttachmentProvider';
 
 export default {
   // initiate custom modules for properties panel
@@ -17,9 +17,10 @@ export default {
     'attachmentPropertiesProvider',
     'dropdownPropertiesProvider',
     'parameterPropertiesProvider',
+    'readOnlyAttachmentProvider'
   ],
   attachmentPropertiesProvider: [ 'type', AttachmentPropertiesProvider ],
   dropdownPropertiesProvider: [ 'type', DropdownPropertiesProvider ],
   parameterPropertiesProvider: [ 'type', ParameterPropertiesProvider ],
-
+  readOnlyAttachmentProvider: [ 'type', ReadOnlyAttachmentProvider]
 };

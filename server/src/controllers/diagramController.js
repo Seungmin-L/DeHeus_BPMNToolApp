@@ -54,7 +54,7 @@ const getUserRole = async (req, res) => {
 
 // check diagram path for displaying on the checkout modal
 const getDiagramPath = async (req, res) => {
-    console.log(req.query);
+    // console.log(req.query);
     const { diagramId, projectId } = req.query;
 
     try {

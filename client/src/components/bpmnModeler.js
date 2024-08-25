@@ -42,11 +42,12 @@ function BpmnEditor() {
     const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
     const { projectId } = useParams();
     const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
+    // const userName = "rmit@pbmn.com";
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
-    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing)
+    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing, admin)
     const [editor, setEditor] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -57,7 +58,6 @@ function BpmnEditor() {
     const [hidePanel, setHidePanel] = useState(false);
     const saveKeys = ['s', 'S'];
     let modelerInstance = null;
-
     // fetches contribution. if the user is editor the user role will be set to contributor, if not readOnly
     const fetchEditor = async () => {
         try {
@@ -99,8 +99,13 @@ function BpmnEditor() {
         //             setIsFileValid(false);
         //         });
         // }
-        fetchEditor();
+        if (userName.includes('@pbmn')){
+            console.log('admin');
+            setUserRole("admin");
+        } else {
+            fetchEditor();
 
+        }
 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
@@ -244,6 +249,17 @@ function BpmnEditor() {
             }
         }
     }, [userRole]);
+
+    useEffect(() => {
+        const minimapElement = document.querySelector('.djs-minimap');
+        if (minimapElement) {
+          if (!hidePanel) {
+            minimapElement.classList.remove('hidePanelFalse');
+          } else {
+            minimapElement.classList.add('hidePanelFalse');
+          }
+        }
+      }, [hidePanel]);
 
     // hide hierarchy side bar
     const handleHidden = () => {
@@ -430,6 +446,10 @@ function BpmnEditor() {
     const handleShare = () => {
 
     }
+    //handle publish
+    const handlePublish=()=> {
+        
+    }
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -560,6 +580,7 @@ function BpmnEditor() {
                         onCheckIn={handleCheckIn}
                         onContributor={handleContributor}
                         onShare={handleShare}
+                        onPublish={handlePublish}
                     />
                 </div>
                 <div className='model-body'>

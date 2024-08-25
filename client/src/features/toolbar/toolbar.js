@@ -1,5 +1,6 @@
-import './toolbar.css'
-// ICONS
+import './toolbar.css';
+import React, { useState } from 'react';
+
 import AlignIcons from 'bpmn-js/lib/features/align-elements/AlignElementsIcons';
 import DistributeIcons from 'bpmn-js/lib/features/distribute-elements/DistributeElementsIcons';
 import Icons from '../../resources/toolbar/toolbar-icons';
@@ -32,6 +33,7 @@ function Toolbar({
   onExport,
   onCheckIn,
   onShare,
+  onPublish,
   mode,
 }) {
 
@@ -44,6 +46,9 @@ function Toolbar({
     e.stopPropagation();
     setIsOpen(prev => !prev);
   }
+
+  const [hoveredButton, setHoveredButton] = useState(null);
+
   return (
     <div className="toolbar">
       <div className="toolbar-left">
@@ -56,8 +61,9 @@ function Toolbar({
         {isOpen &&
           <ul className='export-options'>
             <li>
-              <a id='export-xml' title='download BPMN diagram' target='_blank'
-                onClick={onExportXml}>XML
+              <a id='export-xml' title='download BPMN diagram' target='_blank' 
+                onClick={onExportXml}>
+                XML
               </a>
             </li>
             <li>
@@ -86,44 +92,42 @@ function Toolbar({
           </ul>
         }
 
-        {mode !== 'readOnly' && mode !== 'contributor' && (
+        {mode === "editing" && (
           <>
             <div className='toolbar-group-file'>
-              <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }} />
+              <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }} title="import" />
               <input type='file' accept='text/xml' style={{ display: 'none' }} ref={importFile} onChange={(e) => onFileChange(e)} />
             </div>
 
             <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }} />
 
             <div className="toolbar-group-action">
-              <button onClick={onUndo} dangerouslySetInnerHTML={{ __html: Icons.undo }} />
-              <button onClick={onRedo} dangerouslySetInnerHTML={{ __html: Icons.redo }} />
+              <button onClick={onUndo} dangerouslySetInnerHTML={{ __html: Icons.undo }} title="undo"/>
+              <button onClick={onRedo} dangerouslySetInnerHTML={{ __html: Icons.redo }} title="redo"/>
             </div>
 
             <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }} />
 
             <div className="toolbar-group-zoom">
-              <button onClick={onZoomOut} dangerouslySetInnerHTML={{ __html: Icons.zoomOut }} />
-              <button onClick={onZoomIn} dangerouslySetInnerHTML={{ __html: Icons.zoomIn }} />
+              <button onClick={onZoomOut} dangerouslySetInnerHTML={{ __html: Icons.zoomOut }} title="zoom out"/>
+              <button onClick={onZoomIn} dangerouslySetInnerHTML={{ __html: Icons.zoomIn }} title="zoom in"/>
             </div>
 
             <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }} />
 
             <div className="toolbar-group-align">
-              <button onClick={onAlignLeft} dangerouslySetInnerHTML={{ __html: AlignIcons.left }} />
-              <button onClick={onAlignCenter} dangerouslySetInnerHTML={{ __html: AlignIcons.center }} />
-              <button onClick={onAlignRight} dangerouslySetInnerHTML={{ __html: AlignIcons.right }} />
-              <button onClick={onAlignTop} dangerouslySetInnerHTML={{ __html: AlignIcons.top }} />
-              <button onClick={onAlignMiddle} dangerouslySetInnerHTML={{ __html: AlignIcons.middle }} />
-              <button onClick={onAlignBottom} dangerouslySetInnerHTML={{ __html: AlignIcons.bottom }} />
-              <button onClick={onDistributeHorizontally} dangerouslySetInnerHTML={{ __html: DistributeIcons.horizontal }} />
-              <button onClick={onDistributeVertically} dangerouslySetInnerHTML={{ __html: DistributeIcons.vertical }} />
+              <button onClick={onAlignLeft} dangerouslySetInnerHTML={{ __html: AlignIcons.left }} title="align left"/>
+              <button onClick={onAlignCenter} dangerouslySetInnerHTML={{ __html: AlignIcons.center }} title="align center"/>
+              <button onClick={onAlignRight} dangerouslySetInnerHTML={{ __html: AlignIcons.right }} title="align right"/>
+              <button onClick={onAlignTop} dangerouslySetInnerHTML={{ __html: AlignIcons.top }} title="align top"/>
+              <button onClick={onAlignMiddle} dangerouslySetInnerHTML={{ __html: AlignIcons.middle }} title="align middle"/>
+              <button onClick={onAlignBottom} dangerouslySetInnerHTML={{ __html: AlignIcons.bottom }} title="align bottom"/>
             </div>
 
             <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }} />
 
             <div className="toolbar-group-distribute">
-              <button onClick={onDistributeHorizontally} dangerouslySetInnerHTML={{ __html: DistributeIcons.horizontal }} />
+              <button onClick={onDistributeHorizontally} dangerouslySetInnerHTML={{ __html: DistributeIcons.horizontal }} title=""/>
               <button onClick={onDistributeVertically} dangerouslySetInnerHTML={{ __html: DistributeIcons.vertical }} />
             </div>
           </>
@@ -131,22 +135,29 @@ function Toolbar({
       </div>
 
       <div className="toolbar-right">
-        <button onClick={onContributor} dangerouslySetInnerHTML={{ __html: Icons.user }} />
-        {mode !== 'readOnly' && mode !== 'editing' && (
+        <button onClick={onContributor} dangerouslySetInnerHTML={{ __html: Icons.user }} title="contributors"/>
+        {mode === "contributor" && ( // if contributor
           <>
-            <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} />
-            <button onClick={onCheckIn} dangerouslySetInnerHTML={{ __html: Icons.checkIn }} className='checkIn-button' />
+            <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} title="export"/>
+            <button onClick={onCheckIn} dangerouslySetInnerHTML={{ __html: Icons.checkIn }} className='checkIn-button' title="check in"/>
           </>
-
         )}
-        {mode !== 'readOnly' && mode !== 'contributor' && (
+        {mode === 'editing' && ( // if editing
           <>
-            <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} />
-            <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' />
-            <button onClick={onSave} dangerouslySetInnerHTML={{ __html: Icons.save }} className='clipboard-button' />
-
+            <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} title="export"/>
+            <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' title="add"/>
+            <button onClick={onSave} dangerouslySetInnerHTML={{ __html: Icons.save }} className='clipboard-button' title="save"/>
           </>
-
+        )}
+        {mode === "admin" && ( // if admin
+          <>
+            <button
+              onClick={onPublish}
+              dangerouslySetInnerHTML={{ __html: Icons.publish }}
+              className='publish-button'
+              title="publish"
+            />
+          </>
         )}
 
       </div>

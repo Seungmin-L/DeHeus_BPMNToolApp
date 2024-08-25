@@ -10,12 +10,10 @@ const confirmCheckOut = async (req, res) => {
     try {
         const request = new sql.Request();
 
-        // 현재 시간과 14일 뒤의 시간을 계산합니다.
         const checkoutTime = new Date();
         const expiryTime = new Date(checkoutTime);
         expiryTime.setDate(checkoutTime.getDate() + 14);
 
-        // 다이어그램 체크인 상태를 기록하는 새로운 행을 삽입합니다.
         const insertCheckoutQuery = `
             INSERT INTO diagram_checkout (diagram_id, user_email, checkout_time, expiry_time, status)
             VALUES (@diagramId, @userEmail, @checkoutTime, @expiryTime, 1);
@@ -27,7 +25,6 @@ const confirmCheckOut = async (req, res) => {
         request.input('expiryTime', sql.DateTime, expiryTime);
         await request.query(insertCheckoutQuery);
 
-        // 다이어그램의 checkedout_by 필드를 업데이트하여 체크인 처리합니다.
         const updateDiagramQuery = `
             UPDATE diagram
             SET checkedout_by = @userEmail
@@ -85,7 +82,7 @@ const getCheckedOutDiagrams = async (identifier) => {
 
     return result.recordset.map(record => ({
         name: record.diagramName,
-        time: Math.ceil((new Date(record.expiry_time) - new Date()) / (1000 * 60 * 60 * 24)) // 남은 시간 계산
+        time: Math.ceil((new Date(record.expiry_time) - new Date()) / (1000 * 60 * 60 * 24))
     }));
 };
 

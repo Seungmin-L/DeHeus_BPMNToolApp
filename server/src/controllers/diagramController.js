@@ -1,12 +1,128 @@
 const { sql } = require("../config/dbConfig");
 
-// 다이어그램 세이브랑 연결되는 컨버트 함수
+
+// check the user's role in the current diagram
+const getUserRole = async (req, res) => {
+    const { projectId, diagramId, userName } = req.query;
+
+    try {
+        const request = new sql.Request();
+
+        const contributionQuery = `
+            SELECT editor 
+            FROM diagram_contribution 
+            WHERE user_email = @userName AND project_id = @projectId;
+        `;
+        request.input('userName', sql.VarChar, userName);
+        request.input('projectId', sql.Int, projectId);
+        const contributionResult = await request.query(contributionQuery);
+
+        if (contributionResult.recordset.length > 0) {
+            const isEditor = contributionResult.recordset[0].editor;
+
+            if (!isEditor) {
+                return res.status(200).json({ role: 'read-only' });
+            }
+
+            const diagramQuery = `
+                SELECT checkedout_by 
+                FROM diagram 
+                WHERE id = @diagramId;
+            `;
+            request.input('diagramId', sql.Int, diagramId);
+            const diagramResult = await request.query(diagramQuery);
+
+            if (diagramResult.recordset.length > 0) {
+                const checkedOutBy = diagramResult.recordset[0].checkedout_by;
+
+                if (checkedOutBy === null) {
+                    return res.status(200).json({ role: 'contributor' });
+                } else if (checkedOutBy !== userName) {
+                    return res.status(200).json({ role: 'read-only' });
+                } else {
+                    return res.status(200).json({ role: 'editing' });
+                }
+            }
+        }
+
+        res.status(200).json({ role: 'read-only' });
+    } catch (error) {
+        console.error('Error fetching user role:', error.message);
+        res.status(500).json({ message: 'Error fetching user role', error: error.message });
+    }
+};
+
+
+// check diagram path for displaying on the checkout modal
+const getDiagramPath = async (req, res) => {
+    console.log(req.query);
+    const { diagramId, projectId } = req.query;
+
+    try {
+        const projectQuery = `
+            SELECT name
+            FROM project
+            WHERE id = @projectId;
+        `;
+        
+        const request = new sql.Request();
+        request.input('projectId', sql.Int, projectId);
+        const projectResult = await request.query(projectQuery);
+        const projectName = projectResult.recordset.length > 0 ? projectResult.recordset[0].name : 'Unknown Project';
+
+        let currentDiagramId = diagramId;
+        let pathStack = [];
+
+        while (currentDiagramId) {
+            const diagramQuery = `
+                SELECT name 
+                FROM diagram 
+                WHERE id = @diagramId;
+            `;
+            const diagramRequest = new sql.Request();
+            diagramRequest.input('diagramId', sql.Int, currentDiagramId);
+            const diagramResult = await diagramRequest.query(diagramQuery);
+            
+            if (diagramResult.recordset.length > 0) {
+                pathStack.unshift(`[ ${diagramResult.recordset[0].name} ]`);
+            } else {
+                break;
+            }
+
+            const relationQuery = `
+                SELECT parent_diagram_id 
+                FROM diagram_relation 
+                WHERE child_diagram_id = @diagramId AND project_id = @projectId;
+            `;
+            const relationRequest = new sql.Request();
+            relationRequest.input('diagramId', sql.Int, currentDiagramId);
+            relationRequest.input('projectId', sql.Int, projectId);
+            const relationResult = await relationRequest.query(relationQuery);
+
+            if (relationResult.recordset.length > 0) {
+                currentDiagramId = relationResult.recordset[0].parent_diagram_id;
+            } else {
+                currentDiagramId = null;
+            }
+        }
+
+        const fullPath = `[ ${projectName} ] - ${pathStack.join(' - ')}`;
+        // console.log("Final diagram path:", fullPath);
+        res.status(200).json({ path: fullPath });
+
+    } catch (error) {
+        console.error('Error fetching diagram path:', error.message);
+        res.status(500).json({ message: 'Error fetching diagram path', error: error.message });
+    }
+};
+
+// convert function for saving diagram
 function convertXMLToBlob(xmlString) {
     // xml to blob
     return Buffer.from(xmlString, 'utf-8');
 }
 
-// 다이어그램 로드랑 연결되는 컨버트 함수
+// convert function for loading diagram
 function convertBlobtoXML(file_data) {
     // blob to xml
     return file_data.toString('utf-8');
@@ -128,8 +244,6 @@ async function getLatestPublishedDiagram(projectId, diagramId) {
     }
 }
 
-
-
 async function getDiagramData(req, res) {
     console.log(req.params);
     const { projectId, diagramId } = req.params; // projectId와 diagramId를 URL 파라미터에서 가져옴
@@ -153,4 +267,4 @@ async function getDiagramData(req, res) {
 
 
 
-module.exports = { draftSave, getDiagramData, createSubProcess, addDiagram };
+module.exports = { getUserRole, getDiagramPath, draftSave, getDiagramData, createSubProcess, addDiagram };

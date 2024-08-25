@@ -11,7 +11,7 @@ const diagramController = require('./src/controllers/diagramController');
 const attachmentsController = require('./src/controllers/attachmentsController');
 const adminController = require('./src/controllers/adminController');
 const userController = require('./src/controllers/userController');
-const {getContribution}  = require('./src/controllers/contributionController');
+const contributionController = require('./src/controllers/contributionController');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,27 +28,33 @@ app.post('/api/processes/add', processesController.addProcess);
 app.post('/api/diagram/add', diagramController.addDiagram);
 app.post('/api/diagram/save', diagramController.draftSave);
 app.post('/api/diagram/createSub', diagramController.createSubProcess);
+app.post('/api/diagram/checkedout', userController.confirmCheckOut);
 app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
 app.post('/api/attachments/:diagramId/:nodeId', attachmentsController.deleteAllAttachments);
 app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.deleteAttachments);
 
-// app.get()
-app.get('/api/mypage/user/:identifier', userController.getUserInfo)
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
 
+
+app.get('/api/contribution/editor', contributionController.getContribution);
+app.get('/api/fetch/user-role', diagramController.getUserRole);
+// app.get('/api/fetch/user-role/:projectId/:diagramId', contributionController.getContribution);
+
+
+app.get('/api/fetch/diagram', diagramController.getDiagramPath);
 app.get('/api/diagrams/get-diagram-with-project/:projectId/:diagramId', diagramController.getDiagramData);
 app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
 
-app.get('/api/admin/users', adminController.getUserList)
+app.get('/api/mypage/user/:identifier', userController.getUserInfo);
+app.get('/api/admin/users', adminController.getUserList);
 app.get('/api/admin/users/:identifier', adminController.getUserData);
 app.post('/api/admin/save-user-data', adminController.saveUserData);
 
-app.get('/api/contribution/editor', getContribution);
-
-app.get('/', (req, res) => {
-  res.send('Welcome to the backend server!');
-});
+// for testing the server status when using docker container
+// app.get('/', (req, res) => {
+//   res.send('Welcome to the backend server!');
+// });
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);

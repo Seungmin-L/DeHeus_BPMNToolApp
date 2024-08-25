@@ -8,11 +8,13 @@ import { Form, Button, Modal } from "react-bootstrap";
 function TestingEmail() {
   const isAuthenticated = useIsAuthenticated();
   const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const { accounts } = useMsal();
 
   useEffect(() => {
     if (isAuthenticated && accounts.length > 0) {
       setUserName(accounts[0].username);
+      setUserEmail(accounts[0].userEmail);
     }
   }, [isAuthenticated, accounts]);
   const [isNavVisible, setIsNavVisible] = useState(false);
@@ -20,17 +22,25 @@ function TestingEmail() {
     setIsNavVisible(!isNavVisible);
   };
 
-  const [showModal, setShowModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showCheckInModal, setShowCheckInModal] = useState(false);
 
-  const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
+  const handleShowPublishModal = () => setShowPublishModal(true);
+  const handleClosePublishModal = () => setShowPublishModal(false);
+  const handleShowCheckInModal = () => setShowCheckInModal(true);
+  const handleCloseCheckInModal = () => setShowCheckInModal(false);
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [diagram, setDiagram] =useState('');
+  // Publish variables
+  const currentUrl = window.location.href;
+  const [link] = useState(currentUrl);
   const [message, setMessage] = useState('');
-  const [link, setLink] = useState('');
 
+  // Publish & Check In Modal's Diagram path variables
+  const [projectName, setProjectName] = useState('ProjectName');
+  const [processName, setProcessName] = useState('ProcessName');
+  const [diagramName, setDiagramName] = useState('DiagramName');
+
+  // Email sending function
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -40,9 +50,9 @@ function TestingEmail() {
 
     const templateParams = {
       to_name: 'Admin',
-      from_name: name,
-      from_email: email,
-      diagram_name: diagram,
+      from_name: userName,
+      from_email: userEmail,
+      diagram_name: diagramName,
       message: message,
       link: link,
     };
@@ -51,16 +61,18 @@ function TestingEmail() {
       .then((response) => {
         console.log('Email sent successfully!', response);
         alert("Email sent successfully!");
-        setName('');
-        setEmail('');
-        setDiagram('');
         setMessage('');
-        setLink('');
+        handleClosePublishModal();
       })
       .catch((error) => {
         console.error('Error sending email:', error);
         alert("Error sending email");
       });
+  }
+
+  const handleCheckIn = () => {
+    alert("Checked In!");
+    handleCloseCheckInModal();
   }
 
   return (
@@ -70,76 +82,66 @@ function TestingEmail() {
         {isNavVisible && <LeftNavBar />}
         <div style={{ flexGrow: 1 }}>
           <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
-            <Button variant="primary" onClick={handleShowModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+            <Button variant="primary" onClick={handleShowPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
                 Publish
             </Button>
-            <Modal show={showModal} onHide={handleCloseModal} centered>
+            <Button variant="secondary" onClick={handleShowCheckInModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+              Check In
+            </Button>
+
+            <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
             <Modal.Header closeButton>
-              <Modal.Title>Publish Diagram</Modal.Title>
+              <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Publish Request Form</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+              <div style={{ padding: '15px', marginBottom: '10px', backgroundColor: '#f8f9fa', borderRadius: '5px'}}>
+                <h5>Diagram</h5>
+                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} > {processName} > {diagramName}</p>
+              </div>
               <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="name">
-                  <Form.Label>User Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="User Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </Form.Group>
-                
-                <Form.Group className="mb-3" controlId="email">
-                  <Form.Label>User Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    placeholder="User Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </Form.Group>
-                
-                <Form.Group className="mb-3" controlId="diagram">
-                  <Form.Label>Diagram Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Diagram Name"
-                    value={diagram}
-                    onChange={(e) => setDiagram(e.target.value)}
-                  />
-                </Form.Group>
-                
                 <Form.Group className="mb-3" controlId="message">
-                  <Form.Label>Message</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={5}
-                    placeholder="Message"
+                    placeholder="Enter a request message."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                   />
                 </Form.Group>
                 
-                <Form.Group className="mb-3" controlId="link">
-                  <Form.Label>Link</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Link"
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                  />
-                </Form.Group>
-                
-                <Button variant="primary" type="submit" style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none" }}>
-                  Send Email
+                <Button variant="primary" type="submit" style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                  Send Request
                 </Button>
               </Form>
             </Modal.Body>
-          </Modal>
-            </div>
+            </Modal>
+
+            <Modal show={showCheckInModal} onHide={handleCloseCheckInModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check In Confirm</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                  <h5>Diagram Path</h5>
+                  <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} > {processName} > {diagramName}</p>
+                </div>
+                <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                  <ul style={{ paddingLeft: '20px' }}>
+                    <li>Once you check in, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
+                    <li>During this period, you can <strong>edit</strong> and <strong>save</strong> the draft, then <strong>request for publishing</strong> once completed.</li>
+                  </ul>
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                  Check In
+                </Button>
+              </Modal.Footer>
+            </Modal>
           </div>
         </div>
       </div>
+    </div>
   );
 }
 

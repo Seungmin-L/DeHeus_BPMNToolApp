@@ -3,13 +3,35 @@ const { sql } = require("../config/dbConfig");
 
 const getUserList = async (req, res) => {
     try {
-        const result = await sql.query("SELECT email, name, department FROM [user] WHERE department != 'admin'");
-        res.json(result.recordset);
+        const userQuery = "SELECT email, name, department FROM [user] WHERE department != 'admin'";
+        const userResult = await sql.query(userQuery);
+
+        const users = userResult.recordset;
+
+        for (let user of users) {
+            const request = new sql.Request();
+            request.input('Email', sql.NVarChar, user.email);
+
+            const userDetailsQuery = `
+                SELECT TOP 1 updated_time 
+                FROM user_activity_log 
+                WHERE user_email = @Email 
+                ORDER BY updated_time DESC
+            `;
+
+            const userDetailsResult = await request.query(userDetailsQuery);
+
+            user.lastUpdate = userDetailsResult.recordset.length > 0 
+                ? userDetailsResult.recordset[0].updated_time 
+                : null;
+        }
+
+        res.json(users);
     } catch (err) {
-      console.error("Error fetching user list", err);
-      res.status(500).send("Error fetching user list");
+        console.error("Error fetching user list", err);
+        res.status(500).send("Error fetching user list");
     }
-  };
+};
 
 
 const getUserData = async (req, res) => {
@@ -33,14 +55,7 @@ const getUserData = async (req, res) => {
         }
     
         const { email, name, department } = userEmailResult.recordset[0];
-  
-        // last update time
-        const userDetailsQuery = `
-            SELECT TOP 1 updated_time 
-            FROM user_activity_log 
-            WHERE user_email = @Email 
-            ORDER BY updated_time DESC
-        `;
+
     
         // projects with read only or editor role
         const accessibleProjectsQuery = `
@@ -88,11 +103,8 @@ const getUserData = async (req, res) => {
         `;
     
         request.input('Email', sql.NVarChar, email);
-        const userDetailsResult = await request.query(userDetailsQuery);
         const accessibleProjectsResult = await request.query(accessibleProjectsQuery);
         const availableProjectsResult = await request.query(availableProjectsQuery);
-
-        const lastUpdate = userDetailsResult.recordset[0]?.updated_time || null;
 
         const checkedOutDiagramsResult = await request.query(checkedOutDiagramsQuery);
         const checkedOutDiagrams = checkedOutDiagramsResult.recordset.map((record) => {
@@ -107,7 +119,6 @@ const getUserData = async (req, res) => {
         email,
         name,
         department,
-        lastUpdate,
         projects: accessibleProjectsResult.recordset,
         availableProjects: availableProjectsResult.recordset,
         checkedOut: checkedOutDiagrams

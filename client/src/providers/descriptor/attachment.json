@@ -10,7 +10,7 @@
       {
         "name": "attachment",
         "extends": [
-          "bpmn:BaseElement"
+          "bpmn:Task"
         ],
         "properties": [
           {

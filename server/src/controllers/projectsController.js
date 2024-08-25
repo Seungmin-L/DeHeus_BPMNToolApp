@@ -1,14 +1,55 @@
 const { sql } = require("../config/dbConfig");
 
+const adminEmails = ['vnapp.pbmn@deheus.com'];
+
 const listProjects = async (req, res) => {
+  const { userName } = req.query;
+
   try {
-    const result = await sql.query("SELECT id, name, last_update FROM project");
-    res.json(result.recordset);
+    const isAdmin = adminEmails.includes(userName);
+
+    if (isAdmin) {
+      const allProjectsQuery = `
+        SELECT id, name, last_update 
+        FROM project;
+      `;
+      const allProjectsResult = await sql.query(allProjectsQuery);
+      return res.json(allProjectsResult.recordset);
+    }
+
+    // 일반 사용자는 diagram_contribution 테이블을 기반으로 프로젝트를 필터링
+    const request = new sql.Request();
+    request.input('userName', sql.VarChar, userName);
+
+    const contributionQuery = `
+      SELECT project_id 
+      FROM diagram_contribution 
+      WHERE user_email = @userName;
+    `;
+    const contributionResult = await request.query(contributionQuery);
+
+    if (contributionResult.recordset.length > 0) {
+      const projectIds = contributionResult.recordset.map(row => row.project_id);
+
+      // 해당 project_id로 project 테이블에서 프로젝트 정보 검색
+      const projectsQuery = `
+        SELECT id, name, last_update 
+        FROM project 
+        WHERE id IN (${projectIds.join(',')});
+      `;
+      const projectsResult = await request.query(projectsQuery);
+
+      res.json(projectsResult.recordset);
+    } else {
+      // 접근 가능한 프로젝트가 없음을 반환
+      res.json([]);
+    }
   } catch (err) {
     console.error("Error listing projects", err);
     res.status(500).send("Error listing projects");
   }
 };
+
 
 const addProject = (req, res) => {
   const { projectName } = req.body;

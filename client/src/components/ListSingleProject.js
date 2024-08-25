@@ -1,4 +1,4 @@
-// import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,7 +19,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import LeftNavBar from "./common/LeftNavBar";
 import NoAuth from "./common/NoAuth";
 import TopBar from "./common/TopBar";
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 
 function ListSingleProject() {
   const { projectId } = useParams();
@@ -60,14 +59,7 @@ function ListSingleProject() {
   };
 
   // // 기존 코드
-  // const handleOpenClick = (event, item) => {
-  //   event.stopPropagation();
-  //   // console.log("Clicked item ID:", item.id);  // 디버깅 용도
-  //   navigate(`/publish/bpmnModeler/${item.id}`, { state: { itemId: item.id, userName: userName } });
-  // };
-
-
-  const handleOpenClick = async (event, item) => {
+  const handleOpenClick = (event, item) => {
     event.stopPropagation();
 
     // console.log("Item object:", item);  // 디버깅 용도라서 주석 처리!!
@@ -102,11 +94,10 @@ function ListSingleProject() {
   };
 
 
-
   const renderRow = (item, level = 0) => {
     if (level > 2) return;
     const isExpanded = expandedRows.includes(item.id);
-    const hasChildren = item.children && item.children.length > 0;
+    const hasChildren = level < 2 && item.children && item.children.length > 0;
 
     const rowClass = (level) => {
       if (hasChildren) {
@@ -204,9 +195,9 @@ function ListSingleProject() {
     handleCloseModal();
   };
 
-  if (!isAuthenticated) {
-    return <NoAuth />;
-  }
+  // if (!isAuthenticated) {
+  //   return <NoAuth />;
+  // }
 
   return (
     <div>

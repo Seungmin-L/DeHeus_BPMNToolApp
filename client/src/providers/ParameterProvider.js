@@ -70,7 +70,7 @@ function createParametersGroup(element, injector, translate) {
 
   // Create a group called "parameters".
   const parametersGroup = {
-    id: 'extended',
+    id: 'parameters',
     label: translate('Extended'),
     component: ListGroup,
     ...parametersProps({ element, injector })

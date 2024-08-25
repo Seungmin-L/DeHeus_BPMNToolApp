@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import NoAuth from "./common/NoAuth";
 import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
 import { formatProjectDates } from '../utils/utils';
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
@@ -16,32 +16,36 @@ function Main() {
   const [isNavVisible, setIsNavVisible] = useState(false);
   const navigate = useNavigate();
 
+
+  // listing the projects based on user role
   useEffect(() => {
     if (isAuthenticated && accounts.length > 0) {
-      setUserName(accounts[0].username);
-      
-      axios.get("/api/projects").then(response => {
+      const userName = accounts[0].username;
+      setUserName(userName);
+
+      axios.get("/api/projects", {
+        params: { userName }
+      }).then(response => {
         const formattedProjects = formatProjectDates(response.data);
         setProjects(formattedProjects);
       }).catch(error => {
         console.error("Error fetching projects", error);
       });
     }
-  }, [isAuthenticated, accounts]
-);
+  }, [isAuthenticated, accounts]);
+
 
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);
   };
 
   const handleProjectClick = (projectId) => {
-    localStorage.setItem("ProjectID", projectId);
     navigate(`/project/${projectId}`);
   };
 
-  if (!isAuthenticated) {
-    return <NoAuth />;
-  }
+  // if (!isAuthenticated) {
+  //   return <NoAuth />;
+  // }
 
   return (
     <div>

@@ -131,18 +131,18 @@ function Toolbar({
       </div>
 
       <div className="toolbar-right">
-        <button dangerouslySetInnerHTML={{ __html: Icons.user }} />
+        <button onClick={onContributor} dangerouslySetInnerHTML={{ __html: Icons.user }} />
         {mode !== 'readOnly' && mode !== 'editing' && (
           <>
             <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} />
-            <button dangerouslySetInnerHTML={{ __html: Icons.checkIn }} className='checkIn-button' />
+            <button onClick={onCheckIn} dangerouslySetInnerHTML={{ __html: Icons.checkIn }} className='checkIn-button' />
           </>
 
         )}
         {mode !== 'readOnly' && mode !== 'contributor' && (
           <>
             <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} />
-            <button dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' />
+            <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' />
             <button onClick={onSave} dangerouslySetInnerHTML={{ __html: Icons.save }} className='clipboard-button' />
 
           </>

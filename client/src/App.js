@@ -29,6 +29,7 @@ function App() {
           <Route path="/project/:projectId/:diagramName" element={<BpmnViewer />} />
           <Route path="/testingemail" element={<TestingEmail />} />
           <Route path="*" element={<Error />} />
+          <Route path="/:filename" element={<BpmnEditor />} />
         </Routes>
       </Router>
     </MsalProvider>

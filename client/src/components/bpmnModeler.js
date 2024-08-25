@@ -36,18 +36,23 @@ import Sidebar from '../features/sidebar/Sidebar';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { navigateTo } from '../util/navigation';
 
+// Checkin
+import { Button, Modal } from "react-bootstrap";
+
+
 function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
     const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
     const { projectId } = useParams();
     const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
-    const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
+    const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 fileData
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
-    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing)
+    const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
     const [editor, setEditor] = useState(null);
+    const [diagramPath, setDiagramPath] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
@@ -58,49 +63,63 @@ function BpmnEditor() {
     const saveKeys = ['s', 'S'];
     let modelerInstance = null;
 
-    // fetches contribution. if the user is editor the user role will be set to contributor, if not readOnly
-    const fetchEditor = async () => {
+    // check-in
+    const [showCheckInModal, setShowCheckInModal] = useState(false);
+    const handleShowCheckInModal = () => setShowCheckInModal(true);
+    const handleCloseCheckInModal = () => setShowCheckInModal(false);
+
+
+    // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
+    const fetchUserRole = async () => {
         try {
-            const response = await axios.get('/api/contribution/editor', {
-                params: { projectId, userName }
+            const response = await axios.get('/api/fetch/user-role', {
+                params: { projectId, diagramId, userName }
             });
-            setEditor(response.data.editor);
-            if (response.data.editor && userRole !== "editing") {
-                setUserRole("contributor");
-            } else if (!response.data.editor && userRole !== "editing") {
-                setUserRole("readOnly");
+            const userRole = response.data.role;
+            if (userRole === 'editing') {
+                setEditor(true);
+                setUserRole('editing');
+            } else if (userRole === 'contributor') {
+                setUserRole('contributor');
+            } else if (userRole === 'read-only') {
+                setUserRole('read-only');
             }
+    
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setError('No contribution found');
             } else {
-                setError('Error fetching editor');
+                setError('Error fetching user role');
             }
         } finally {
             setLoading(false);
         }
-
     };
+
+    const fetchDiagramPath = async () => {
+        try {
+            // console.log("Received Diagram ID:", diagramId);  // for debugging
+            // console.log("Received Project ID:", projectId);  // for debugging
+
+            const response = await axios.get('/api/fetch/diagram', {
+                params: { diagramId, projectId }
+            });
+    
+            if (response.status === 200 && response.data.path) {
+                const diagramPath = response.data.path;
+                setDiagramPath(diagramPath);
+            } else {
+                console.error("Failed to fetch diagram path: Invalid response data.");
+            }
+        } catch (err) {
+            console.error("An error occurred while fetching the diagram path:", err.message);
+        }         
+    };
+    
+
     useEffect(() => {
-        // 아래는 디버깅 용도 로그입니다~!!
-        // console.log("Received Diagram ID:", diagramId); 
-        // console.log("Received User Name:", userName); 
-        // console.log("Received File Data:", fileData); 
-
-        // 아래 코드는 내가 임의로 작성해 둔 건데, server/src/controllers/diagramController.js 파일에서 api response로 가지고 온 xml 정보 (diagram_published 테이블의 file data 컬럼에 해당)를 다이어그램 모델러로 띄우면 됩니다~!!! 라인 193도 함께 주석 처리 완료!!!
-        // if (projectName && diagramName && publishDate) {
-        //     axios.get(`/api/diagrams/get-diagram-with-project/${diagramId}`)
-        //         .then(response => {
-        //             const { fileData } = response.data;
-        //             setDiagramXML(fileData);
-        //         })
-        //         .catch(error => {
-        //             console.error("Error fetching diagram data:", error);
-        //             setIsFileValid(false);
-        //         });
-        // }
-        fetchEditor();
-
+        fetchUserRole();
+        fetchDiagramPath();
 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
@@ -226,8 +245,7 @@ function BpmnEditor() {
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, editor, diagramId, projectId, userName, userRole]);
-    // }, [diagramXML, projectName, diagramName, publishDate]);  // 생각한 변수는 이 정도인데 필요한 대로 수정하시면 될 것 같습니다~!!!
+    }, [diagramXML, editor, diagramId, projectId, userName, userRole, diagramPath]);
 
     useEffect(() => {
         if (modelerInstance) {
@@ -417,10 +435,25 @@ function BpmnEditor() {
     const handleClose = () => {
         setIsOpen(false);
     }
-    // handle checkIn
-    const handleCheckIn = () => {
-        setUserRole("editing");
-        console.log(userRole);
+    // handle checkout function
+    const handleCheckIn = async () => {
+        try {
+            console.log(diagramId);
+            console.log(userName);
+            const response = await axios.post('/api/diagram/checkedout', { diagramId, userName });
+    
+            if (response.status === 200) {
+                alert("Checked In!");
+                handleCloseCheckInModal();
+                setUserRole("editing");
+            } else {
+                console.error("Checked-out failed:", response.data.message);
+                alert("Checked-out failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error during checked-out:", error.message);
+            alert("Error during checked-out. Please try again.");
+        }
     }
     // handle contributor
     const handleContributor = () => {
@@ -533,7 +566,7 @@ function BpmnEditor() {
                 <div className='model-header'>
                     <Topbar onLogoClick={toMain} />
                     <Toolbar
-                        mode={userRole} // "readOnly" or "contributor" or "editing"
+                        mode={userRole} // "read-only" or "contributor" or "editing"
                         isOpen={isOpen}
                         setIsOpen={setIsOpen}
                         onSave={handleSave}
@@ -557,7 +590,7 @@ function BpmnEditor() {
                         onDistributeVertically={() => handleDistribute('vertical')}
                         importFile={importFile}
                         onFileChange={onFileChange}
-                        onCheckIn={handleCheckIn}
+                        onCheckIn={handleShowCheckInModal}
                         onContributor={handleContributor}
                         onShare={handleShare}
                     />
@@ -581,6 +614,30 @@ function BpmnEditor() {
                         <div id='properties-panel-parent' />
 
                     </div>
+                </div>
+                <div>
+                    <Modal show={showCheckInModal} onHide={handleCloseCheckInModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check In Confirm</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                            <h5>Diagram Path</h5>
+                            <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{ diagramPath }</p>
+                            </div>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                            <ul style={{ paddingLeft: '20px' }}>
+                                <li>Once you check in, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
+                                <li>During this period, you can <strong>edit</strong> and <strong>save</strong> the draft, then <strong>request for publishing</strong> once completed.</li>
+                            </ul>
+                            </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                            Check In
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                 </div>
             </div>
         )

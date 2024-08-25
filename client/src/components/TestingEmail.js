@@ -17,6 +17,7 @@ function TestingEmail() {
       setUserEmail(accounts[0].userEmail);
     }
   }, [isAuthenticated, accounts]);
+  
   const [isNavVisible, setIsNavVisible] = useState(false);
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);
@@ -96,7 +97,7 @@ function TestingEmail() {
             <Modal.Body>
               <div style={{ padding: '15px', marginBottom: '10px', backgroundColor: '#f8f9fa', borderRadius: '5px'}}>
                 <h5>Diagram</h5>
-                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} > {processName} > {diagramName}</p>
+                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} - {processName} - {diagramName}</p>
               </div>
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="message">
@@ -123,7 +124,7 @@ function TestingEmail() {
               <Modal.Body>
                 <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
                   <h5>Diagram Path</h5>
-                  <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} > {processName} > {diagramName}</p>
+                  <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} - {processName} - {diagramName}</p>
                 </div>
                 <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
                   <ul style={{ paddingLeft: '20px' }}>

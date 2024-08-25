@@ -25,6 +25,9 @@ import ReplaceModule from '../features/replace';
 //palette
 import PaletteModule from '../features/palette';
 
+//publish
+import emailjs from '@emailjs/browser';
+
 //toolbar
 import Toolbar from '../features/toolbar/toolbar';
 import Topbar from './common/TopBar'
@@ -37,19 +40,20 @@ import { BsArrowBarRight } from 'react-icons/bs';
 import { navigateTo } from '../util/navigation';
 
 // Checkin
-import { Button, Modal } from "react-bootstrap";
+import { Form, Button, Modal } from "react-bootstrap";
 
 
 function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
-    const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
+    const diagramId = location.state?.itemId;
     const { projectId } = useParams();
-    const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
-    const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 fileData
+    const userName = location.state?.userName;
+    const fileData = location.state?.fileData;  //
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
+    const [userEmail, setUserEmail] = useState("");  // *
     const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
     const [editor, setEditor] = useState(null);
     const [diagramPath, setDiagramPath] = useState(null);
@@ -61,12 +65,23 @@ function BpmnEditor() {
     const [isFileValid, setIsFileValid] = useState(true);
     const [hidePanel, setHidePanel] = useState(false);
     const saveKeys = ['s', 'S'];
+    const [showPublishModal, setShowPublishModal] = useState(false);
     let modelerInstance = null;
 
     // check-in
     const [showCheckInModal, setShowCheckInModal] = useState(false);
     const handleShowCheckInModal = () => setShowCheckInModal(true);
     const handleCloseCheckInModal = () => setShowCheckInModal(false);
+
+    // publish
+    const handleShowPublishModal = () => setShowPublishModal(true);
+    const handleClosePublishModal = () => setShowPublishModal(false);
+
+    // Publish variables
+    const currentUrl = window.location.href;
+    const [link] = useState(currentUrl);
+    const [message, setMessage] = useState('');
+    const [diagramName, setDiagramName] = useState('DiagramName');  // *
 
 
     // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
@@ -98,9 +113,6 @@ function BpmnEditor() {
 
     const fetchDiagramPath = async () => {
         try {
-            // console.log("Received Diagram ID:", diagramId);  // for debugging
-            // console.log("Received Project ID:", projectId);  // for debugging
-
             const response = await axios.get('/api/fetch/diagram', {
                 params: { diagramId, projectId }
             });
@@ -118,6 +130,7 @@ function BpmnEditor() {
     
 
     useEffect(() => {
+        // console.log(location.state);
         fetchUserRole();
         fetchDiagramPath();
 
@@ -435,6 +448,7 @@ function BpmnEditor() {
     const handleClose = () => {
         setIsOpen(false);
     }
+
     // handle checkout function
     const handleCheckIn = async () => {
         try {
@@ -455,14 +469,43 @@ function BpmnEditor() {
             alert("Error during checked-out. Please try again.");
         }
     }
+    
     // handle contributor
     const handleContributor = () => {
 
     }
-    // handle share
-    const handleShare = () => {
 
+    // send a request to publish
+    const handleSubmit = (e) => {
+        e.preventDefault();
+    
+        const serviceId = 'service_deheusvn_bpmnapp';
+        const templateId = 'template_rfow6sk';
+        const publicKey = 'oQHqsgvCGRFGdRGwg';
+    
+        const templateParams = {
+          to_name: 'Admin',
+          from_name: userName,
+          from_email: userEmail,
+          diagram_name: diagramName,  // *
+          message: message,
+          link: link,
+        };
+    
+        emailjs.send(serviceId, templateId, templateParams, publicKey)
+          .then((response) => {
+            console.log('Email sent successfully!', response);
+            alert("Email sent successfully!");
+            setMessage('');
+            handleClosePublishModal();
+          })
+          .catch((error) => {
+            console.error('Error sending email:', error);
+            alert("Error sending email");
+          });
     }
+
+
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -592,7 +635,7 @@ function BpmnEditor() {
                         onFileChange={onFileChange}
                         onCheckIn={handleShowCheckInModal}
                         onContributor={handleContributor}
-                        onShare={handleShare}
+                        onShare={handleShowPublishModal}
                     />
                 </div>
                 <div className='model-body'>
@@ -616,6 +659,33 @@ function BpmnEditor() {
                     </div>
                 </div>
                 <div>
+                    <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
+                    <Modal.Header closeButton>
+                    <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Publish Request Form</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                    <div style={{ padding: '15px', marginBottom: '10px', backgroundColor: '#f8f9fa', borderRadius: '5px'}}>
+                        <h5>Diagram</h5>
+                        <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{ diagramPath }</p>
+                    </div>
+                    <Form onSubmit={handleSubmit}>
+                        <Form.Group className="mb-3" controlId="message">
+                        <Form.Control
+                            as="textarea"
+                            rows={5}
+                            placeholder="Enter a request message."
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                        />
+                        </Form.Group>
+                        
+                        <Button variant="primary" type="submit" style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                        Send Request
+                        </Button>
+                    </Form>
+                    </Modal.Body>
+                    </Modal>
+
                     <Modal show={showCheckInModal} onHide={handleCloseCheckInModal} centered>
                         <Modal.Header closeButton>
                             <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check In Confirm</Modal.Title>

@@ -65,34 +65,6 @@ function ListSingleProject() {
   };
 
 
-  // const handleOpenClick = async (event, item) => {
-  //   event.stopPropagation();
-
-  //   // console.log("Item object:", item);  // 디버깅 용도라서 주석 처리!!
-
-  //   try {
-  //       const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);
-  //       // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
-  //       // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
-
-  //       const { diagramName, fileData } = response.data;  // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
-  //       // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
-  //       console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
-
-  //       const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
-  //       // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
-
-  //       // 다이어그램 모델러 페이지로 이동
-  //       // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
-  //       navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
-  //   } catch (error) {
-  //       console.error("Error fetching diagram data:", error);
-  //       alert('Failed to open the diagram.');
-  //   }
-  // };
-
-
-
   const renderRow = (item, level = 0) => {
     const isExpanded = expandedRows.includes(item.id);
     const hasChildren = item.children && item.children.length > 0;

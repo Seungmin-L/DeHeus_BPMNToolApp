@@ -97,6 +97,7 @@ function BpmnEditor() {
                 params: { projectId, diagramId, userName }
             });
             const userRole = response.data.role;
+            console.log(userRole);
             if (userRole === 'editing') {
                 setEditor(true);
                 setUserRole('editing');
@@ -115,6 +116,7 @@ function BpmnEditor() {
         } finally {
             setLoading(false);
         }
+        
     };
 
     const fetchDiagramPath = async () => {
@@ -137,7 +139,13 @@ function BpmnEditor() {
 
     useEffect(() => {
         // console.log(location.state);
-        fetchUserRole();
+        if (userName.includes('.pbmn@')){
+            console.log('admin');
+            setUserRole("admin");
+        } else {
+            console.log("not admin")
+            fetchUserRole();
+        }
         fetchDiagramPath();
 
         if (modelerInstance) return;
@@ -299,6 +307,17 @@ function BpmnEditor() {
             setDiagramXML(null);
         }
     }, [fileData, diagramXML]);
+
+    useEffect(() => {
+        const minimapElement = document.querySelector('.djs-minimap');
+        if (minimapElement) {
+          if (!hidePanel) {
+            minimapElement.classList.remove('hidePanelFalse');
+          } else {
+            minimapElement.classList.add('hidePanelFalse');
+          }
+        }
+    })
 
     // hide hierarchy side bar
     const handleHidden = () => {

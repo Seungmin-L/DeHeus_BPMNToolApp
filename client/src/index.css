@@ -250,6 +250,20 @@ code {
   position: absolute;
   width: 130px;
   margin-top: -15px;
+  transition: transform 0.5s ease-in-out; 
+  transform: translateX(-390px)
+}
+
+.djs-minimap.hidePanelFalse {
+  border-radius: 5px !important;
+  line-height: 15px;
+  z-index: 99;
+  display: flex;
+  position: absolute;
+  width: 130px;
+  margin-top: -15px;
+  transition: transform 0.5s ease-in-out; 
+  transform: translateX(0);
 }
 
 .djs-minimap.open .toggle::before{

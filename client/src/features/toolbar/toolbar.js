@@ -86,7 +86,7 @@ function Toolbar({
           </ul>
         }
 
-        {mode !== 'readOnly' && mode !== 'contributor' && (
+        {mode !== 'read-only' && mode !== 'contributor' && (
           <>
             <div className='toolbar-group-file'>
               <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }} />
@@ -132,14 +132,14 @@ function Toolbar({
 
       <div className="toolbar-right">
         <button onClick={onContributor} dangerouslySetInnerHTML={{ __html: Icons.user }} />
-        {mode !== 'readOnly' && mode !== 'editing' && (
+        {mode !== 'read-only' && mode !== 'editing' && (
           <>
             <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} />
             <button onClick={onCheckIn} dangerouslySetInnerHTML={{ __html: Icons.checkIn }} className='checkIn-button' />
           </>
 
         )}
-        {mode !== 'readOnly' && mode !== 'contributor' && (
+        {mode !== 'read-only' && mode !== 'contributor' && (
           <>
             <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} />
             <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' />

@@ -12,7 +12,6 @@ import { msalInstance } from "./config/authConfig";
 import TestingEmail from "./components/TestingEmail";
 import BpmnEditor from "./components/bpmnModeler";
 import { NavigationHelper } from "./util/navigation";
-import BpmnViewer from "./components/TestingViewer";
 
 function App() {
   return (
@@ -25,8 +24,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/project/:projectId" element={<ListSingleProject />} />
-          {/* <Route path="/project/:projectId/:diagramName" element={<BpmnEditor />} /> */}
-          <Route path="/project/:projectId/:diagramName" element={<BpmnViewer />} />
+          <Route path="/project/:projectId/:diagramName" element={<BpmnEditor />} />
           <Route path="/testingemail" element={<TestingEmail />} />
           <Route path="*" element={<Error />} />
           <Route path="/:filename" element={<BpmnEditor />} />

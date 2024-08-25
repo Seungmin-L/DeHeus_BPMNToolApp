@@ -30,7 +30,8 @@ export default function Sidebar(props) {
                 process.children && process.children.length > 0 && findDiagram(process.children, list);
             });
             if (list.length > 0) {
-                setExpandedRows([...expandedRows, ...list]);
+                const newRows = list.filter(p => !expandedRows.includes(p));
+                setExpandedRows([...expandedRows, ...newRows]);
             }
         }
     }
@@ -38,6 +39,7 @@ export default function Sidebar(props) {
     const findDiagram = (process, list) => {
         process.forEach(p => {
             if (p.id == diagramId) {
+                !list.includes(p.parent_diagram_id) &&
                 list.push(p.parent_diagram_id);
             } else {
                 p.children && p.children.length > 0 && findDiagram(p.children, list);
@@ -46,7 +48,7 @@ export default function Sidebar(props) {
         if (list.length > 0) {
             process.forEach(p => {
                 if (list.includes(p.id)) {
-                    list.push(p.parent_diagram_id);
+                    !list.includes(p.parent_diagram_id) && list.push(p.parent_diagram_id);
                 }
             });
         }
@@ -54,7 +56,7 @@ export default function Sidebar(props) {
 
     const handleOpenClick = async (id, name) => {
         try {
-            const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${id}/editor/${userName}`);
+            const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${id}/${userName}`);
             // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
             // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
             if (!response.data.message) {
@@ -125,13 +127,14 @@ export default function Sidebar(props) {
         )
     }
     useEffect(() => {
+        console.log(expandedRows);
         axios.get(`/api/processes/${projectId}`)
             .then((res) => {
                 setProcesses(res.data);
                 getCurrentDiagram(res.data);
             })
             .catch((err) => console.error(err));
-    }, [diagramId, processes]);
+    }, [diagramId]);
     return (
         <div className='hierarchy-sidebar'>
             <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)" }}>

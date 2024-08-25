@@ -7,6 +7,7 @@ import minimapModule from 'diagram-js-minimap';
 import ErrorPage from './ErrorPage';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import attachmentPropertiesProviderModule from '../providers';
+import readOnlyAttachmentProviderModule from '../readOnlyProviders';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
@@ -47,7 +48,7 @@ function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
     const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
-    const { projectId, diagramName } = useParams();
+    const { projectId, itemName } = useParams();
     const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
     // const userName = "vnapp.pbmn@deheus.com"
@@ -62,12 +63,14 @@ function BpmnEditor() {
     const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [diagramXML, setDiagramXML] = useState(null);
+    const [diagramXML, setDiagramXML] = useState(fileData);
     const [isFileValid, setIsFileValid] = useState(true);
     const [hidePanel, setHidePanel] = useState(false);
     const saveKeys = ['s', 'S'];
     const [showPublishModal, setShowPublishModal] = useState(false);
     let modelerInstance = null;
+    const searchKeys = ['f', 'F'];
+    let priority = 10000;
 
     // check-in
     const [showCheckInModal, setShowCheckInModal] = useState(false);
@@ -100,7 +103,7 @@ function BpmnEditor() {
             } else if (userRole === 'read-only') {
                 setUserRole('read-only');
             }
-    
+
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setError('No contribution found');
@@ -117,7 +120,7 @@ function BpmnEditor() {
             const response = await axios.get('/api/fetch/diagram', {
                 params: { diagramId, projectId }
             });
-    
+
             if (response.status === 200 && response.data.path) {
                 const diagramPath = response.data.path;
                 setDiagramPath(diagramPath);
@@ -126,9 +129,9 @@ function BpmnEditor() {
             }
         } catch (err) {
             console.error("An error occurred while fetching the diagram path:", err.message);
-        }         
+        }
     };
-    
+
 
     useEffect(() => {
         // console.log(location.state);
@@ -138,7 +141,7 @@ function BpmnEditor() {
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
-        
+
         modelerInstance = new BpmnModeler({
             container: container.current,
             keyboard: { bindTo: document },
@@ -150,14 +153,17 @@ function BpmnEditor() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                attachmentPropertiesProviderModule,
-                parameterPropertiesProviderModule,
-                dropdownPropertiesProvider,
+                userRole !== 'editing' ? readOnlyAttachmentProviderModule : attachmentPropertiesProviderModule,
+                userRole === 'editing' && parameterPropertiesProviderModule,
+                userRole === 'editing' && dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
                 PaletteModule,
                 PopupMenuModule,
-                ReplaceModule
+                ReplaceModule,
+                userRole !== 'editing' && {
+                    dragging: ['value', { init: function () { } }]
+                }
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
@@ -165,14 +171,6 @@ function BpmnEditor() {
                 dropdown: dropdownDescriptor,
             }
         });
-        // Check file api availablitiy
-        if (!window.FileList || !window.FileReader) {
-            window.alert(
-                'Looks like you use an older browser that does not support drag and drop. ' +
-                'Try using Chrome, Firefox or the Internet Explorer > 10.');
-        } else {
-            registerFileDrop(document.getElementById('modeler-container'));
-        }
         // if subprocess
         // var bpmnnXml = localStorage.getItem('bpmnXml');
         // if (bpmnnXml) {
@@ -196,9 +194,6 @@ function BpmnEditor() {
                 }
             }
         });
-        if (fileData) {
-            setDiagramXML(fileData);
-        }
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
                 .then(({ warnings }) => {
@@ -224,37 +219,69 @@ function BpmnEditor() {
                     setIsFileValid(false);
                 });
         }
-
-        // Save diagram on every change
-        modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
-        // modelerInstance.on('commandStack.changed', saveDiagram);
-        modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
-        // Add Save shortcut (ctrl + s)
-        modelerInstance.get('editorActions').register('save', saveDiagram);
-        modelerInstance.get('keyboard').addListener(function (context) {
-            var event = context.keyEvent;
-            if (event.ctrlKey || event.metaKey) {
-                if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
-                    modelerInstance.get('editorActions').trigger('save');
-                    return true;
-                }
-            }
-        });
-        const eventBus = modelerInstance.get('eventBus');
-        const elementRegistry = modelerInstance.get('elementRegistry');
-
-        eventBus.on('element.click', function (e) {
-            const element = elementRegistry.get(e.element.id);
-            const overlays = modelerInstance.get('overlays');
-            const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-            if (existingOverlays.length) {
-                console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
-            }
-        });
-
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
+        if (modelerInstance) {
+            if (userRole !== 'editing') {
+                const eventBus = modelerInstance.get('eventBus');
+                const keyboard = modelerInstance.get('keyboard');
+                eventBus.on('element.dblclick', priority, () => {
+                    return false;
+                });
 
+                keyboard.addListener(priority, () => {
+                    return false;
+                });
+
+                keyboard.addListener(20000, function (context) {
+                    var event = context.keyEvent;
+                    if (event.ctrlKey || event.metaKey) {
+                        if (searchKeys.indexOf(event.key) !== -1 || searchKeys.indexOf(event.code) !== -1) {
+                            modelerInstance.get('editorActions').trigger('find');
+                            return true;
+                        }
+                    }
+                });
+                document.addEventListener("keydown", (e) => {
+                    if (e.key === 'Tab') e.preventDefault();
+                })
+            } else {
+                const eventBus = modelerInstance.get('eventBus');
+                const elementRegistry = modelerInstance.get('elementRegistry');
+
+                eventBus.on('element.click', function (e) {
+                    const element = elementRegistry.get(e.element.id);
+                    const overlays = modelerInstance.get('overlays');
+                    const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
+                    if (existingOverlays.length) {
+                        console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
+                    }
+                });
+                // Check file api availablitiy
+                if (!window.FileList || !window.FileReader) {
+                    window.alert(
+                        'Looks like you use an older browser that does not support drag and drop. ' +
+                        'Try using Chrome, Firefox or the Internet Explorer > 10.');
+                } else {
+                    registerFileDrop(document.getElementById('modeler-container'));
+                }
+                // Save diagram on every change
+                modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
+                modelerInstance.on('commandStack.changed', saveDiagram);
+                modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
+                // Add Save shortcut (ctrl + s)
+                modelerInstance.get('editorActions').register('save', saveDiagram);
+                modelerInstance.get('keyboard').addListener(function (context) {
+                    var event = context.keyEvent;
+                    if (event.ctrlKey || event.metaKey) {
+                        if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
+                            modelerInstance.get('editorActions').trigger('save');
+                            return true;
+                        }
+                    }
+                });
+            }
+        }
         updatePaletteVisibility();
 
         return () => {
@@ -263,20 +290,12 @@ function BpmnEditor() {
     }, [diagramXML, editor, diagramId, projectId, userName, userRole, diagramPath]);
 
     useEffect(() => {
-        if (modelerInstance) {
-            const canvas = modelerInstance.get('canvas');
-            const eventBus = modelerInstance.get('eventBus');
-
-            if (userRole !== "editing") {
-                // Disable interactions
-                canvas.zoom('fit-viewport');
-                eventBus.fire('interaction.disable');
-            } else {
-                // Enable interactions
-                eventBus.fire('interaction.enable');
-            }
+        if (fileData) {
+            setDiagramXML(fileData);
+        } else {
+            setDiagramXML(null);
         }
-    }, [userRole]);
+    }, [fileData]);
 
     // hide hierarchy side bar
     const handleHidden = () => {
@@ -337,7 +356,7 @@ function BpmnEditor() {
                 console.log(err);
             });
             if (xml) {
-                setEncoded(document.getElementById(id), diagramName + '.xml', xml);
+                setEncoded(document.getElementById(id), itemName + '.xml', xml);
             };
         }
     };
@@ -349,7 +368,7 @@ function BpmnEditor() {
                 console.log(err);
             });
             if (svg) {
-                setEncoded(document.getElementById(id), diagramName + '.svg', svg);
+                setEncoded(document.getElementById(id), itemName + '.svg', svg);
             };
         }
     };
@@ -362,7 +381,7 @@ function BpmnEditor() {
             });
             if (svg) {
                 const url = await generateImage('png', svg);
-                downloadImage(document.getElementById(id), diagramName + '.png', url);
+                downloadImage(document.getElementById(id), itemName + '.png', url);
             };
         }
     };
@@ -375,7 +394,7 @@ function BpmnEditor() {
             });
             if (svg) {
                 const url = await generateImage('png', svg);
-                generatePdf(url, diagramName);
+                generatePdf(url, itemName);
             };
             handleClose();
         }
@@ -456,8 +475,8 @@ function BpmnEditor() {
         try {
             console.log(diagramId);
             console.log(userName);
-            const response = await axios.post('/api/diagram/checkedout', { diagramId, userName });
-    
+            const response = await axios.post('http://localhost:3001/api/diagram/checkedout', { diagramId, userName });
+
             if (response.status === 200) {
                 alert("Checked In!");
                 handleCloseCheckInModal();
@@ -471,7 +490,7 @@ function BpmnEditor() {
             alert("Error during checked-out. Please try again.");
         }
     }
-    
+
     // handle contributor
     const handleContributor = () => {
 
@@ -480,31 +499,31 @@ function BpmnEditor() {
     // send a request to publish
     const handleSubmit = (e) => {
         e.preventDefault();
-    
+
         const serviceId = 'service_deheusvn_bpmnapp';
         const templateId = 'template_rfow6sk';
         const publicKey = 'oQHqsgvCGRFGdRGwg';
-    
+
         const templateParams = {
-          to_name: 'Admin',
-          from_name: userName,
-          from_email: userEmail,
-          diagram_name: diagramName,  // *
-          message: message,
-          link: link,
+            to_name: 'Admin',
+            from_name: userName,
+            from_email: userEmail,
+            diagram_name: diagramName,  // *
+            message: message,
+            link: link,
         };
-    
+
         emailjs.send(serviceId, templateId, templateParams, publicKey)
-          .then((response) => {
-            console.log('Email sent successfully!', response);
-            alert("Email sent successfully!");
-            setMessage('');
-            handleClosePublishModal();
-          })
-          .catch((error) => {
-            console.error('Error sending email:', error);
-            alert("Error sending email");
-          });
+            .then((response) => {
+                console.log('Email sent successfully!', response);
+                alert("Email sent successfully!");
+                setMessage('');
+                handleClosePublishModal();
+            })
+            .catch((error) => {
+                console.error('Error sending email:', error);
+                alert("Error sending email");
+            });
     }
 
 
@@ -607,7 +626,7 @@ function BpmnEditor() {
         )
     } else {
         return (
-            <div className='main-container' onClick={handleClose}>
+            <div className='main-container' onClick={handleClose} style={{ "--height": window.innerHeight }}>
                 <div className='model-header'>
                     <Topbar onLogoClick={toMain} />
                     <Toolbar
@@ -656,36 +675,36 @@ function BpmnEditor() {
                         <button className='hide-panel' onClick={toggleVisibility}>
                             Details
                         </button>
-                        <div id='properties-panel-parent' />
+                        <div id='properties-panel-parent' className={userRole === 'editor' ? '' : 'disabled'} />
 
                     </div>
                 </div>
                 <div>
                     <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
-                    <Modal.Header closeButton>
-                    <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Publish Request Form</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                    <div style={{ padding: '15px', marginBottom: '10px', backgroundColor: '#f8f9fa', borderRadius: '5px'}}>
-                        <h5>Diagram</h5>
-                        <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{ diagramPath }</p>
-                    </div>
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group className="mb-3" controlId="message">
-                        <Form.Control
-                            as="textarea"
-                            rows={5}
-                            placeholder="Enter a request message."
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                        />
-                        </Form.Group>
-                        
-                        <Button variant="primary" type="submit" style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
-                        Send Request
-                        </Button>
-                    </Form>
-                    </Modal.Body>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Publish Request Form</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', marginBottom: '10px', backgroundColor: '#f8f9fa', borderRadius: '5px' }}>
+                                <h5>Diagram</h5>
+                                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
+                            </div>
+                            <Form onSubmit={handleSubmit}>
+                                <Form.Group className="mb-3" controlId="message">
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={5}
+                                        placeholder="Enter a request message."
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
+                                    />
+                                </Form.Group>
+
+                                <Button variant="primary" type="submit" style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                                    Send Request
+                                </Button>
+                            </Form>
+                        </Modal.Body>
                     </Modal>
 
                     <Modal show={showCheckInModal} onHide={handleCloseCheckInModal} centered>
@@ -694,19 +713,19 @@ function BpmnEditor() {
                         </Modal.Header>
                         <Modal.Body>
                             <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
-                            <h5>Diagram Path</h5>
-                            <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{ diagramPath }</p>
+                                <h5>Diagram Path</h5>
+                                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                            <ul style={{ paddingLeft: '20px' }}>
-                                <li>Once you check in, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
-                                <li>During this period, you can <strong>edit</strong> and <strong>save</strong> the draft, then <strong>request for publishing</strong> once completed.</li>
-                            </ul>
+                                <ul style={{ paddingLeft: '20px' }}>
+                                    <li>Once you check in, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
+                                    <li>During this period, you can <strong>edit</strong> and <strong>save</strong> the draft, then <strong>request for publishing</strong> once completed.</li>
+                                </ul>
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
-                            Check In
+                                Check In
                             </Button>
                         </Modal.Footer>
                     </Modal>

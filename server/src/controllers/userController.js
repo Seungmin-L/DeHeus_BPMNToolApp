@@ -1,5 +1,51 @@
 const { sql } = require("../config/dbConfig");
 
+
+// For Diagram Checkout
+const confirmCheckOut = async (req, res) => {
+    const { diagramId, userName } = req.body;
+    console.log(diagramId);
+    console.log(userName);
+
+    try {
+        const request = new sql.Request();
+
+        // 현재 시간과 14일 뒤의 시간을 계산합니다.
+        const checkoutTime = new Date();
+        const expiryTime = new Date(checkoutTime);
+        expiryTime.setDate(checkoutTime.getDate() + 14);
+
+        // 다이어그램 체크인 상태를 기록하는 새로운 행을 삽입합니다.
+        const insertCheckoutQuery = `
+            INSERT INTO diagram_checkout (diagram_id, user_email, checkout_time, expiry_time, status)
+            VALUES (@diagramId, @userEmail, @checkoutTime, @expiryTime, 1);
+        `;
+
+        request.input('diagramId', sql.Int, diagramId);
+        request.input('userEmail', sql.VarChar, userName);
+        request.input('checkoutTime', sql.DateTime, checkoutTime);
+        request.input('expiryTime', sql.DateTime, expiryTime);
+        await request.query(insertCheckoutQuery);
+
+        // 다이어그램의 checkedout_by 필드를 업데이트하여 체크인 처리합니다.
+        const updateDiagramQuery = `
+            UPDATE diagram
+            SET checkedout_by = @userEmail
+            WHERE id = @diagramId AND (checkedout_by IS NULL OR checkedout_by = @userEmail);
+        `;
+
+        await request.query(updateDiagramQuery);
+
+        res.status(200).json({ message: 'Check-in successful' });
+    } catch (error) {
+        console.error('Error during check-in:', error.message);
+        res.status(500).json({ message: 'Check-in failed', error: error.message });
+    }
+}
+
+
+
+// For My Page Listing
 const getUserBasicInfo = async (identifier) => {
     const userInfoQuery = `
         SELECT name, department AS department, email
@@ -18,7 +64,6 @@ const getUserBasicInfo = async (identifier) => {
 
     return result.recordset[0];
 };
-
 
 const getCheckedOutDiagrams = async (identifier) => {
     const checkedOutDiagramsQuery = `
@@ -43,7 +88,6 @@ const getCheckedOutDiagrams = async (identifier) => {
         time: Math.ceil((new Date(record.expiry_time) - new Date()) / (1000 * 60 * 60 * 24)) // 남은 시간 계산
     }));
 };
-
 
 const getActivityLog = async (identifier) => {
     const activityLogQuery = `
@@ -97,4 +141,5 @@ const getUserInfo = async (req, res) => {
     }
 };
 
-module.exports = { getUserInfo };
+
+module.exports = { getUserInfo, confirmCheckOut };

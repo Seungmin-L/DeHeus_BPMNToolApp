@@ -4,58 +4,74 @@ const { sql } = require("../config/dbConfig");
 
 // check the user's role in the current diagram
 const getUserRole = async (req, res) => {
-    const { projectId, diagramId, userName } = req.query;
+    const { projectId, diagramId, userEmail } = req.query;
 
     try {
-        const request = new sql.Request();
+        if (userEmail.includes('.pbmn@')) {
+            // console.log('Admin account detected:', userEmail);
+            return res.status(200).json({ role: 'admin' });
+        } else {
+            const request = new sql.Request();
 
-        const contributionQuery = `
-            SELECT editor 
-            FROM diagram_contribution 
-            WHERE user_email = @userName AND project_id = @projectId;
-        `;
-        request.input('userName', sql.VarChar, userName);
-        request.input('projectId', sql.Int, projectId);
-        const contributionResult = await request.query(contributionQuery);
-
-        if (contributionResult.recordset.length > 0) {
-            const isEditor = contributionResult.recordset[0].editor;
-
-            if (!isEditor) {
-                return res.status(200).json({ role: 'read-only' });
-            }
-
-            const diagramQuery = `
-                SELECT checkedout_by 
-                FROM diagram 
-                WHERE id = @diagramId;
+            const userQuery = `
+                SELECT name 
+                FROM [user] 
+                WHERE email = @userEmail;
             `;
-            request.input('diagramId', sql.Int, diagramId);
-            const diagramResult = await request.query(diagramQuery);
+            request.input('userEmail', sql.VarChar, userEmail);
+            const userResult = await request.query(userQuery);
 
-            if (diagramResult.recordset.length > 0) {
-                const checkedOutBy = diagramResult.recordset[0].checkedout_by;
+            const userName = userResult.recordset.length > 0 
+                ? userResult.recordset[0].name 
+                : 'Unknown User';
 
-                if (checkedOutBy === null) {
-                    return res.status(200).json({ role: 'contributor' });
-                } else if (checkedOutBy !== userName) {
-                    return res.status(200).json({ role: 'read-only' });
-                } else {
-                    return res.status(200).json({ role: 'editing' });
+            const contributionQuery = `
+                SELECT editor 
+                FROM diagram_contribution 
+                WHERE user_email = @userEmail AND project_id = @projectId;
+            `;
+            request.input('projectId', sql.Int, projectId);
+            const contributionResult = await request.query(contributionQuery);
+
+            if (contributionResult.recordset.length > 0) {
+                const isEditor = contributionResult.recordset[0].editor;
+
+                if (!isEditor) {
+                    return res.status(200).json({ role: 'read-only', userName });
+                }
+
+                const diagramQuery = `
+                    SELECT checkedout_by 
+                    FROM diagram 
+                    WHERE id = @diagramId;
+                `;
+                request.input('diagramId', sql.Int, diagramId);
+                const diagramResult = await request.query(diagramQuery);
+
+                if (diagramResult.recordset.length > 0) {
+                    const checkedOutBy = diagramResult.recordset[0].checkedout_by;
+
+                    if (checkedOutBy === null) {
+                        return res.status(200).json({ role: 'contributor', userName });
+                    } else if (checkedOutBy !== userEmail) {
+                        return res.status(200).json({ role: 'read-only', userName });
+                    } else {
+                        return res.status(200).json({ role: 'editing', userName });
+                    }
                 }
             }
+            res.status(200).json({ role: 'read-only', userName });
         }
-
-        res.status(200).json({ role: 'read-only' });
+        
     } catch (error) {
         console.error('Error fetching user role:', error.message);
         res.status(500).json({ message: 'Error fetching user role', error: error.message });
     }
 };
 
+
 // check diagram path for displaying on the checkout modal
 const getDiagramPath = async (req, res) => {
-    // console.log(req.query);
     const { diagramId, projectId } = req.query;
 
     try {
@@ -72,6 +88,7 @@ const getDiagramPath = async (req, res) => {
 
         let currentDiagramId = diagramId;
         let pathStack = [];
+        let currentDiagramName = '';
 
         while (currentDiagramId) {
             const diagramQuery = `
@@ -84,7 +101,8 @@ const getDiagramPath = async (req, res) => {
             const diagramResult = await diagramRequest.query(diagramQuery);
 
             if (diagramResult.recordset.length > 0) {
-                pathStack.unshift(`[ ${diagramResult.recordset[0].name} ]`);
+                currentDiagramName = diagramResult.recordset[0].name;
+                pathStack.unshift(`[ ${currentDiagramName} ]`);
             } else {
                 break;
             }
@@ -107,8 +125,7 @@ const getDiagramPath = async (req, res) => {
         }
 
         const fullPath = `[ ${projectName} ] - ${pathStack.join(' - ')}`;
-        // console.log("Final diagram path:", fullPath);
-        res.status(200).json({ path: fullPath });
+        res.status(200).json({ path: fullPath, diagramName: currentDiagramName });
 
     } catch (error) {
         console.error('Error fetching diagram path:', error.message);
@@ -245,31 +262,36 @@ async function getLatestPublishedDiagram(projectId, diagramId) {
 }
 
 async function getDiagramData(req, res) {
-    console.log(req.params);
-    const { projectId, diagramId, userEmail } = req.params; // projectId와 diagramId를 URL 파라미터에서 가져옴
-    // // 아래는 디버깅 용도라서 주석 처리~!!!
-    // console.log("Received request with projectId:", projectId);
-    // console.log("Received request with diagramId:", diagramId);
+    const { projectId, diagramId, userEmail } = req.params; 
 
     try {
+        if (userEmail.includes('.pbmn@')) {
+            const adminDraftData = await getLatestDraftDiagramForAdmin(diagramId);
+            if (adminDraftData) {
+                return res.status(200).json(adminDraftData);
+            } else {
+                return res.status(404).json({ message: 'No diagram found for the given diagramId' });
+            }
+        }
+
         const draftData = await getLatestDraftDiagram(diagramId, userEmail);
         if (draftData) {
-            res.status(200).json(draftData); // 프론트에서 api response로 확인 가능
+            res.status(200).json(draftData);
         } else {
             const diagramData = await getLatestPublishedDiagram(projectId, diagramId);
             if (diagramData) {
-                res.status(200).json(diagramData); // 프론트에서 api response로 확인 가능
+                res.status(200).json(diagramData);
             } else {
                 const msg = await checkNewDiagram(diagramId);
                 if (msg) {
-                    res.status(200).json({ message: msg.message }); // 프론트에서 api response로 확인 가능
+                    res.status(200).json({ message: msg.message });
                 } else {
                     res.status(500).json({ message: 'Diagram already has been checked out by someone' });
                 }
             }
         }
     } catch (err) {
-        console.error("Error in getDiagramData:", err.message); // getDiagramData 함수 오류인 경우
+        console.error("Error in getDiagramData:", err.message);
         res.status(500).json({ message: 'Error fetching diagram', error: err.message });
     }
 }
@@ -305,13 +327,50 @@ async function getLatestDraftDiagram(diagramId, userEmail) {
             };
         } else {
             console.log("No diagram found for the given projectId and diagramId");
-            return null;  // 해당 프로젝트 내에서 특정 다이어그램을 찾을 수 없는 경우
+            return null;
         }
     } catch (err) {
-        console.error('Error executing query:', err.message); // 쿼리 실행 중 오류 발생, 데베 문제
+        console.error('Error executing query:', err.message);
         throw new Error('Error fetching diagram: ' + err.message);
     }
 }
+
+// function for admin to view draft version for publish request
+async function getLatestDraftDiagramForAdmin(diagramId) {
+    try {
+        const request = new sql.Request();
+        const query = `
+            SELECT TOP 1
+                dd.file_data,
+                dd.file_type,
+                d.name AS diagramName
+            FROM diagram_draft dd
+            JOIN diagram d ON dd.diagram_id = d.id
+            WHERE dd.diagram_id = @diagramId
+            ORDER BY dd.created_at DESC;
+        `;
+        request.input('diagramId', sql.Int, diagramId);
+
+        const result = await request.query(query);
+        // console.log("Admin Query Result:", result.recordset);
+
+        if (result.recordset.length > 0) {
+            const { file_data, file_type, diagramName } = result.recordset[0];
+            return {
+                fileData: convertBlobtoXML(file_data),
+                fileType: file_type,
+                diagramName
+            };
+        } else {
+            console.log("No diagram found for the given diagramId");
+            return null;
+        }
+    } catch (err) {
+        console.error('Error executing admin query:', err.message);
+        throw new Error('Error fetching diagram for admin: ' + err.message);
+    }
+}
+
 
 const checkNewDiagram = async (diagramId) => {
     try {

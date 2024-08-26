@@ -1,3 +1,4 @@
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from "axios";
@@ -49,9 +50,8 @@ import { Form, Button, Modal } from "react-bootstrap";
 function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
-    const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
+    const diagramId = location.state?.itemId; // 프로젝트 리스트에서 접근할 때 state로 가지고 온 다이어그램 id
     const { projectId, itemName } = useParams();
-    const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
     // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
@@ -74,6 +74,10 @@ function BpmnEditor() {
     const searchKeys = ['f', 'F'];
     let priority = 10000;
 
+    const isAuthenticated = useIsAuthenticated();
+    const [userName, setUserName] = useState("");
+    const { accounts } = useMsal();
+
     // check-in
     const [showCheckInModal, setShowCheckInModal] = useState(false);
     const handleShowCheckInModal = () => setShowCheckInModal(true);
@@ -94,19 +98,24 @@ function BpmnEditor() {
     const fetchUserRole = async () => {
         try {
             const response = await axios.get('/api/fetch/user-role', {
-                params: { projectId, diagramId, userName }
+                params: { projectId, diagramId, userEmail }
             });
+            const userName = response.data.userName;
             const userRole = response.data.role;
-            console.log(userRole);
             if (userRole === 'editing') {
                 setEditor(true);
+                setUserName(userName);
                 setUserRole('editing');
             } else if (userRole === 'contributor') {
+                setUserName(userName);
                 setUserRole('contributor');
             } else if (userRole === 'read-only') {
+                setUserName(userName);
                 setUserRole('read-only');
-            }
-
+            } else if (userRole === 'admin') {
+                setUserName(userName);
+                setUserRole('admin');
+            } 
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setError('No contribution found');
@@ -127,7 +136,9 @@ function BpmnEditor() {
 
             if (response.status === 200 && response.data.path) {
                 const diagramPath = response.data.path;
+                const diagramName = response.data.diagramName;
                 setDiagramPath(diagramPath);
+                setDiagramName(diagramName);
             } else {
                 console.error("Failed to fetch diagram path: Invalid response data.");
             }
@@ -138,14 +149,13 @@ function BpmnEditor() {
 
 
     useEffect(() => {
-        // console.log(location.state);
-        if (userName.includes('.pbmn@')){
-            console.log('admin');
-            setUserRole("admin");
-        } else {
-            console.log("not admin")
-            fetchUserRole();
+        if (isAuthenticated && accounts.length > 0) {
+            const userName = accounts[0].username;
+            setUserName(userName);
+            setUserEmail(userName);
         }
+
+        fetchUserRole();
         fetchDiagramPath();
 
         if (modelerInstance) return;

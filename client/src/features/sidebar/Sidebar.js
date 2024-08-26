@@ -59,7 +59,7 @@ export default function Sidebar(props) {
             const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${id}/${userName}`);
             // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
             // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
-            if (!response.data.message) {
+            if (response.data.fileData) {
                 const { diagramName, fileData } = response.data;  // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
                 // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
                 console.log(fileData)  // 디버깅 용도라서 주석 처리!!!

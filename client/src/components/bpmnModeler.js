@@ -590,8 +590,7 @@ function BpmnEditor() {
                     });
             }
         }
-        setUserRole("contributor");
-
+        // setUserRole("contributor");
     };
     // handle aligning elements
     const handleAlign = (alignment) => {

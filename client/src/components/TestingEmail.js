@@ -29,7 +29,7 @@ function TestingEmail() {
 
   const handleShowPublishModal = () => setShowPublishModal(true);
   const handleClosePublishModal = () => setShowPublishModal(false);
-  const handleShowCheckInModal = () => setShowdfdfdCheckInModal(true);
+  const handleShowCheckInModal = () => setShowCheckInModal(true);
   const handleCloseCheckInModal = () => setShowCheckInModal(false);
 
   // Publish variables

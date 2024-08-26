@@ -4,7 +4,7 @@ import { useError } from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 
 // import hooks from the vendored preact package
-import { useEffect, useState } from '@bpmn-io/properties-panel/preact/hooks';
+import { useState } from '@bpmn-io/properties-panel/preact/hooks';
 import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
 
 export default function(element) {
@@ -36,7 +36,6 @@ export default function(element) {
 function EndToEndProp(props) {
   const { element, id } = props;
 
-  const modeling = useService('modeling');
   const translate = useService('translate');
 
 
@@ -46,7 +45,7 @@ function EndToEndProp(props) {
 
   return html`<${PropertyFieldEntry}
     id=${ id }
-    label=${ translate("EndToEnd") }
+    label=${ translate("End to End") }
     getValue=${ getValue }
   />`;
 }
@@ -54,7 +53,6 @@ function EndToEndProp(props) {
 // Properties for Function
 function FunctionProp(props) {
   const { element, id } = props;
-  const modeling = useService('modeling');
   const translate = useService('translate');
 
   const getValue = () => {
@@ -116,12 +114,14 @@ function PropertyFieldEntry(props) {
     "data-entry-id": id,
     children: [value !== "" && jsx('p', {
       class: 'bio-properties-panel-dropdown-properties-label',
-      children: [label + ": "]
+      children: [label]
     }),
-    jsx("span", {
+    jsx("input", {
       class: 'bio-properties-panel-dropdown-properties-value',
+      value: value,
       label: label,
-      children: [value]
+      disabled: true,
+      defaultValue: value
     }), error && jsx("div", {
       class: "bio-properties-panel-error",
       children: error

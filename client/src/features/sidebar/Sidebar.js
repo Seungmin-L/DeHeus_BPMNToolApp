@@ -127,7 +127,6 @@ export default function Sidebar(props) {
         )
     }
     useEffect(() => {
-        console.log(expandedRows);
         axios.get(`/api/processes/${projectId}`)
             .then((res) => {
                 setProcesses(res.data);

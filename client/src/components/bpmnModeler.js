@@ -726,7 +726,7 @@ function BpmnEditor() {
 
                     <Modal show={showCheckInModal} onHide={handleCloseCheckInModal} centered>
                         <Modal.Header closeButton>
-                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check In Confirm</Modal.Title>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check Out Confirm</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
@@ -735,14 +735,14 @@ function BpmnEditor() {
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
                                 <ul style={{ paddingLeft: '20px' }}>
-                                    <li>Once you check in, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
+                                    <li>Once you check out, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
                                     <li>During this period, you can <strong>edit</strong> and <strong>save</strong> the draft, then <strong>request for publishing</strong> once completed.</li>
                                 </ul>
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
-                                Check In
+                                Check out
                             </Button>
                         </Modal.Footer>
                     </Modal>

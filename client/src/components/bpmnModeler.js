@@ -89,10 +89,9 @@ function BpmnEditor() {
 
     // Publish variables
     const currentUrl = window.location.href;
-    const [link] = useState(currentUrl);
+    const [link] = useState(currentUrl  + "/" + diagramId);
     const [message, setMessage] = useState('');
     const [diagramName, setDiagramName] = useState('DiagramName');  // *
-
 
     // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
     const fetchUserRole = async () => {
@@ -147,14 +146,12 @@ function BpmnEditor() {
         }
     };
 
-
     useEffect(() => {
         if (isAuthenticated && accounts.length > 0) {
             const userName = accounts[0].username;
             setUserName(userName);
             setUserEmail(userName);
         }
-
         fetchUserRole();
         fetchDiagramPath();
 
@@ -303,7 +300,7 @@ function BpmnEditor() {
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, editor, diagramId, projectId, userName, userRole, diagramPath]);
+    }, [diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
 
     useEffect(() => {
         if (fileData) {

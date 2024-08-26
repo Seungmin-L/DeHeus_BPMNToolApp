@@ -163,9 +163,9 @@ function BpmnEditor() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                userRole === 'editing' ? readOnlyAttachmentProviderModule : attachmentPropertiesProviderModule,
-                userRole === 'editing' ? readOnlyParameterProviderModule : parameterPropertiesProviderModule,
-                userRole === 'editing' ? readOnlyDropdownProviderModule : dropdownPropertiesProvider,
+                userRole !== 'editing' ? readOnlyAttachmentProviderModule : attachmentPropertiesProviderModule,
+                userRole !== 'editing' ? readOnlyParameterProviderModule : parameterPropertiesProviderModule,
+                userRole !== 'editing' ? readOnlyDropdownProviderModule : dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
                 PaletteModule,
@@ -681,7 +681,7 @@ function BpmnEditor() {
                         onShare={handleShowPublishModal}
                     />
                 </div>
-                <div className='model-body'>
+                <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>
                     {isHidden ?
                         <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
                         :
@@ -693,7 +693,7 @@ function BpmnEditor() {
                         className={"" + (isHidden ? 'sidebar-hidden' : '')}
                         ref={container}
                     />
-                    <div className={userRole === 'editing' ? (hidePanel ? 'properties_panel_hidden' : 'properties_panel_open') : (hidePanel ? 'properties_panel_hidden disabled' : 'properties_panel_open disabled')}>
+                    <div className={hidePanel ? 'properties_panel_hidden' : 'properties_panel_open'}>
                         <button className='hide-panel' onClick={toggleVisibility}>
                             Details
                         </button>

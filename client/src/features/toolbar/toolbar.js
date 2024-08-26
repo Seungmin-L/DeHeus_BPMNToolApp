@@ -88,7 +88,7 @@ function Toolbar({
           </ul>
         }
 
-        {mode === 'editor' && (
+        {mode === 'editing' && (
           <>
             <div className='toolbar-group-file'>
               <button onClick={onImport} dangerouslySetInnerHTML={{ __html: Icons.import }} title="import" />

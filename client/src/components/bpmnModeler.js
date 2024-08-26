@@ -89,7 +89,7 @@ function BpmnEditor() {
 
     // Publish variables
     const currentUrl = window.location.href;
-    const [link] = useState(currentUrl  + "/" + diagramId);
+    const [link] = useState(currentUrl);
     const [message, setMessage] = useState('');
     const [diagramName, setDiagramName] = useState('DiagramName');  // *
 
@@ -235,9 +235,9 @@ function BpmnEditor() {
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
         if (modelerInstance) {
+            const eventBus = modelerInstance.get('eventBus');
+            const keyboard = modelerInstance.get('keyboard');
             if (userRole !== 'editing') {
-                const eventBus = modelerInstance.get('eventBus');
-                const keyboard = modelerInstance.get('keyboard');
                 eventBus.on('element.dblclick', priority, () => {
                     return false;
                 });
@@ -284,7 +284,7 @@ function BpmnEditor() {
                 modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
                 // Add Save shortcut (ctrl + s)
                 modelerInstance.get('editorActions').register('save', saveDiagram);
-                modelerInstance.get('keyboard').addListener(function (context) {
+                keyboard.addListener(function (context) {
                     var event = context.keyEvent;
                     if (event.ctrlKey || event.metaKey) {
                         if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
@@ -432,8 +432,9 @@ function BpmnEditor() {
             });
             if (xml) {
                 console.log(xml);
+                console.log(diagramId, userEmail);
                 // Save diagram in DB
-                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
+                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userEmail: userEmail })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })
@@ -534,7 +535,7 @@ function BpmnEditor() {
             from_email: userEmail,
             diagram_name: diagramName,  // *
             message: message,
-            link: link,
+            link: link + "/" + diagramId,
         };
 
         emailjs.send(serviceId, templateId, templateParams, publicKey)
@@ -687,7 +688,7 @@ function BpmnEditor() {
                     {isHidden ?
                         <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
                         :
-                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userName} />
+                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userEmail} />
                     }
 
                     <div

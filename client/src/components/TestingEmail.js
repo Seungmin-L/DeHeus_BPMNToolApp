@@ -41,6 +41,26 @@ function TestingEmail() {
   const [processName, setProcessName] = useState('ProcessName');
   const [diagramName, setDiagramName] = useState('DiagramName');
 
+  // Confirm Publish Modal function
+  const handleShowConfirmPublishModal = () => setShowConfirmPublishModal(true);
+  const handleCloseConfirmPublishModal = () => setShowConfirmPublishModal(false);
+
+  // Confirm Publish variables
+  const [declineReason, setDeclineReason] = useState('');
+
+  // Confirm Publish function
+  const handleConfirmPublish = () => {
+    alert("Diagram Published!");
+    handleCloseConfirmPublishModal();
+  }
+
+  // Decline Publish function
+  const handleDeclinePublish = () => {
+    alert(`Publish declined: ${declineReason}`);
+    setDeclineReason('');
+    handleCloseConfirmPublishModal();
+  }
+
   // Email sending function
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -89,6 +109,9 @@ function TestingEmail() {
             <Button variant="secondary" onClick={handleShowCheckInModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
               Check In
             </Button>
+            <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#ffc107", border: "none", marginTop: "10px" }}>
+              Confirm Publish
+            </Button>
 
             <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
             <Modal.Header closeButton>
@@ -136,6 +159,37 @@ function TestingEmail() {
               <Modal.Footer>
                 <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
                   Check In
+                </Button>
+              </Modal.Footer>
+            </Modal>
+
+            <Modal show={showConfirmPublishModal} onHide={handleCloseConfirmPublishModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Confirm Publish</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px', textAlign: 'center' }}>
+                  <p>If you agree to publish this diagram, please click <strong>Confirm</strong>. If not, please provide a reason and click <strong>Decline</strong>.</p>
+                </div>
+                <Form>
+                  <Form.Group className="mb-3" controlId="declineReason">
+                    <Form.Label style={{ textAlign: 'center', width: '100%' }}>Decline Reason (Optional)</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Type the reason for declining"
+                      value={declineReason}
+                      onChange={(e) => setDeclineReason(e.target.value)}
+                    />
+                  </Form.Group>
+                </Form>
+              </Modal.Body>
+              <Modal.Footer style={{ justifyContent: 'space-around' }}>
+                <Button variant="success" onClick={handleConfirmPublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none" }}>
+                  Confirm
+                </Button>
+                <Button variant="danger" onClick={handleDeclinePublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#d9534f", border: "none" }}>
+                  Decline
                 </Button>
               </Modal.Footer>
             </Modal>

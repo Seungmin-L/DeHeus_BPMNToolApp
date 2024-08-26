@@ -195,7 +195,7 @@ function AttachmentfieldEntry(props) {
   }, [value, validate]);
 
   const error = globalError || localError;
-  return jsxs("div", {
+  return value.length > 0 && jsxs("div", {
     class: classnames('bio-properties-panel-attachment-entry', error ? 'has-error' : ''),
     "data-entry-id": id,
     children: [jsx(Attachmentfield, {

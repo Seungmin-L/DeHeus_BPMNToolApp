@@ -39,7 +39,6 @@ function Attachment(props) {
   const debounce = useService('debounceInput');
   const nodeId = element.businessObject.id;
   const { diagramId } = getLocation();
-  console.log(diagramId);
   // Get attachment 
   const getValue = () => {
     if (element.businessObject.attachment) {

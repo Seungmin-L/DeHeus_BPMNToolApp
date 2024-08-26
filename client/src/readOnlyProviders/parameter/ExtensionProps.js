@@ -39,6 +39,7 @@ function Key(props) {
     extension
   } = props;
 
+  console.log(extension);
   const commandStack = useService('commandStack'),
         translate = useService('translate'),
         debounce = useService('debounceInput');
@@ -66,7 +67,6 @@ function ExtensionFieldEntry(props) {
   const globalError = useError(id);
   const [localError, setLocalError] = useState(null);
   let value = getValue();
-  console.log(element);
   const error = globalError || localError;
   return jsxs("div", {
     class: classnames('bio-properties-panel-extension-entry', error ? 'has-error' : ''),

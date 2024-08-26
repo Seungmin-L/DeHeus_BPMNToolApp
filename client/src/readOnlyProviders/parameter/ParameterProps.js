@@ -100,7 +100,6 @@ function ParameterFieldEntry(props) {
   const globalError = useError(id);
   const [localError, setLocalError] = useState(null);
   let value = getValue(element);
-  console.log(value);
   const error = globalError || localError;
   return jsxs("div", {
     class: classnames('bio-properties-panel-parameter-entry', error ? 'has-error' : ''),
@@ -108,7 +107,7 @@ function ParameterFieldEntry(props) {
     children: [label === 'Value' && jsx("p", {
       value: value,
       label: label,
-      children:[value]
+      children:["Value: " + value]
     }), error && jsx("div", {
       class: "bio-properties-panel-error",
       children: error

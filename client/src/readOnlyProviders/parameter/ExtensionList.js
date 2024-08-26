@@ -14,11 +14,12 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import {
   CollapsibleEntry,
-  ListEntry
+  ListEntry, useError
 } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
-
+import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
+import { useState } from '@bpmn-io/properties-panel/preact/hooks';
 import ExtensionProps from './ExtensionProps';
 
 export default function ExtensionList(props) {
@@ -28,7 +29,7 @@ export default function ExtensionList(props) {
     parameter
   } = props;
 
-  const id = `${ idPrefix }-extensions`;
+  const id = `${idPrefix}-extensions`;
 
   const bpmnFactory = useService('bpmnFactory');
   const commandStack = useService('commandStack');
@@ -41,12 +42,13 @@ export default function ExtensionList(props) {
   const extensionsList = (extensions && extensions.get('extensions')) || [];
 
   return html`<${ListEntry}
-    element=${ element }
-    autoFocusEntry=${ `[data-entry-id="${id}-extension-${extensionsList.length - 1}"] input` }
-    id=${ id }
-    label=${ translate('Extensions') }
-    items=${ extensionsList }
-    component=${ Extension } />`;
+    element=${element}
+    autoFocusEntry=${`[data-entry-id="${id}-extension-${extensionsList.length - 1}"] input`}
+    id=${id}
+    label=${translate('Extensions')}
+    items=${extensionsList}
+    component=${Extension} 
+    />`;
 }
 
 function Extension(props) {
@@ -60,20 +62,34 @@ function Extension(props) {
 
   const translate = useService('translate');
 
-  const id = `${ idPrefix }-extension-${ index }`;
+  const id = `${idPrefix}-extension-${index}`;
 
   return html`
-    <${CollapsibleEntry}
-      id=${ id }
-      element=${ element }
-      entries=${ ExtensionProps({
-    extension,
-    element,
-    idPrefix: id
-  }) }
-      label=${ extension.get('key') || translate('<empty>') }
-      open=${ open }
+    <${KeyEntry}
+      id=${id}
+      element=${element}
+      label=${extension.get('key') || ''}
     />`;
 }
 
+var classnames = require('classnames');
+function KeyEntry(props) {
+  const {
+    id,
+    label
+  } = props;
+  const globalError = useError(id);
+  const [localError, setLocalError] = useState(null);
+  const error = globalError || localError;
+  return label !== '' && jsxs("div", {
+    class: classnames('bio-properties-panel-extension-entry', error ? 'has-error' : ''),
+    "data-entry-id": id,
+    children: [jsx("p", {
+      children: ["Key: " + label]
+    }), error && jsx("div", {
+      class: "bio-properties-panel-error",
+      children: error
+    })]
+  });
+}
 

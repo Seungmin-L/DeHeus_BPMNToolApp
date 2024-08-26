@@ -110,7 +110,6 @@ function PropertyFieldEntry(props) {
   const globalError = useError(id);
   const [localError, setLocalError] = useState(null);
   let value = getValue();
-  console.log(value);
   const error = globalError || localError;
   return value !== "" && jsxs("div", {
     class: classnames('bio-properties-panel-dropdown-properties-entry', error ? 'has-error' : ''),

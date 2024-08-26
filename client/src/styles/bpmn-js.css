@@ -148,7 +148,7 @@
   input, textarea, label{
       pointer-events: none !important;
   }
-  .djs-palette, .djs-context-pad{
+  .djs-palette, .djs-context-pad, .bio-properties-panel-add-entry{
       display: none !important;
   }
 }

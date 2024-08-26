@@ -1,5 +1,9 @@
 export const convertUTCToLocal = (dateString) => {
   const date = new Date(dateString);
+  if (!dateString) {
+    return 'N/A';
+}
+
   const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // UTC+7
   return localTime.toISOString().slice(0, 16).replace('T', ' ');
 };

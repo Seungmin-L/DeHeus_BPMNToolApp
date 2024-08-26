@@ -10,16 +10,14 @@ import AttachmentPropertiesProvider from './AttachmentPropertiesProvider';
 import ParameterPropertiesProvider from './ParameterProvider';
 import DropdownPropertiesProvider from './DropdownProvider';
 
-
 export default {
   // initiate custom modules for properties panel
   __init__: [ 
     'attachmentPropertiesProvider',
     'dropdownPropertiesProvider',
-    'parameterPropertiesProvider',
+    'parameterPropertiesProvider'
   ],
   attachmentPropertiesProvider: [ 'type', AttachmentPropertiesProvider ],
   dropdownPropertiesProvider: [ 'type', DropdownPropertiesProvider ],
-  parameterPropertiesProvider: [ 'type', ParameterPropertiesProvider ],
-
+  parameterPropertiesProvider: [ 'type', ParameterPropertiesProvider ]
 };

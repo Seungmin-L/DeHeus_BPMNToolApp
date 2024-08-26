@@ -7,13 +7,16 @@ import minimapModule from 'diagram-js-minimap';
 import ErrorPage from './ErrorPage';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import attachmentPropertiesProviderModule from '../providers';
+import readOnlyAttachmentProviderModule from '../readOnlyProviders';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import generateImage from '../util/generateImage';
 import generatePdf from '../util/generatePdf';
 //custom properties module
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
+import readOnlyParameterProviderModule from '../readOnlyProviders';
 import dropdownPropertiesProvider from '../providers';
+import readOnlyDropdownProviderModule from '../readOnlyProviders';
 import dropdownDescriptor from '../providers/descriptor/dropdown';
 //search
 import bpmnSearchModule from '../features/search/provider';
@@ -24,6 +27,9 @@ import PopupMenuModule from '../features/popup';
 import ReplaceModule from '../features/replace';
 //palette
 import PaletteModule from '../features/palette';
+
+//publish
+import emailjs from '@emailjs/browser';
 
 //toolbar
 import Toolbar from '../features/toolbar/toolbar';
@@ -36,76 +42,116 @@ import Sidebar from '../features/sidebar/Sidebar';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { navigateTo } from '../util/navigation';
 
+// Checkin
+import { Form, Button, Modal } from "react-bootstrap";
+
+
 function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
     const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
-    const { projectId } = useParams();
+    const { projectId, itemName } = useParams();
     const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
+    // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
     const [modeler, setModeler] = useState(null);
-    const [userRole, setUserRole] = useState(null); // for toolbar view (readOnly, contributor, editing)
+    const [userEmail, setUserEmail] = useState("");  // *
+    const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
     const [editor, setEditor] = useState(null);
+    const [diagramPath, setDiagramPath] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [diagramXML, setDiagramXML] = useState(null);
+    const [diagramXML, setDiagramXML] = useState(fileData);
     const [isFileValid, setIsFileValid] = useState(true);
     const [hidePanel, setHidePanel] = useState(false);
     const saveKeys = ['s', 'S'];
+    const [showPublishModal, setShowPublishModal] = useState(false);
     let modelerInstance = null;
+    const searchKeys = ['f', 'F'];
+    let priority = 10000;
 
-    // fetches contribution. if the user is editor the user role will be set to contributor, if not readOnly
-    const fetchEditor = async () => {
+    // check-in
+    const [showCheckInModal, setShowCheckInModal] = useState(false);
+    const handleShowCheckInModal = () => setShowCheckInModal(true);
+    const handleCloseCheckInModal = () => setShowCheckInModal(false);
+
+    // publish
+    const handleShowPublishModal = () => setShowPublishModal(true);
+    const handleClosePublishModal = () => setShowPublishModal(false);
+
+    // Publish variables
+    const currentUrl = window.location.href;
+    const [link] = useState(currentUrl);
+    const [message, setMessage] = useState('');
+    const [diagramName, setDiagramName] = useState('DiagramName');  // *
+
+
+    // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
+    const fetchUserRole = async () => {
         try {
-            const response = await axios.get('/api/contribution/editor', {
-                params: { projectId, userName }
+            const response = await axios.get('/api/fetch/user-role', {
+                params: { projectId, diagramId, userName }
             });
-            setEditor(response.data.editor);
-            if (response.data.editor && userRole !== "editing") {
-                setUserRole("contributor");
-            } else if (!response.data.editor && userRole !== "editing") {
-                setUserRole("readOnly");
+            const userRole = response.data.role;
+            console.log(userRole);
+            if (userRole === 'editing') {
+                setEditor(true);
+                setUserRole('editing');
+            } else if (userRole === 'contributor') {
+                setUserRole('contributor');
+            } else if (userRole === 'read-only') {
+                setUserRole('read-only');
             }
+
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setError('No contribution found');
             } else {
-                setError('Error fetching editor');
+                setError('Error fetching user role');
             }
         } finally {
             setLoading(false);
         }
-
+        
     };
+
+    const fetchDiagramPath = async () => {
+        try {
+            const response = await axios.get('/api/fetch/diagram', {
+                params: { diagramId, projectId }
+            });
+
+            if (response.status === 200 && response.data.path) {
+                const diagramPath = response.data.path;
+                setDiagramPath(diagramPath);
+            } else {
+                console.error("Failed to fetch diagram path: Invalid response data.");
+            }
+        } catch (err) {
+            console.error("An error occurred while fetching the diagram path:", err.message);
+        }
+    };
+
+
     useEffect(() => {
-        // 아래는 디버깅 용도 로그입니다~!!
-        // console.log("Received Diagram ID:", diagramId); 
-        // console.log("Received User Name:", userName); 
-        // console.log("Received File Data:", fileData); 
-
-        // 아래 코드는 내가 임의로 작성해 둔 건데, server/src/controllers/diagramController.js 파일에서 api response로 가지고 온 xml 정보 (diagram_published 테이블의 file data 컬럼에 해당)를 다이어그램 모델러로 띄우면 됩니다~!!! 라인 193도 함께 주석 처리 완료!!!
-        // if (projectName && diagramName && publishDate) {
-        //     axios.get(`/api/diagrams/get-diagram-with-project/${diagramId}`)
-        //         .then(response => {
-        //             const { fileData } = response.data;
-        //             setDiagramXML(fileData);
-        //         })
-        //         .catch(error => {
-        //             console.error("Error fetching diagram data:", error);
-        //             setIsFileValid(false);
-        //         });
-        // }
-        fetchEditor();
-
+        // console.log(location.state);
+        if (userName.includes('.pbmn@')){
+            console.log('admin');
+            setUserRole("admin");
+        } else {
+            console.log("not admin")
+            fetchUserRole();
+        }
+        fetchDiagramPath();
 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
-        
+
         modelerInstance = new BpmnModeler({
             container: container.current,
             keyboard: { bindTo: document },
@@ -117,13 +163,18 @@ function BpmnEditor() {
                 BpmnPropertiesProviderModule,
                 ColorPickerModule,
                 minimapModule,
-                parameterPropertiesProviderModule,
-                dropdownPropertiesProvider,
+                userRole !== 'editing' ? readOnlyAttachmentProviderModule : attachmentPropertiesProviderModule,
+                userRole !== 'editing' ? readOnlyParameterProviderModule : parameterPropertiesProviderModule,
+                userRole !== 'editing' ? readOnlyDropdownProviderModule : dropdownPropertiesProvider,
                 bpmnSearchModule,
                 DrilldownOverlayBehavior,
                 PaletteModule,
                 PopupMenuModule,
-                ReplaceModule
+                ReplaceModule,
+                userRole !== 'editing' && {
+                    dragging: ['value', { init: function () { } }],
+                    create: ['value', {}]
+                }
             ],
             moddleExtensions: {
                 attachment: attachmentModdleDescriptor,
@@ -131,21 +182,6 @@ function BpmnEditor() {
                 dropdown: dropdownDescriptor,
             }
         });
-        // Check file api availablitiy
-        if (!window.FileList || !window.FileReader) {
-            window.alert(
-                'Looks like you use an older browser that does not support drag and drop. ' +
-                'Try using Chrome, Firefox or the Internet Explorer > 10.');
-        } else {
-            registerFileDrop(document.getElementById('modeler-container'));
-        }
-        // if subprocess
-        // var bpmnnXml = localStorage.getItem('bpmnXml');
-        // if (bpmnnXml) {
-        //     //set bpmn xml from local
-        //     setDiagramXML(bpmnnXml);
-        // }
-        // Import file or create a new diagram
 
         window.addEventListener("message", (e) => {
             if (e.origin !== window.location.origin) return;
@@ -162,9 +198,8 @@ function BpmnEditor() {
                 }
             }
         });
-        if (fileData) {
-            setDiagramXML(fileData);
-        }
+        
+        // Import file or create a new diagram
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
                 .then(({ warnings }) => {
@@ -190,60 +225,94 @@ function BpmnEditor() {
                     setIsFileValid(false);
                 });
         }
-
-        // Save diagram on every change
-        modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
-        // modelerInstance.on('commandStack.changed', saveDiagram);
-        modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
-        // Add Save shortcut (ctrl + s)
-        modelerInstance.get('editorActions').register('save', saveDiagram);
-        modelerInstance.get('keyboard').addListener(function (context) {
-            var event = context.keyEvent;
-            if (event.ctrlKey || event.metaKey) {
-                if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
-                    modelerInstance.get('editorActions').trigger('save');
-                    return true;
-                }
-            }
-        });
-        const eventBus = modelerInstance.get('eventBus');
-        const elementRegistry = modelerInstance.get('elementRegistry');
-
-        eventBus.on('element.click', function (e) {
-            const element = elementRegistry.get(e.element.id);
-            const overlays = modelerInstance.get('overlays');
-            const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-            if (existingOverlays.length) {
-                console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
-            }
-        });
-
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
+        if (modelerInstance) {
+            if (userRole !== 'editing') {
+                const eventBus = modelerInstance.get('eventBus');
+                const keyboard = modelerInstance.get('keyboard');
+                eventBus.on('element.dblclick', priority, () => {
+                    return false;
+                });
 
+                keyboard.addListener(priority, () => {
+                    return false;
+                });
+
+                keyboard.addListener(20000, function (context) {
+                    var event = context.keyEvent;
+                    if (event.ctrlKey || event.metaKey) {
+                        if (searchKeys.indexOf(event.key) !== -1 || searchKeys.indexOf(event.code) !== -1) {
+                            modelerInstance.get('editorActions').trigger('find');
+                            return true;
+                        }
+                    }
+                });
+                document.addEventListener("keydown", (e) => {
+                    if (e.key === 'Tab') e.preventDefault();
+                })
+            } else {
+                const eventBus = modelerInstance.get('eventBus');
+                const elementRegistry = modelerInstance.get('elementRegistry');
+
+                eventBus.on('element.click', function (e) {
+                    const element = elementRegistry.get(e.element.id);
+                    const overlays = modelerInstance.get('overlays');
+                    const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
+                    if (existingOverlays.length) {
+                        console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
+                    }
+                });
+                // Check file api availablitiy
+                if (!window.FileList || !window.FileReader) {
+                    window.alert(
+                        'Looks like you use an older browser that does not support drag and drop. ' +
+                        'Try using Chrome, Firefox or the Internet Explorer > 10.');
+                } else {
+                    registerFileDrop(document.getElementById('modeler-container'));
+                }
+                // Save diagram on every change
+                modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
+                modelerInstance.on('commandStack.changed', saveDiagram);
+                modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
+                // Add Save shortcut (ctrl + s)
+                modelerInstance.get('editorActions').register('save', saveDiagram);
+                modelerInstance.get('keyboard').addListener(function (context) {
+                    var event = context.keyEvent;
+                    if (event.ctrlKey || event.metaKey) {
+                        if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
+                            modelerInstance.get('editorActions').trigger('save');
+                            return true;
+                        }
+                    }
+                });
+            }
+        }
         updatePaletteVisibility();
 
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, editor, diagramId, projectId, userName, userRole]);
-    // }, [diagramXML, projectName, diagramName, publishDate]);  // 생각한 변수는 이 정도인데 필요한 대로 수정하시면 될 것 같습니다~!!!
+    }, [diagramXML, editor, diagramId, projectId, userName, userRole, diagramPath]);
 
     useEffect(() => {
-        if (modelerInstance) {
-            const canvas = modelerInstance.get('canvas');
-            const eventBus = modelerInstance.get('eventBus');
-
-            if (userRole !== "editing") {
-                // Disable interactions
-                canvas.zoom('fit-viewport');
-                eventBus.fire('interaction.disable');
-            } else {
-                // Enable interactions
-                eventBus.fire('interaction.enable');
-            }
+        if (fileData) {
+            setDiagramXML(fileData);
+        } else {
+            setDiagramXML(null);
         }
-    }, [userRole]);
+    }, [fileData, diagramXML]);
+
+    useEffect(() => {
+        const minimapElement = document.querySelector('.djs-minimap');
+        if (minimapElement) {
+          if (!hidePanel) {
+            minimapElement.classList.remove('hidePanelFalse');
+          } else {
+            minimapElement.classList.add('hidePanelFalse');
+          }
+        }
+    })
 
     // hide hierarchy side bar
     const handleHidden = () => {
@@ -298,51 +367,51 @@ function BpmnEditor() {
     }
 
     // Export diagram as xml
-    const exportXml = async (id, name) => {
+    const exportXml = async (id) => {
         if (modeler) {
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
                 console.log(err);
             });
             if (xml) {
-                setEncoded(document.getElementById(id), name + '.xml', xml);
+                setEncoded(document.getElementById(id), itemName + '.xml', xml);
             };
         }
     };
 
     // Export diagram as svg
-    const exportSvg = async (id, name) => {
+    const exportSvg = async (id) => {
         if (modeler) {
             const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
                 console.log(err);
             });
             if (svg) {
-                setEncoded(document.getElementById(id), name + '.svg', svg);
+                setEncoded(document.getElementById(id), itemName + '.svg', svg);
             };
         }
     };
 
     // Export diagram as png
-    const exportPng = async (id, name) => {
+    const exportPng = async (id) => {
         if (modeler) {
             const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
                 console.log(err);
             });
             if (svg) {
                 const url = await generateImage('png', svg);
-                downloadImage(document.getElementById(id), name + '.png', url);
+                downloadImage(document.getElementById(id), itemName + '.png', url);
             };
         }
     };
 
     // Export diagram as pdf
-    const exportPdf = async (id, name) => {
+    const exportPdf = async (id) => {
         if (modeler) {
             const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
                 console.log(err);
             });
             if (svg) {
                 const url = await generateImage('png', svg);
-                generatePdf(url, name);
+                generatePdf(url, itemName);
             };
             handleClose();
         }
@@ -417,19 +486,64 @@ function BpmnEditor() {
     const handleClose = () => {
         setIsOpen(false);
     }
-    // handle checkIn
-    const handleCheckIn = () => {
-        setUserRole("editing");
-        console.log(userRole);
+
+    // handle checkout function
+    const handleCheckIn = async () => {
+        try {
+            console.log(diagramId);
+            console.log(userName);
+            const response = await axios.post('http://localhost:3001/api/diagram/checkedout', { diagramId, userName });
+
+            if (response.status === 200) {
+                alert("Checked In!");
+                handleCloseCheckInModal();
+                setUserRole("editing");
+            } else {
+                console.error("Checked-out failed:", response.data.message);
+                alert("Checked-out failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error during checked-out:", error.message);
+            alert("Error during checked-out. Please try again.");
+        }
     }
+
     // handle contributor
     const handleContributor = () => {
 
     }
-    // handle share
-    const handleShare = () => {
 
+    // send a request to publish
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const serviceId = 'service_deheusvn_bpmnapp';
+        const templateId = 'template_rfow6sk';
+        const publicKey = 'oQHqsgvCGRFGdRGwg';
+
+        const templateParams = {
+            to_name: 'Admin',
+            from_name: userName,
+            from_email: userEmail,
+            diagram_name: diagramName,  // *
+            message: message,
+            link: link,
+        };
+
+        emailjs.send(serviceId, templateId, templateParams, publicKey)
+            .then((response) => {
+                console.log('Email sent successfully!', response);
+                alert("Email sent successfully!");
+                setMessage('');
+                handleClosePublishModal();
+            })
+            .catch((error) => {
+                console.error('Error sending email:', error);
+                alert("Error sending email");
+            });
     }
+
+
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -529,11 +643,11 @@ function BpmnEditor() {
         )
     } else {
         return (
-            <div className='main-container' onClick={handleClose}>
+            <div className='main-container' onClick={handleClose} style={{ "--height": window.innerHeight }}>
                 <div className='model-header'>
                     <Topbar onLogoClick={toMain} />
                     <Toolbar
-                        mode={userRole} // "readOnly" or "contributor" or "editing"
+                        mode={userRole} // "read-only" or "contributor" or "editing"
                         isOpen={isOpen}
                         setIsOpen={setIsOpen}
                         onSave={handleSave}
@@ -557,12 +671,12 @@ function BpmnEditor() {
                         onDistributeVertically={() => handleDistribute('vertical')}
                         importFile={importFile}
                         onFileChange={onFileChange}
-                        onCheckIn={handleCheckIn}
+                        onCheckIn={handleShowCheckInModal}
                         onContributor={handleContributor}
-                        onShare={handleShare}
+                        onShare={handleShowPublishModal}
                     />
                 </div>
-                <div className='model-body'>
+                <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>
                     {isHidden ?
                         <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
                         :
@@ -581,6 +695,57 @@ function BpmnEditor() {
                         <div id='properties-panel-parent' />
 
                     </div>
+                </div>
+                <div>
+                    <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Publish Request Form</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', marginBottom: '10px', backgroundColor: '#f8f9fa', borderRadius: '5px' }}>
+                                <h5>Diagram</h5>
+                                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
+                            </div>
+                            <Form onSubmit={handleSubmit}>
+                                <Form.Group className="mb-3" controlId="message">
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={5}
+                                        placeholder="Enter a request message."
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
+                                    />
+                                </Form.Group>
+
+                                <Button variant="primary" type="submit" style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                                    Send Request
+                                </Button>
+                            </Form>
+                        </Modal.Body>
+                    </Modal>
+
+                    <Modal show={showCheckInModal} onHide={handleCloseCheckInModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check In Confirm</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                                <h5>Diagram Path</h5>
+                                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
+                            </div>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                                <ul style={{ paddingLeft: '20px' }}>
+                                    <li>Once you check in, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
+                                    <li>During this period, you can <strong>edit</strong> and <strong>save</strong> the draft, then <strong>request for publishing</strong> once completed.</li>
+                                </ul>
+                            </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                                Check In
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                 </div>
             </div>
         )

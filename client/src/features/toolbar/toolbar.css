@@ -44,8 +44,8 @@
 }
 
 .toolbar-spacing {
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     display: flex;        /* Enable flex layout */
     justify-content: center; /* Center content horizontally */
     align-items: center;  /* Center content vertically */
@@ -99,4 +99,8 @@
 
 .checkIn-button {
     width: 35px !important;
+}
+
+.publish-button {
+    width: 33px !important;
 }

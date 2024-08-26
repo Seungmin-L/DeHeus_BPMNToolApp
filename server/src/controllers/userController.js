@@ -1,5 +1,48 @@
 const { sql } = require("../config/dbConfig");
 
+
+// For Diagram Checkout
+const confirmCheckOut = async (req, res) => {
+    const { diagramId, userName } = req.body;
+    console.log(diagramId);
+    console.log(userName);
+
+    try {
+        const request = new sql.Request();
+
+        const checkoutTime = new Date();
+        const expiryTime = new Date(checkoutTime);
+        expiryTime.setDate(checkoutTime.getDate() + 14);
+
+        const insertCheckoutQuery = `
+            INSERT INTO diagram_checkout (diagram_id, user_email, checkout_time, expiry_time, status)
+            VALUES (@diagramId, @userEmail, @checkoutTime, @expiryTime, 1);
+        `;
+
+        request.input('diagramId', sql.Int, diagramId);
+        request.input('userEmail', sql.VarChar, userName);
+        request.input('checkoutTime', sql.DateTime, checkoutTime);
+        request.input('expiryTime', sql.DateTime, expiryTime);
+        await request.query(insertCheckoutQuery);
+
+        const updateDiagramQuery = `
+            UPDATE diagram
+            SET checkedout_by = @userEmail
+            WHERE id = @diagramId AND (checkedout_by IS NULL OR checkedout_by = @userEmail);
+        `;
+
+        await request.query(updateDiagramQuery);
+
+        res.status(200).json({ message: 'Check-in successful' });
+    } catch (error) {
+        console.error('Error during check-in:', error.message);
+        res.status(500).json({ message: 'Check-in failed', error: error.message });
+    }
+}
+
+
+
+// For My Page Listing
 const getUserBasicInfo = async (identifier) => {
     const userInfoQuery = `
         SELECT name, department AS department, email
@@ -18,7 +61,6 @@ const getUserBasicInfo = async (identifier) => {
 
     return result.recordset[0];
 };
-
 
 const getCheckedOutDiagrams = async (identifier) => {
     const checkedOutDiagramsQuery = `
@@ -40,10 +82,9 @@ const getCheckedOutDiagrams = async (identifier) => {
 
     return result.recordset.map(record => ({
         name: record.diagramName,
-        time: Math.ceil((new Date(record.expiry_time) - new Date()) / (1000 * 60 * 60 * 24)) // 남은 시간 계산
+        time: Math.ceil((new Date(record.expiry_time) - new Date()) / (1000 * 60 * 60 * 24))
     }));
 };
-
 
 const getActivityLog = async (identifier) => {
     const activityLogQuery = `
@@ -97,4 +138,5 @@ const getUserInfo = async (req, res) => {
     }
 };
 
-module.exports = { getUserInfo };
+
+module.exports = { getUserInfo, confirmCheckOut };

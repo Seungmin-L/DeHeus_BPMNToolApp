@@ -268,25 +268,30 @@ async function getDiagramData(req, res) {
         if (userEmail.includes('.pbmn@')) {
             const adminDraftData = await getLatestDraftDiagramForAdmin(diagramId);
             if (adminDraftData) {
-                return res.status(200).json(adminDraftData);
+                res.status(200).json(adminDraftData);
             } else {
-                return res.status(404).json({ message: 'No diagram found for the given diagramId' });
-            }
-        }
-
-        const draftData = await getLatestDraftDiagram(diagramId, userEmail);
-        if (draftData) {
-            res.status(200).json(draftData);
-        } else {
-            const diagramData = await getLatestPublishedDiagram(projectId, diagramId);
-            if (diagramData) {
-                res.status(200).json(diagramData);
-            } else {
-                const msg = await checkNewDiagram(diagramId);
-                if (msg) {
-                    res.status(200).json({ message: msg.message });
+                const adminDiagramData = await getLatestPublishedDiagram(projectId, diagramId);
+                if (adminDiagramData) {
+                    res.status(200).json(adminDiagramData);
                 } else {
-                    res.status(500).json({ message: 'Diagram already has been checked out by someone' });
+                    res.status(200).json(diagramId);
+                }
+            }
+        }else{
+            const draftData = await getLatestDraftDiagram(diagramId, userEmail);
+            if (draftData) {
+                res.status(200).json(draftData);
+            } else {
+                const diagramData = await getLatestPublishedDiagram(projectId, diagramId);
+                if (diagramData) {
+                    res.status(200).json(diagramData);
+                } else {
+                    const msg = await checkNewDiagram(diagramId);
+                    if (msg) {
+                        res.status(200).json({ message: msg.message });
+                    } else {
+                        res.status(500).json({ message: 'Diagram already has been checked out by someone' });
+                    }
                 }
             }
         }

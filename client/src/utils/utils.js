@@ -1,7 +1,7 @@
 export const convertUTCToLocal = (dateString) => {
   const date = new Date(dateString);
   if (!dateString) {
-    return 'N/A';
+    return ' ';
 }
 
   const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // UTC+7
@@ -19,10 +19,11 @@ export const formatProjectDates = (projects) => {
 
 export const formatProcessDates = (processes) => {
   return processes.map(process => {
+
     return {
       ...process,
-      lastUpdate: convertUTCToLocal(process.last_update),
-      children: formatProcessDates(process.child_diagram || [])
+      last_update: convertUTCToLocal(process.last_update),
+      children: formatProcessDates(process.children || [])
     };
   });
 };

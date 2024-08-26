@@ -182,13 +182,6 @@ function BpmnEditor() {
                 dropdown: dropdownDescriptor,
             }
         });
-        // if subprocess
-        // var bpmnnXml = localStorage.getItem('bpmnXml');
-        // if (bpmnnXml) {
-        //     //set bpmn xml from local
-        //     setDiagramXML(bpmnnXml);
-        // }
-        // Import file or create a new diagram
 
         window.addEventListener("message", (e) => {
             if (e.origin !== window.location.origin) return;
@@ -205,6 +198,8 @@ function BpmnEditor() {
                 }
             }
         });
+        
+        // Import file or create a new diagram
         if (diagramXML) {
             modelerInstance.importXML(diagramXML)
                 .then(({ warnings }) => {

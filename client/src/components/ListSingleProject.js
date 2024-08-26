@@ -19,6 +19,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import LeftNavBar from "./common/LeftNavBar";
 import NoAuth from "./common/NoAuth";
 import TopBar from "./common/TopBar";
+import { formatProcessDates } from '../utils/utils';
+
 
 function ListSingleProject() {
   const { projectId } = useParams();
@@ -30,6 +32,7 @@ function ListSingleProject() {
   const [isNavVisible, setIsNavVisible] = useState(false);
   const navigate = useNavigate();
   const [options, setOptions] = useState([]);
+  const [projectName, setProjectName] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -37,8 +40,10 @@ function ListSingleProject() {
         .get(`/api/processes/${projectId}`)
         .then((response) => {
           console.log("Fetched processes:", response.data);
-          setProcesses(response.data);  // 데이터를 트리 구조로 설정
-          setOptions(response.data.map(process => ({
+          const formattedProcesses = formatProcessDates(response.data.processes); // 트리 구조로 된 프로세스 데이터 설정
+          setProcesses(formattedProcesses);
+          setProjectName(response.data.projectName);  // 프로젝트 이름 설정
+          setOptions(response.data.processes.map(process => ({
             id: process.id,
             name: process.name
           })));
@@ -47,8 +52,7 @@ function ListSingleProject() {
           console.error("Error fetching processes", error);
         });
     }
-  }, [isAuthenticated, projectId]
-  );
+  }, [isAuthenticated, projectId]);
 
   const toggleRow = (id) => {
     setExpandedRows(
@@ -79,7 +83,7 @@ function ListSingleProject() {
         // 다이어그램 모델러 페이지로 이동
         // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
         navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
-      }else{
+      } else{
         const generatedUrl = `/project/${projectId}/${item.name.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
         // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
 
@@ -127,8 +131,8 @@ function ListSingleProject() {
             </span>
             {item.name}
           </td>
-          <td>{item.status || "-"}</td>
-          <td>{item.last_update || "-"}</td>
+          <td>{item.status}</td>
+          <td>{item.last_update}</td>
           <td>
             <MdOpenInNew
               onClick={(event) => handleOpenClick(event, item)}
@@ -319,7 +323,7 @@ function ListSingleProject() {
           </Modal>
           <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
             <div className="mt-4" style={{ width: "85%" }}>
-              <h3 className="mb-3">Project {projectId}: VN Sales Department</h3>
+              <h3 className="mb-3">{projectName}</h3>
               <style type="text/css">
                 {`
                   .table-primary {

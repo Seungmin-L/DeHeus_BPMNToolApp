@@ -7,10 +7,8 @@
  */
 
 import { useService } from 'bpmn-js-properties-panel';
-import { useError } from '@bpmn-io/properties-panel';
+import { TextFieldEntry } from '@bpmn-io/properties-panel';
 import ExtensionList from './ExtensionList';
-import { useState } from '@bpmn-io/properties-panel/preact/hooks';
-import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
 
 
 export default function ParameterProps(props) {
@@ -43,74 +41,46 @@ export default function ParameterProps(props) {
 
   return entries;
 }
-
 function Name(props) {
   const {
     idPrefix,
-    element,
     parameter
   } = props;
 
-  const commandStack = useService('commandStack');
   const translate = useService('translate');
   const debounce = useService('debounceInput');
   const getValue = (parameter) => {
     return parameter.name;
   };
 
-  return ParameterFieldEntry({
+  return TextFieldEntry({
     element: parameter,
     id: idPrefix + '-name',
     label: translate('Name'),
-    getValue
+    getValue,
+    debounce,
+    disabled: true
   });
 }
 
 function Value(props) {
   const {
     idPrefix,
-    element,
     parameter
   } = props;
 
-  const commandStack = useService('commandStack');
   const translate = useService('translate');
   const debounce = useService('debounceInput');
-
   const getValue = (parameter) => {
     return parameter.value;
   };
 
-  return ParameterFieldEntry({
+  return TextFieldEntry({
     element: parameter,
     id: idPrefix + '-value',
     label: translate('Value'),
-    getValue
-  });
-}
-
-var classnames = require('classnames');
-function ParameterFieldEntry(props) {
-  const {
-    element,
-    id,
-    label,
-    getValue
-  } = props;
-  const globalError = useError(id);
-  const [localError, setLocalError] = useState(null);
-  let value = getValue(element);
-  const error = globalError || localError;
-  return jsxs("div", {
-    class: classnames('bio-properties-panel-parameter-entry', error ? 'has-error' : ''),
-    "data-entry-id": id,
-    children: [label === 'Value' && jsx("p", {
-      value: value,
-      label: label,
-      children:["Value: " + value]
-    }), error && jsx("div", {
-      class: "bio-properties-panel-error",
-      children: error
-    })]
+    getValue,
+    debounce,
+    disabled: true
   });
 }

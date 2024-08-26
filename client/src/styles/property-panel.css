@@ -1662,32 +1662,13 @@ textarea.bio-properties-panel-input {
 }
 
 .bio-properties-panel-dropdown-properties-entry {
-    padding: 0 10px;
-    display: flex;
+    padding: 0 12px;
     margin-bottom: 10px;
-
     p {
-        margin-bottom: 0;
-        margin-right: 5px;
+        margin-bottom: 2px;
+        font-size: 13px;
     }
-}
-
-.bio-properties-panel-extension-entry {
-    padding: 0 10px;
-    display: flex;
-
-    p {
-        margin-bottom: 0;
-        margin-right: 5px;
-    }
-}
-
-.bio-properties-panel-parameter-entry {
-    padding: 0 20px;
-    display: flex;
-
-    p {
-        margin-bottom: 0;
-        margin-right: 5px;
+    input{
+        width: 100%;
     }
 }

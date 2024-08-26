@@ -8,18 +8,11 @@
 
 import { html } from 'htm/preact';
 
-import { without } from 'min-dash';
-
-import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
-
 import {
-  CollapsibleEntry,
-  ListEntry, useError
+  ListEntry, CollapsibleEntry
 } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
-import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
-import { useState } from '@bpmn-io/properties-panel/preact/hooks';
 import ExtensionProps from './ExtensionProps';
 
 export default function ExtensionList(props) {
@@ -30,12 +23,7 @@ export default function ExtensionList(props) {
   } = props;
 
   const id = `${idPrefix}-extensions`;
-
-  const bpmnFactory = useService('bpmnFactory');
-  const commandStack = useService('commandStack');
   const translate = useService('translate');
-
-  const businessObject = getBusinessObject(element);
 
   let extensions = parameter.get('extensions');
 
@@ -60,36 +48,20 @@ function Extension(props) {
     open
   } = props;
 
+  const id = `${idPrefix}-extension-${index}`;
   const translate = useService('translate');
 
-  const id = `${idPrefix}-extension-${index}`;
-
   return html`
-    <${KeyEntry}
-      id=${id}
-      element=${element}
-      label=${extension.get('key') || ''}
-    />`;
-}
-
-var classnames = require('classnames');
-function KeyEntry(props) {
-  const {
-    id,
-    label
-  } = props;
-  const globalError = useError(id);
-  const [localError, setLocalError] = useState(null);
-  const error = globalError || localError;
-  return label !== '' && jsxs("div", {
-    class: classnames('bio-properties-panel-extension-entry', error ? 'has-error' : ''),
-    "data-entry-id": id,
-    children: [jsx("p", {
-      children: ["Key: " + label]
-    }), error && jsx("div", {
-      class: "bio-properties-panel-error",
-      children: error
-    })]
-  });
+  <${CollapsibleEntry}
+    id=${id}
+    element=${element}
+    entries=${ExtensionProps({
+    extension,
+    element,
+    idPrefix: id
+  })}
+    label=${extension.get('key') || translate('<empty>')}
+    open=${open}
+  />`;
 }
 

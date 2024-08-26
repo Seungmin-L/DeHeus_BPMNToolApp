@@ -12,6 +12,7 @@ import { msalInstance } from "./config/authConfig";
 import TestingEmail from "./components/TestingEmail";
 import BpmnEditor from "./components/bpmnModeler";
 import { NavigationHelper } from "./util/navigation";
+import PageForNav from "./components/common/PageForNavigation";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/testingemail" element={<TestingEmail />} />
           <Route path="*" element={<Error />} />
           <Route path="/:filename" element={<BpmnEditor />} />
+          <Route path="/project/:projectId/:diagramName/:diagramId" element={<PageForNav/>}/>
         </Routes>
       </Router>
     </MsalProvider>

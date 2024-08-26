@@ -1,3 +1,4 @@
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from "axios";
@@ -49,9 +50,8 @@ import { Form, Button, Modal } from "react-bootstrap";
 function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
-    const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
+    const diagramId = location.state?.itemId; // 프로젝트 리스트에서 접근할 때 state로 가지고 온 다이어그램 id
     const { projectId, itemName } = useParams();
-    const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
     // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
@@ -74,6 +74,10 @@ function BpmnEditor() {
     const searchKeys = ['f', 'F'];
     let priority = 10000;
 
+    const isAuthenticated = useIsAuthenticated();
+    const [userName, setUserName] = useState("");
+    const { accounts } = useMsal();
+
     // check-in
     const [showCheckInModal, setShowCheckInModal] = useState(false);
     const handleShowCheckInModal = () => setShowCheckInModal(true);
@@ -85,28 +89,32 @@ function BpmnEditor() {
 
     // Publish variables
     const currentUrl = window.location.href;
-    const [link] = useState(currentUrl);
+    const [link] = useState(currentUrl  + "/" + diagramId);
     const [message, setMessage] = useState('');
     const [diagramName, setDiagramName] = useState('DiagramName');  // *
-
 
     // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
     const fetchUserRole = async () => {
         try {
             const response = await axios.get('/api/fetch/user-role', {
-                params: { projectId, diagramId, userName }
+                params: { projectId, diagramId, userEmail }
             });
+            const userName = response.data.userName;
             const userRole = response.data.role;
-            console.log(userRole);
             if (userRole === 'editing') {
                 setEditor(true);
+                setUserName(userName);
                 setUserRole('editing');
             } else if (userRole === 'contributor') {
+                setUserName(userName);
                 setUserRole('contributor');
             } else if (userRole === 'read-only') {
+                setUserName(userName);
                 setUserRole('read-only');
-            }
-
+            } else if (userRole === 'admin') {
+                setUserName(userName);
+                setUserRole('admin');
+            } 
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setError('No contribution found');
@@ -127,7 +135,9 @@ function BpmnEditor() {
 
             if (response.status === 200 && response.data.path) {
                 const diagramPath = response.data.path;
+                const diagramName = response.data.diagramName;
                 setDiagramPath(diagramPath);
+                setDiagramName(diagramName);
             } else {
                 console.error("Failed to fetch diagram path: Invalid response data.");
             }
@@ -136,16 +146,13 @@ function BpmnEditor() {
         }
     };
 
-
     useEffect(() => {
-        // console.log(location.state);
-        if (userName.includes('.pbmn@')){
-            console.log('admin');
-            setUserRole("admin");
-        } else {
-            console.log("not admin")
-            fetchUserRole();
+        if (isAuthenticated && accounts.length > 0) {
+            const userName = accounts[0].username;
+            setUserName(userName);
+            setUserEmail(userName);
         }
+        fetchUserRole();
         fetchDiagramPath();
 
         if (modelerInstance) return;
@@ -293,7 +300,7 @@ function BpmnEditor() {
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, editor, diagramId, projectId, userName, userRole, diagramPath]);
+    }, [diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
 
     useEffect(() => {
         if (fileData) {
@@ -726,7 +733,7 @@ function BpmnEditor() {
 
                     <Modal show={showCheckInModal} onHide={handleCloseCheckInModal} centered>
                         <Modal.Header closeButton>
-                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check In Confirm</Modal.Title>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check Out Confirm</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
@@ -735,14 +742,14 @@ function BpmnEditor() {
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
                                 <ul style={{ paddingLeft: '20px' }}>
-                                    <li>Once you check in, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
+                                    <li>Once you check out, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
                                     <li>During this period, you can <strong>edit</strong> and <strong>save</strong> the draft, then <strong>request for publishing</strong> once completed.</li>
                                 </ul>
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
-                                Check In
+                                Check out
                             </Button>
                         </Modal.Footer>
                     </Modal>

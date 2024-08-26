@@ -26,10 +26,10 @@ function TestingEmail() {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showConfirmPublishModal, setShowConfirmPublishModal] = useState(false);
-  
+
   const handleShowPublishModal = () => setShowPublishModal(true);
   const handleClosePublishModal = () => setShowPublishModal(false);
-  const handleShowCheckInModal = () => setShowCheckInModal(true);
+  const handleShowCheckInModal = () => setShowdfdfdCheckInModal(true);
   const handleCloseCheckInModal = () => setShowCheckInModal(false);
 
   // Publish variables

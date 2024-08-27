@@ -42,17 +42,16 @@ const listProcesses = async (req, res) => {
     for (let row of result.recordset) {
       const { diagramId, diagramName, userName, expiry_time, lastUpdate, parent_diagram_id } = row;
       
-      // 수정 예정
-      let status = ' ';
+      let remainingTime = null;
       if (userName && expiry_time) {
-        const remainingTime = Math.ceil((new Date(expiry_time) - new Date()) / (1000 * 60 * 60 * 24));
-        status = `Checked out by ${userName}  |  ${remainingTime} days left`;
+        remainingTime = Math.ceil((new Date(expiry_time) - new Date()) / (1000 * 60 * 60 * 24));
       }
 
       const process = processMap[diagramId] || {
         id: diagramId,
         name: diagramName,
-        status,
+        userName: userName || null,
+        remainingTime: remainingTime,
         last_update: lastUpdate,
         children: []
       };
@@ -74,6 +73,7 @@ const listProcesses = async (req, res) => {
     res.status(500).send("Error listing processes");
   }
 };
+
 
 const addProcess = async (req, res) => {
   const { projectId, processName } = req.body;

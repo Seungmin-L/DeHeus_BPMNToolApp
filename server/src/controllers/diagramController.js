@@ -204,6 +204,53 @@ const draftSave = async (req, res) => {
     }
 };
 
+const confirmPublish = async (req, res) => {
+    try {
+        const { xml, diagramId } = req.body;
+        const blobData = convertXMLToBlob(xml);
+
+        // find user first
+        const result = await sql.query`
+            SELECT user_email 
+            FROM diagram_checkout 
+            WHERE diagram_id = ${diagramId} 
+            AND status = 1
+        `;
+
+        const userEmail = result.recordset[0]?.user_email;
+
+        if (!userEmail) {
+            return res.status(400).json({ message: "Error: No user currently checked out this diagram" });
+        }
+
+        // publish
+        await sql.query`
+            INSERT INTO diagram_published (diagram_id, file_data, file_type, published_by, published_at)
+            VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${userEmail}, GETDATE());
+        `;
+
+        // automatically checkout after publishing
+        await sql.query`
+            DELETE FROM diagram_checkout
+            WHERE diagram_id = ${diagramId}
+            AND user_email = ${userEmail}
+        `;
+
+        // automatically checkout after publishing
+        await sql.query`
+            UPDATE diagram
+            SET checkedout_by = NULL
+            WHERE id = ${diagramId}
+        `;
+
+        res.status(200).json({ message: "Diagram published and checkout entry removed successfully", diagramId: diagramId });
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).send("Failed to publish diagram");
+    }
+};
+
+
 const addDiagram = async (req, res) => {
     const { projectId, diagramName, diagramId } = req.body;
     try {
@@ -406,4 +453,4 @@ const checkNewDiagram = async (diagramId) => {
     }
 }
 
-module.exports = { getUserRole, getDiagramPath, draftSave, getDiagramData, createSubProcess, addDiagram };
+module.exports = { getUserRole, getDiagramPath, draftSave, confirmPublish, getDiagramData, createSubProcess, addDiagram };

@@ -590,6 +590,16 @@ function BpmnEditor() {
 
     // Confirm Publish function
     const handleConfirmPublish = () => {
+        // console.log(diagramXML, diagramId);  // 디버깅
+        if (diagramXML) {
+            axios.post('http://localhost:3001/api/diagram/publish', { xml: diagramXML, diagramId: diagramId })
+                .then(response => {
+                    // console.log("Diagram published successfully:", response.data);  // 디버깅
+                })
+                .catch(error => {
+                    console.error("Error saving diagram to the database:", error);
+                });
+        }
         alert("Diagram Published!");
         handleCloseConfirmPublishModal();
     }

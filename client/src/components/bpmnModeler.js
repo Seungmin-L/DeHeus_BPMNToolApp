@@ -602,7 +602,7 @@ function BpmnEditor() {
             if (xml) {
                 console.log("Saved XML:", xml);
                 console.log("diagramId:", diagramId);
-                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
+                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userEmail: userEmail })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })

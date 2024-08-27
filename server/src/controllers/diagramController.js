@@ -180,7 +180,7 @@ const createSubProcess = async (req, res) => {
 
 const draftSave = async (req, res) => {
     try {
-        const { xml, diagramId, userName } = req.body;
+        const { xml, diagramId, userEmail } = req.body;
         const blobData = convertXMLToBlob(xml);
 
         await sql.query`
@@ -191,10 +191,10 @@ const draftSave = async (req, res) => {
                 UPDATE SET 
                     file_data = ${blobData}, 
                     created_at = GETDATE(),
-                    created_by = ${userName}
+                    created_by = ${userEmail}
             WHEN NOT MATCHED THEN
                 INSERT (diagram_id, file_data, file_type, created_by, created_at)
-                VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${userName}, GETDATE());
+                VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${userEmail}, GETDATE());
         `;
 
         res.status(200).json({ message: "Diagram draft saved successfully", diagramId: diagramId });

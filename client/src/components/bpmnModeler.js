@@ -1,3 +1,4 @@
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from "axios";
@@ -49,9 +50,8 @@ import { Form, Button, Modal } from "react-bootstrap";
 function BpmnEditor() {
     const navigate = useNavigate();
     const location = useLocation();
-    const diagramId = location.state?.itemId; // state로 가지고 온 다이어그램 id
+    const diagramId = location.state?.itemId; // 프로젝트 리스트에서 접근할 때 state로 가지고 온 다이어그램 id
     const { projectId, itemName } = useParams();
-    const userName = location.state?.userName; // state로 가지고 온 다이어그램 userName
     const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
     // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
@@ -74,6 +74,10 @@ function BpmnEditor() {
     const searchKeys = ['f', 'F'];
     let priority = 10000;
 
+    const isAuthenticated = useIsAuthenticated();
+    const [userName, setUserName] = useState("");
+    const { accounts } = useMsal();
+
     // check-in
     const [showCheckInModal, setShowCheckInModal] = useState(false);
     const handleShowCheckInModal = () => setShowCheckInModal(true);
@@ -83,30 +87,40 @@ function BpmnEditor() {
     const handleShowPublishModal = () => setShowPublishModal(true);
     const handleClosePublishModal = () => setShowPublishModal(false);
 
+    // confirm publish
+    const [showConfirmPublishModal, setShowConfirmPublishModal] = useState(false);
+    const handleShowConfirmPublishModal = () => setShowConfirmPublishModal(true);
+    const handleCloseConfirmPublishModal = () => setShowConfirmPublishModal(false);
+    const [declineReason, setDeclineReason] = useState('');
+
     // Publish variables
     const currentUrl = window.location.href;
     const [link] = useState(currentUrl);
     const [message, setMessage] = useState('');
     const [diagramName, setDiagramName] = useState('DiagramName');  // *
 
-
     // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
     const fetchUserRole = async () => {
         try {
             const response = await axios.get('/api/fetch/user-role', {
-                params: { projectId, diagramId, userName }
+                params: { projectId, diagramId, userEmail }
             });
+            const userName = response.data.userName;
             const userRole = response.data.role;
-            console.log(userRole);
             if (userRole === 'editing') {
                 setEditor(true);
+                setUserName(userName);
                 setUserRole('editing');
             } else if (userRole === 'contributor') {
+                setUserName(userName);
                 setUserRole('contributor');
             } else if (userRole === 'read-only') {
+                setUserName(userName);
                 setUserRole('read-only');
-            }
-
+            } else if (userRole === 'admin') {
+                setUserName(userName);
+                setUserRole('admin');
+            } 
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setError('No contribution found');
@@ -127,7 +141,9 @@ function BpmnEditor() {
 
             if (response.status === 200 && response.data.path) {
                 const diagramPath = response.data.path;
+                const diagramName = response.data.diagramName;
                 setDiagramPath(diagramPath);
+                setDiagramName(diagramName);
             } else {
                 console.error("Failed to fetch diagram path: Invalid response data.");
             }
@@ -136,16 +152,13 @@ function BpmnEditor() {
         }
     };
 
-
     useEffect(() => {
-        // console.log(location.state);
-        if (userName.includes('.pbmn@')){
-            console.log('admin');
-            setUserRole("admin");
-        } else {
-            console.log("not admin")
-            fetchUserRole();
+        if (isAuthenticated && accounts.length > 0) {
+            const userName = accounts[0].username;
+            setUserName(userName);
+            setUserEmail(userName);
         }
+        fetchUserRole();
         fetchDiagramPath();
 
         if (modelerInstance) return;
@@ -228,9 +241,9 @@ function BpmnEditor() {
         setModeler(modelerInstance);
         // console.log(modeler?.get('elementRegistry'))
         if (modelerInstance) {
+            const eventBus = modelerInstance.get('eventBus');
+            const keyboard = modelerInstance.get('keyboard');
             if (userRole !== 'editing') {
-                const eventBus = modelerInstance.get('eventBus');
-                const keyboard = modelerInstance.get('keyboard');
                 eventBus.on('element.dblclick', priority, () => {
                     return false;
                 });
@@ -277,7 +290,7 @@ function BpmnEditor() {
                 modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
                 // Add Save shortcut (ctrl + s)
                 modelerInstance.get('editorActions').register('save', saveDiagram);
-                modelerInstance.get('keyboard').addListener(function (context) {
+                keyboard.addListener(function (context) {
                     var event = context.keyEvent;
                     if (event.ctrlKey || event.metaKey) {
                         if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
@@ -293,7 +306,7 @@ function BpmnEditor() {
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, editor, diagramId, projectId, userName, userRole, diagramPath]);
+    }, [diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
 
     useEffect(() => {
         if (fileData) {
@@ -425,8 +438,9 @@ function BpmnEditor() {
             });
             if (xml) {
                 console.log(xml);
+                console.log(diagramId, userEmail);
                 // Save diagram in DB
-                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
+                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userEmail: userEmail })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })
@@ -527,7 +541,7 @@ function BpmnEditor() {
             from_email: userEmail,
             diagram_name: diagramName,  // *
             message: message,
-            link: link,
+            link: link + "/" + diagramId,
         };
 
         emailjs.send(serviceId, templateId, templateParams, publicKey)
@@ -543,7 +557,20 @@ function BpmnEditor() {
             });
     }
 
+    
+    // Confirm Publish function
+    const handleConfirmPublish = () => {
+        alert("Diagram Published!");
+        handleCloseConfirmPublishModal();
+    }
 
+    // Decline Publish function
+    const handleDeclinePublish = () => {
+        alert(`Publish declined: ${declineReason}`);
+        setDeclineReason('');
+        handleCloseConfirmPublishModal();
+    }
+    
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -582,8 +609,7 @@ function BpmnEditor() {
                     });
             }
         }
-        setUserRole("contributor");
-
+        // setUserRole("contributor");
     };
     // handle aligning elements
     const handleAlign = (alignment) => {
@@ -674,13 +700,14 @@ function BpmnEditor() {
                         onCheckIn={handleShowCheckInModal}
                         onContributor={handleContributor}
                         onShare={handleShowPublishModal}
+                        onPublish={handleShowConfirmPublishModal}
                     />
                 </div>
                 <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>
                     {isHidden ?
                         <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
                         :
-                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userName} />
+                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userEmail} />
                     }
 
                     <div
@@ -726,7 +753,7 @@ function BpmnEditor() {
 
                     <Modal show={showCheckInModal} onHide={handleCloseCheckInModal} centered>
                         <Modal.Header closeButton>
-                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check In Confirm</Modal.Title>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Check Out Confirm</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
@@ -735,14 +762,45 @@ function BpmnEditor() {
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
                                 <ul style={{ paddingLeft: '20px' }}>
-                                    <li>Once you check in, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
+                                    <li>Once you check out, you will have editing access to this diagram for the <strong>next 14 days</strong>.</li>
                                     <li>During this period, you can <strong>edit</strong> and <strong>save</strong> the draft, then <strong>request for publishing</strong> once completed.</li>
                                 </ul>
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
-                                Check In
+                                Check out
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={showConfirmPublishModal} onHide={handleCloseConfirmPublishModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Confirm Publish</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px', textAlign: 'center' }}>
+                            <p>If you agree to publish this diagram, please click <strong>Confirm</strong>. If not, please provide a reason and click <strong>Decline</strong>.</p>
+                            </div>
+                            <Form>
+                            <Form.Group className="mb-3" controlId="declineReason">
+                                <Form.Label style={{ textAlign: 'center', width: '100%' }}>Decline Reason (Optional)</Form.Label>
+                                <Form.Control
+                                as="textarea"
+                                rows={3}
+                                placeholder="Type the reason for declining"
+                                value={declineReason}
+                                onChange={(e) => setDeclineReason(e.target.value)}
+                                />
+                            </Form.Group>
+                            </Form>
+                        </Modal.Body>
+                        <Modal.Footer style={{ justifyContent: 'space-around' }}>
+                            <Button variant="success" onClick={handleConfirmPublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none" }}>
+                            Confirm
+                            </Button>
+                            <Button variant="danger" onClick={handleDeclinePublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#d9534f", border: "none" }}>
+                            Decline
                             </Button>
                         </Modal.Footer>
                     </Modal>

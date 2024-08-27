@@ -17,7 +17,7 @@ const listProjects = async (req, res) => {
       return res.json(allProjectsResult.recordset);
     }
 
-    // 일반 사용자는 diagram_contribution 테이블을 기반으로 프로젝트를 필터링
+    // filtering readonly or no access user
     const request = new sql.Request();
     request.input('userName', sql.VarChar, userName);
 
@@ -31,7 +31,6 @@ const listProjects = async (req, res) => {
     if (contributionResult.recordset.length > 0) {
       const projectIds = contributionResult.recordset.map(row => row.project_id);
 
-      // 해당 project_id로 project 테이블에서 프로젝트 정보 검색
       const projectsQuery = `
         SELECT id, name, last_update 
         FROM project 
@@ -41,7 +40,7 @@ const listProjects = async (req, res) => {
 
       res.json(projectsResult.recordset);
     } else {
-      // 접근 가능한 프로젝트가 없음을 반환
+      // no project
       res.json([]);
     }
   } catch (err) {

@@ -144,6 +144,7 @@ function BpmnEditor() {
                 const diagramName = response.data.diagramName;
                 setDiagramPath(diagramPath);
                 setDiagramName(diagramName);
+                document.title = diagramPath.split('[').pop().split(']')[0];
             } else {
                 console.error("Failed to fetch diagram path: Invalid response data.");
             }

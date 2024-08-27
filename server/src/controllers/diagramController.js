@@ -453,4 +453,43 @@ const checkNewDiagram = async (diagramId) => {
     }
 }
 
-module.exports = { getUserRole, getDiagramPath, draftSave, confirmPublish, getDiagramData, createSubProcess, addDiagram };
+const getContributors = async (req, res) => {
+    const { diagramId } = req.params;
+    const contributors = [];
+    try {
+        const request = new sql.Request();
+
+        const contributionQuery = `
+            SELECT published_by 
+            FROM diagram_published
+            WHERE diagram_id = @diagramId;
+        `;
+        request.input('diagramId', sql.Int, diagramId);
+        const contributionResult = await request.query(contributionQuery);        
+        
+        for (const row of contributionResult.recordset) {
+            const userEmail = row.published_by;
+            console.log("🚀 ~ getContributors ~ userEmail:", userEmail)
+            const userQuery = `
+                SELECT email, name
+                FROM [user]
+                WHERE email = @userEmail;
+            `;
+            request.input('userEmail', sql.VarChar, userEmail);
+            const userResult = await request.query(userQuery);
+            console.log("🚀 ~ getContributors ~ userResult:", userResult)
+
+            if (userResult.recordset.length > 0) {
+                const { email, name } = userResult.recordset[0];
+                contributors.push({ email, name });
+            }
+        }
+
+        res.status(200).json({ contributors });
+    } catch (error) {
+        console.error('Error fetching contributor:', error.message);
+        res.status(500).json({ message: 'Error fetching contributor', error: error.message });
+    }
+};
+
+module.exports = { getUserRole, getDiagramPath, draftSave, confirmPublish, getDiagramData, createSubProcess, addDiagram, getContributors };

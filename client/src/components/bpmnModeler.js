@@ -71,6 +71,7 @@ function BpmnEditor() {
     const [hidePanel, setHidePanel] = useState(false);
     const saveKeys = ['s', 'S'];
     const [showPublishModal, setShowPublishModal] = useState(false);
+    const [contributors, setContributors] = useState([]);
     let modelerInstance = null;
     const searchKeys = ['f', 'F'];
     let priority = 10000;
@@ -349,6 +350,18 @@ function BpmnEditor() {
             }
         }
     })
+
+    // fetch contributors
+    useEffect(() => {
+        console.log(diagramId);
+        axios.get(`/api/diagrams/getContributors/${diagramId}`)
+            .then(response => {
+                const data = response.data;
+                setContributors(data.contributors);
+                console.log(contributors);
+            })
+            .catch(error => console.error('Error fetching contributors:', error));
+    }, [diagramId]);
 
     // hide hierarchy side bar
     const handleHidden = () => {

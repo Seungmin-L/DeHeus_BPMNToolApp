@@ -40,7 +40,7 @@ export default function Sidebar(props) {
         process.forEach(p => {
             if (p.id == diagramId) {
                 !list.includes(p.parent_diagram_id) &&
-                list.push(p.parent_diagram_id);
+                    list.push(p.parent_diagram_id);
             } else {
                 p.children && p.children.length > 0 && findDiagram(p.children, list);
             }
@@ -129,8 +129,8 @@ export default function Sidebar(props) {
     useEffect(() => {
         axios.get(`/api/processes/${projectId}`)
             .then((res) => {
-                setProcesses(res.data);
-                getCurrentDiagram(res.data);
+                setProcesses(res.data.processes);
+                getCurrentDiagram(res.data.processes);
             })
             .catch((err) => console.error(err));
     }, [diagramId]);

@@ -414,7 +414,7 @@ function BpmnEditor() {
                 console.log(err);
             });
             if (xml) {
-                setEncoded(document.getElementById(id), itemName + '.xml', xml);
+                setEncoded(document.getElementById(id), diagramName + '.xml', xml);
             };
         }
     };
@@ -426,7 +426,7 @@ function BpmnEditor() {
                 console.log(err);
             });
             if (svg) {
-                setEncoded(document.getElementById(id), itemName + '.svg', svg);
+                setEncoded(document.getElementById(id), diagramName + '.svg', svg);
             };
         }
     };
@@ -439,7 +439,7 @@ function BpmnEditor() {
             });
             if (svg) {
                 const url = await generateImage('png', svg);
-                downloadImage(document.getElementById(id), itemName + '.png', url);
+                downloadImage(document.getElementById(id), diagramName + '.png', url);
             };
         }
     };
@@ -452,7 +452,7 @@ function BpmnEditor() {
             });
             if (svg) {
                 const url = await generateImage('png', svg);
-                generatePdf(url, itemName);
+                generatePdf(url, diagramName);
             };
             handleClose();
         }
@@ -512,19 +512,19 @@ function BpmnEditor() {
     // handle exports to files
     const handleExportXml = (e) => {
         e.stopPropagation();
-        exportXml(e.target.id, "diagram")
+        exportXml(e.target.id)
     }
     const handleExportSvg = (e) => {
         e.stopPropagation();
-        exportSvg(e.target.id, "diagram")
+        exportSvg(e.target.id)
     }
     const handleExportPng = (e) => {
         e.stopPropagation();
-        exportPng(e.target.id, "diagram")
+        exportPng(e.target.id)
     }
     const handleExportPdf = (e) => {
         e.stopPropagation();
-        exportPdf(e.target.id, "diagram");
+        exportPdf(e.target.id);
     }
     const handleClose = () => {
         setIsOpen(false);

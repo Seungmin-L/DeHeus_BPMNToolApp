@@ -68,14 +68,6 @@ function Toolbar({
               </a>
             </li>
             <li>
-              <a id='export-doc' title='download BPMN diagram as doc' target='_blank'
-                onClick={(e) => {
-                  // e.stopPropagation();
-                  // exportDiagram(e.target.id, "diagram");
-                }}>DOC
-              </a>
-            </li>
-            <li>
               <a id='export-png' title='download BPMN diagram as png' target='_blank'
                 onClick={onExportPng}>PNG
               </a>

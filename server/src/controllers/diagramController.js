@@ -133,6 +133,47 @@ const getDiagramPath = async (req, res) => {
     }
 };
 
+
+const getContributors = async (req, res) => {
+    const { diagramId } = req.query;
+    const contributors = [];
+
+    try {
+        const request = new sql.Request();
+
+        const contributorQuery = `
+            SELECT published_by 
+            FROM diagram_published
+            WHERE diagram_id = @diagramId;
+        `;
+        request.input('diagramId', sql.Int, diagramId);
+        const contributorResult = await request.query(contributorQuery);   
+        // console.log(contributorResult);     
+        
+        for (const row of contributorResult.recordset) {
+            const userEmail = row.published_by;
+            const userQuery = `
+                SELECT email, name
+                FROM [user]
+                WHERE email = @userEmail;
+            `;
+            request.input('userEmail', sql.VarChar, userEmail);
+            const userResult = await request.query(userQuery);
+
+            if (userResult.recordset.length > 0) {
+                const { email, name } = userResult.recordset[0];
+                // console.log(userResult.recordset[0]);
+                contributors.push({ email, name });
+            }
+        }
+        // console.log(contributors);  // 디버깅
+        res.status(200).json({ contributors });
+    } catch (error) {
+        console.error('Error fetching contributor:', error.message);
+        res.status(500).json({ message: 'Error fetching contributor', error: error.message });
+    }
+};
+
 // convert function for saving diagram
 function convertXMLToBlob(xmlString) {
     // xml to blob
@@ -453,4 +494,5 @@ const checkNewDiagram = async (diagramId) => {
     }
 }
 
-module.exports = { getUserRole, getDiagramPath, draftSave, confirmPublish, getDiagramData, createSubProcess, addDiagram };
+
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, confirmPublish, getDiagramData, createSubProcess, addDiagram };

@@ -62,6 +62,7 @@ function BpmnEditor() {
     const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
     const [editor, setEditor] = useState(null);
     const [diagramPath, setDiagramPath] = useState(null);
+    const [contributors, setContributors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
@@ -99,6 +100,11 @@ function BpmnEditor() {
     const [link] = useState(currentUrl);
     const [message, setMessage] = useState('');
     const [diagramName, setDiagramName] = useState('DiagramName');  // *
+
+    // contributors
+    const [showContributorsModal, setShowContributorsModal] = useState(false);
+    const handleShowContributorsModal = () => setShowContributorsModal(true);
+    const handleCloseContributorsModal = () => setShowContributorsModal(false);
 
     // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
     const fetchUserRole = async () => {
@@ -154,6 +160,17 @@ function BpmnEditor() {
         }
     };
 
+    const fetchContributors = async () => {
+        try {
+            const response = await axios.get('/api/diagrams/getContributors', {
+                params: { diagramId }
+            });
+            setContributors(response.data.contributors);
+        } catch (err) {
+            console.error("An error occurred while fetching the contributors:", err.message);
+        }
+    };
+
     useEffect(() => {
         if (isAuthenticated && accounts.length > 0) {
             const userName = accounts[0].username;
@@ -162,6 +179,7 @@ function BpmnEditor() {
         }
         fetchUserRole();
         fetchDiagramPath();
+        fetchContributors();
 
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
@@ -738,7 +756,7 @@ function BpmnEditor() {
                         importFile={importFile}
                         onFileChange={onFileChange}
                         onCheckIn={handleShowCheckInModal}
-                        onContributor={handleContributor}
+                        onContributor={handleShowContributorsModal}
                         onShare={handleShowPublishModal}
                         onPublish={handleShowConfirmPublishModal}
                     />
@@ -764,6 +782,21 @@ function BpmnEditor() {
                     </div>
                 </div>
                 <div>
+                    <Modal show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                                <ul style={{ paddingLeft: '20px' }}>
+                                    {contributors.length > 0 ? contributors.map((contributor, index) => (
+                                        <li key={index}>{contributor.name} ({contributor.email})</li>
+                                    )) : <li>No contributors found.</li>}
+                                </ul>
+                            </div>
+                        </Modal.Body>
+                    </Modal>
+
                     <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
                         <Modal.Header closeButton>
                             <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Publish Request Form</Modal.Title>

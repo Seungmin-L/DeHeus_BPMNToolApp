@@ -147,32 +147,34 @@ const getContributors = async (req, res) => {
             WHERE diagram_id = @diagramId;
         `;
         request.input('diagramId', sql.Int, diagramId);
-        const contributorResult = await request.query(contributorQuery);   
-        // console.log(contributorResult);     
-        
+        const contributorResult = await request.query(contributorQuery);
+
         for (const row of contributorResult.recordset) {
-            const userEmail = row.published_by;
+            const userEmail = row.published_by.toLowerCase();
+
+            // Create a new request object for the user query
+            const userRequest = new sql.Request();
             const userQuery = `
                 SELECT email, name
                 FROM [user]
-                WHERE email = @userEmail;
+                WHERE email = @userEmailAddress;
             `;
-            request.input('userEmail', sql.VarChar, userEmail);
-            const userResult = await request.query(userQuery);
+            userRequest.input('userEmailAddress', sql.VarChar, userEmail);
+            const userResult = await userRequest.query(userQuery);
 
             if (userResult.recordset.length > 0) {
                 const { email, name } = userResult.recordset[0];
-                // console.log(userResult.recordset[0]);
                 contributors.push({ email, name });
             }
         }
-        // console.log(contributors);  // 디버깅
+
         res.status(200).json({ contributors });
     } catch (error) {
         console.error('Error fetching contributor:', error.message);
         res.status(500).json({ message: 'Error fetching contributor', error: error.message });
     }
 };
+
 
 // convert function for saving diagram
 function convertXMLToBlob(xmlString) {

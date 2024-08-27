@@ -129,8 +129,8 @@ export default function Sidebar(props) {
     useEffect(() => {
         axios.get(`/api/processes/${projectId}`)
             .then((res) => {
-                setProcesses(res.data);
-                getCurrentDiagram(res.data);
+                setProcesses(res.data.processes);
+                getCurrentDiagram(res.data.processes);
             })
             .catch((err) => console.error(err));
     }, [diagramId]);

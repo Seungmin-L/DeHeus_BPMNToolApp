@@ -3,9 +3,9 @@ const { sql } = require("../config/dbConfig");
 
 // For Diagram Checkout
 const confirmCheckOut = async (req, res) => {
-    const { diagramId, userName } = req.body;
-    console.log(diagramId);
-    console.log(userName);
+    const { diagramId, userEmail } = req.body;
+    // console.log(diagramId);
+    // console.log(userEmail);
 
     try {
         const request = new sql.Request();
@@ -20,7 +20,7 @@ const confirmCheckOut = async (req, res) => {
         `;
 
         request.input('diagramId', sql.Int, diagramId);
-        request.input('userEmail', sql.VarChar, userName);
+        request.input('userEmail', sql.VarChar, userEmail);
         request.input('checkoutTime', sql.DateTime, checkoutTime);
         request.input('expiryTime', sql.DateTime, expiryTime);
         await request.query(insertCheckoutQuery);

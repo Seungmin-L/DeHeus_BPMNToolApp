@@ -505,9 +505,10 @@ function BpmnEditor() {
     // handle checkout function
     const handleCheckIn = async () => {
         try {
-            console.log(diagramId);
-            console.log(userName);
-            const response = await axios.post('http://localhost:3001/api/diagram/checkedout', { diagramId, userName });
+            // console.log(diagramId);
+            // console.log(userEmail);
+            // console.log(userName);
+            const response = await axios.post('http://localhost:3001/api/diagram/checkedout', { diagramId, userEmail });
 
             if (response.status === 200) {
                 alert("Checked In!");

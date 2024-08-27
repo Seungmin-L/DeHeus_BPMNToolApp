@@ -133,7 +133,7 @@ function Toolbar({
         {mode === 'editing' && ( // if editing
           <>
             <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} title="export" />
-            <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' title="publish" />
+            <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' title="request" />
             <button onClick={onSave} dangerouslySetInnerHTML={{ __html: Icons.save }} className='clipboard-button' title="save" />
 
           </>

@@ -26,9 +26,7 @@ export default function Sidebar(props) {
         const current = processList?.filter(process => process.id === diagramId);
         if (current.length === 0) {
             const list = [];
-            processList.forEach(process => {
-                process.children && process.children.length > 0 && findDiagram(process.children, list);
-            });
+            findDiagram(processList, list);
             if (list.length > 0) {
                 const newRows = list.filter(p => !expandedRows.includes(p));
                 setExpandedRows([...expandedRows, ...newRows]);
@@ -39,17 +37,19 @@ export default function Sidebar(props) {
     const findDiagram = (process, list) => {
         process.forEach(p => {
             if (p.id == diagramId) {
-                !list.includes(p.parent_diagram_id) &&
-                    list.push(p.parent_diagram_id);
+                !list.includes(p.id) &&
+                    list.push(p.id);
             } else {
                 p.children && p.children.length > 0 && findDiagram(p.children, list);
             }
         });
         if (list.length > 0) {
-            process.forEach(p => {
-                if (list.includes(p.id)) {
-                    !list.includes(p.parent_diagram_id) && list.push(p.parent_diagram_id);
-                }
+            process && process.forEach(p => {
+                p.children && p.children.forEach(ch => {
+                    if (list.includes(ch.id)) {
+                        !list.includes(p.id) && list.push(p.id);
+                    }
+                }) 
             });
         }
     }

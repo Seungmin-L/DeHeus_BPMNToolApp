@@ -27,7 +27,7 @@ const listProcesses = async (req, res) => {
       WHERE 
         p.id = @projectId
       ORDER BY 
-        dp.published_at DESC;
+        d.id ASC;
     `;
     
     const request = new sql.Request();
@@ -47,22 +47,23 @@ const listProcesses = async (req, res) => {
         remainingTime = Math.ceil((new Date(expiry_time) - new Date()) / (1000 * 60 * 60 * 24));
       }
 
-      const process = processMap[diagramId] || {
-        id: diagramId,
-        name: diagramName,
-        userName: userName || null,
-        remainingTime: remainingTime,
-        last_update: lastUpdate,
-        children: []
-      };
-      processMap[diagramId] = process;
+      if (!processMap[diagramId]) {
+        processMap[diagramId] = {
+          id: diagramId,
+          name: diagramName,
+          userName: userName || null,
+          remainingTime: remainingTime,
+          last_update: lastUpdate,
+          children: []
+        };
+      }
 
       if (parent_diagram_id) {
         if (!processMap[parent_diagram_id]) {
           processMap[parent_diagram_id] = { children: [] };
         }
         processMap[parent_diagram_id].children.push(processMap[diagramId]);
-      } else {
+      } else if (!rootProcesses.includes(processMap[diagramId])) {
         rootProcesses.push(processMap[diagramId]);
       }
     }
@@ -73,6 +74,7 @@ const listProcesses = async (req, res) => {
     res.status(500).send("Error listing processes");
   }
 };
+
 
 
 const addProcess = async (req, res) => {

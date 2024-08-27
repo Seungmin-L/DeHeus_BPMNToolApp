@@ -729,7 +729,7 @@ function BpmnEditor() {
         return (
             <div className='main-container' onClick={handleClose} style={{ "--height": window.innerHeight }}>
                 <div className='model-header'>
-                    <Topbar onLogoClick={toMain} />
+                    <Topbar onLogoClick={toMain} userName={userEmail} />
                     <Toolbar
                         mode={userRole} // "read-only" or "contributor" or "editing"
                         isOpen={isOpen}

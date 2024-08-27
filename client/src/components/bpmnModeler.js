@@ -87,6 +87,12 @@ function BpmnEditor() {
     const handleShowPublishModal = () => setShowPublishModal(true);
     const handleClosePublishModal = () => setShowPublishModal(false);
 
+    // confirm publish
+    const [showConfirmPublishModal, setShowConfirmPublishModal] = useState(false);
+    const handleShowConfirmPublishModal = () => setShowConfirmPublishModal(true);
+    const handleCloseConfirmPublishModal = () => setShowConfirmPublishModal(false);
+    const [declineReason, setDeclineReason] = useState('');
+
     // Publish variables
     const currentUrl = window.location.href;
     const [link] = useState(currentUrl);
@@ -551,7 +557,20 @@ function BpmnEditor() {
             });
     }
 
+    
+    // Confirm Publish function
+    const handleConfirmPublish = () => {
+        alert("Diagram Published!");
+        handleCloseConfirmPublishModal();
+    }
 
+    // Decline Publish function
+    const handleDeclinePublish = () => {
+        alert(`Publish declined: ${declineReason}`);
+        setDeclineReason('');
+        handleCloseConfirmPublishModal();
+    }
+    
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -681,6 +700,7 @@ function BpmnEditor() {
                         onCheckIn={handleShowCheckInModal}
                         onContributor={handleContributor}
                         onShare={handleShowPublishModal}
+                        onPublish={handleShowConfirmPublishModal}
                     />
                 </div>
                 <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>
@@ -750,6 +770,37 @@ function BpmnEditor() {
                         <Modal.Footer>
                             <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
                                 Check out
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={showConfirmPublishModal} onHide={handleCloseConfirmPublishModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Confirm Publish</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px', textAlign: 'center' }}>
+                            <p>If you agree to publish this diagram, please click <strong>Confirm</strong>. If not, please provide a reason and click <strong>Decline</strong>.</p>
+                            </div>
+                            <Form>
+                            <Form.Group className="mb-3" controlId="declineReason">
+                                <Form.Label style={{ textAlign: 'center', width: '100%' }}>Decline Reason (Optional)</Form.Label>
+                                <Form.Control
+                                as="textarea"
+                                rows={3}
+                                placeholder="Type the reason for declining"
+                                value={declineReason}
+                                onChange={(e) => setDeclineReason(e.target.value)}
+                                />
+                            </Form.Group>
+                            </Form>
+                        </Modal.Body>
+                        <Modal.Footer style={{ justifyContent: 'space-around' }}>
+                            <Button variant="success" onClick={handleConfirmPublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none" }}>
+                            Confirm
+                            </Button>
+                            <Button variant="danger" onClick={handleDeclinePublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#d9534f", border: "none" }}>
+                            Decline
                             </Button>
                         </Modal.Footer>
                     </Modal>

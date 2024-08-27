@@ -56,6 +56,7 @@ function BpmnEditor() {
     // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
+    const [importXML, setImportXML] = useState(null);
     const [modeler, setModeler] = useState(null);
     const [userEmail, setUserEmail] = useState("");  // *
     const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
@@ -120,7 +121,7 @@ function BpmnEditor() {
             } else if (userRole === 'admin') {
                 setUserName(userName);
                 setUserRole('admin');
-            } 
+            }
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setError('No contribution found');
@@ -130,7 +131,7 @@ function BpmnEditor() {
         } finally {
             setLoading(false);
         }
-        
+
     };
 
     const fetchDiagramPath = async () => {
@@ -212,9 +213,23 @@ function BpmnEditor() {
                 }
             }
         });
-        
+
         // Import file or create a new diagram
-        if (diagramXML) {
+        if (importXML) {
+            modelerInstance.importXML(importXML)
+                .then(({ warnings }) => {
+                    if (warnings.length) {
+                        console.warn(warnings);
+                    }
+                    modelerInstance.get("canvas").zoom("fit-viewport");
+                    modelerInstance.get('keyboard').bind(document);
+                })
+                .catch(err => {
+                    // console.log(err);
+                    console.error("Error rendering diagram:", err);
+                    setIsFileValid(false);
+                });
+        } else if (diagramXML) {
             modelerInstance.importXML(diagramXML)
                 .then(({ warnings }) => {
                     if (warnings.length) {
@@ -240,66 +255,73 @@ function BpmnEditor() {
                 });
         }
         setModeler(modelerInstance);
+
         // console.log(modeler?.get('elementRegistry'))
         if (modelerInstance) {
             const eventBus = modelerInstance.get('eventBus');
             const keyboard = modelerInstance.get('keyboard');
-            if (userRole !== 'editing') {
-                eventBus.on('element.dblclick', priority, () => {
-                    return false;
-                });
+            if (userRole) {
+                console.log(userRole);
+                if (userRole !== 'editing') {
+                    eventBus.on('element.dblclick', priority, () => {
+                        return false;
+                    });
 
-                keyboard.addListener(priority, () => {
-                    return false;
-                });
+                    keyboard.addListener(priority, () => {
+                        return false;
+                    });
 
-                keyboard.addListener(20000, function (context) {
-                    var event = context.keyEvent;
-                    if (event.ctrlKey || event.metaKey) {
-                        if (searchKeys.indexOf(event.key) !== -1 || searchKeys.indexOf(event.code) !== -1) {
-                            modelerInstance.get('editorActions').trigger('find');
-                            return true;
+                    keyboard.addListener(20000, function (context) {
+                        var event = context.keyEvent;
+                        if (event.ctrlKey || event.metaKey) {
+                            if (searchKeys.indexOf(event.key) !== -1 || searchKeys.indexOf(event.code) !== -1) {
+                                modelerInstance.get('editorActions').trigger('find');
+                                return true;
+                            }
                         }
-                    }
-                });
-                document.addEventListener("keydown", (e) => {
-                    if (e.key === 'Tab') e.preventDefault();
-                })
-            } else {
-                const eventBus = modelerInstance.get('eventBus');
-                const elementRegistry = modelerInstance.get('elementRegistry');
-
-                eventBus.on('element.click', function (e) {
-                    const element = elementRegistry.get(e.element.id);
-                    const overlays = modelerInstance.get('overlays');
-                    const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-                    if (existingOverlays.length) {
-                        console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
-                    }
-                });
-                // Check file api availablitiy
-                if (!window.FileList || !window.FileReader) {
-                    window.alert(
-                        'Looks like you use an older browser that does not support drag and drop. ' +
-                        'Try using Chrome, Firefox or the Internet Explorer > 10.');
+                    });
+                    document.addEventListener("keydown", (e) => {
+                        if (e.key === 'Tab') e.preventDefault();
+                    });
                 } else {
-                    registerFileDrop(document.getElementById('modeler-container'));
-                }
-                // Save diagram on every change
-                modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
-                modelerInstance.on('commandStack.changed', saveDiagram);
-                modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
-                // Add Save shortcut (ctrl + s)
-                modelerInstance.get('editorActions').register('save', saveDiagram);
-                keyboard.addListener(function (context) {
-                    var event = context.keyEvent;
-                    if (event.ctrlKey || event.metaKey) {
-                        if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
-                            modelerInstance.get('editorActions').trigger('save');
-                            return true;
+                    const eventBus = modelerInstance.get('eventBus');
+                    const elementRegistry = modelerInstance.get('elementRegistry');
+
+                    eventBus.on('element.click', function (e) {
+                        const element = elementRegistry.get(e.element.id);
+                        const overlays = modelerInstance.get('overlays');
+                        const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
+                        if (existingOverlays.length) {
+                            console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
                         }
+                    });
+                    // Check file api availablitiy
+                    if (!window.FileList || !window.FileReader) {
+                        window.alert(
+                            'Looks like you use an older browser that does not support drag and drop. ' +
+                            'Try using Chrome, Firefox or the Internet Explorer > 10.');
+                    } else {
+                        registerFileDrop(document.getElementById('modeler-container'));
                     }
-                });
+                    // Save diagram on every change
+                    modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
+                    modelerInstance.on('commandStack.changed', saveDiagram);
+                    modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
+                    // Add Save shortcut (ctrl + s)
+                    modelerInstance.get('editorActions').register('save', saveDiagram);
+                    document.removeEventListener("keydown", (e) => {
+                        e.preventDefault();
+                    })
+                    keyboard.addListener(function (context) {
+                        var event = context.keyEvent;
+                        if (event.ctrlKey || event.metaKey) {
+                            if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
+                                modelerInstance.get('editorActions').trigger('save');
+                                return true;
+                            }
+                        }
+                    });
+                }
             }
         }
         updatePaletteVisibility();
@@ -307,7 +329,7 @@ function BpmnEditor() {
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
+    }, [importXML, diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
 
     useEffect(() => {
         if (fileData) {
@@ -320,11 +342,11 @@ function BpmnEditor() {
     useEffect(() => {
         const minimapElement = document.querySelector('.djs-minimap');
         if (minimapElement) {
-          if (!hidePanel) {
-            minimapElement.classList.remove('hidePanelFalse');
-          } else {
-            minimapElement.classList.add('hidePanelFalse');
-          }
+            if (!hidePanel) {
+                minimapElement.classList.remove('hidePanelFalse');
+            } else {
+                minimapElement.classList.add('hidePanelFalse');
+            }
         }
     })
 
@@ -344,7 +366,7 @@ function BpmnEditor() {
             if (file) {
                 reader.onload = (e) => {
                     var xml = e.target.result;
-                    setDiagramXML(xml);
+                    setImportXML(xml);
                 };
 
                 reader.readAsText(file);
@@ -359,8 +381,13 @@ function BpmnEditor() {
             e.dataTransfer.dropEffect = 'copy';
         }
 
-        container.addEventListener('dragover', handleDragOver, false);
-        container.addEventListener('drop', handleFileSelect, false);
+        if (userRole === 'editing') {
+            container.addEventListener('dragover', handleDragOver, false);
+            container.addEventListener('drop', handleFileSelect, false);
+        } else {
+            container.removeEventListener('dragover', container);
+            container.removeEventListener('drop', container);
+        }
     }
 
     // Download exported file (SVG, XML)
@@ -434,13 +461,14 @@ function BpmnEditor() {
     // Save diagram
     const saveDiagram = async () => {
         if (modelerInstance) {
+            // save bpmn diagram as xml
             const { xml } = await modelerInstance.saveXML({ format: true }).catch(err => {
-                console.log(err);
+                console.error("Error saving XML:", err);
             });
+
             if (xml) {
-                console.log(xml);
-                console.log(diagramId, userEmail);
-                // Save diagram in DB
+                console.log("Saved XML:", xml);
+                console.log("diagramId:", diagramId);
                 axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userEmail: userEmail })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
@@ -448,7 +476,7 @@ function BpmnEditor() {
                     .catch(error => {
                         console.error("Error saving diagram to the database:", error);
                     });
-            };
+            }
         }
     }
     const onElementDelete = (nodeId) => {
@@ -472,7 +500,7 @@ function BpmnEditor() {
         if (file) {
             reader.onload = (e) => {
                 var xml = e.target.result;
-                setDiagramXML(xml);
+                setImportXML(xml);
             };
 
             reader.readAsText(file);
@@ -559,7 +587,7 @@ function BpmnEditor() {
             });
     }
 
-    
+
     // Confirm Publish function
     const handleConfirmPublish = () => {
         alert("Diagram Published!");
@@ -572,7 +600,7 @@ function BpmnEditor() {
         setDeclineReason('');
         handleCloseConfirmPublishModal();
     }
-    
+
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -709,7 +737,7 @@ function BpmnEditor() {
                     {isHidden ?
                         <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
                         :
-                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userEmail} />
+                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userEmail} onClick={setImportXML} />
                     }
 
                     <div
@@ -782,27 +810,27 @@ function BpmnEditor() {
                         </Modal.Header>
                         <Modal.Body>
                             <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px', textAlign: 'center' }}>
-                            <p>If you agree to publish this diagram, please click <strong>Confirm</strong>. If not, please provide a reason and click <strong>Decline</strong>.</p>
+                                <p>If you agree to publish this diagram, please click <strong>Confirm</strong>. If not, please provide a reason and click <strong>Decline</strong>.</p>
                             </div>
                             <Form>
-                            <Form.Group className="mb-3" controlId="declineReason">
-                                <Form.Label style={{ textAlign: 'center', width: '100%' }}>Decline Reason (Optional)</Form.Label>
-                                <Form.Control
-                                as="textarea"
-                                rows={3}
-                                placeholder="Type the reason for declining"
-                                value={declineReason}
-                                onChange={(e) => setDeclineReason(e.target.value)}
-                                />
-                            </Form.Group>
+                                <Form.Group className="mb-3" controlId="declineReason">
+                                    <Form.Label style={{ textAlign: 'center', width: '100%' }}>Decline Reason (Optional)</Form.Label>
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={3}
+                                        placeholder="Type the reason for declining"
+                                        value={declineReason}
+                                        onChange={(e) => setDeclineReason(e.target.value)}
+                                    />
+                                </Form.Group>
                             </Form>
                         </Modal.Body>
                         <Modal.Footer style={{ justifyContent: 'space-around' }}>
                             <Button variant="success" onClick={handleConfirmPublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none" }}>
-                            Confirm
+                                Confirm
                             </Button>
                             <Button variant="danger" onClick={handleDeclinePublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#d9534f", border: "none" }}>
-                            Decline
+                                Decline
                             </Button>
                         </Modal.Footer>
                     </Modal>

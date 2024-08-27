@@ -9,7 +9,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function Sidebar(props) {
-    const { handleHidden, diagramId, userName } = props;
+    const { handleHidden, diagramId, userName, onClick } = props;
     const { projectId } = useParams();
     const [processes, setProcesses] = useState(null);
     const [expandedRows, setExpandedRows] = useState([]);
@@ -55,6 +55,7 @@ export default function Sidebar(props) {
     }
 
     const handleOpenClick = async (id, name) => {
+        onClick();
         try {
             const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${id}/${userName}`);
             // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!

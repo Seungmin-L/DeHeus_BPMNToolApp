@@ -180,7 +180,6 @@ function BpmnEditor() {
         fetchUserRole();
         fetchDiagramPath();
         fetchContributors();
-
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -276,6 +275,9 @@ function BpmnEditor() {
 
         // console.log(modeler?.get('elementRegistry'))
         if (modelerInstance) {
+            document.addEventListener("keydown", (e) => {
+                if (e.key === 'Tab') e.preventDefault();
+            });
             const eventBus = modelerInstance.get('eventBus');
             const keyboard = modelerInstance.get('keyboard');
             if (userRole) {
@@ -297,9 +299,6 @@ function BpmnEditor() {
                                 return true;
                             }
                         }
-                    });
-                    document.addEventListener("keydown", (e) => {
-                        if (e.key === 'Tab') e.preventDefault();
                     });
                 } else {
                     const eventBus = modelerInstance.get('eventBus');

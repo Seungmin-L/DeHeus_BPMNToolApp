@@ -7,11 +7,13 @@ import { FaSortDown, FaSortUp, FaUserCircle } from "react-icons/fa";
 import { MdOpenInNew } from "react-icons/md";
 import LeftNavBar from "./common/LeftNavBar";
 import TopBar from "./common/TopBar";
+import { useNavigate } from "react-router-dom";
 
 function MyPage() {
   const isAuthenticated = useIsAuthenticated();
   const [userName, setUserName] = useState("");
   const { accounts } = useMsal();
+  const navigate = useNavigate();
 
   const [userInfo, setUserInfo] = useState({
     name: "",
@@ -21,13 +23,28 @@ function MyPage() {
 
   const [checkedOutDiagrams, setCheckedOutDiagrams] = useState([]);
   const [activityLog, setActivityLog] = useState([]);
-  
+
+  const handleOpenClick = async (event, item) => {
+    event.stopPropagation();
+    axios.get('http://localhost:3001/api/diagram/getDraft', {
+      params: { diagramId: item.id, userEmail: userName }
+    })
+      .then((res) => {
+        const fileData = res.data.fileData;
+        const generatedUrl = `/project/${item.projectId}/${item.name.replace(/ /g, '-')}`;
+        navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  };
+
   useEffect(() => {
     if (isAuthenticated && accounts.length > 0) {
       setUserName(accounts[0].username);
 
       const identifier = accounts[0].username.split('@')[0];
-      
+
       axios.get(`/api/mypage/user/${identifier}`)
         .then(response => {
           const data = response.data;
@@ -38,6 +55,8 @@ function MyPage() {
           });
 
           setCheckedOutDiagrams(data.checkedOutDiagrams.map(diagram => ({
+            id: diagram.id,
+            projectId: diagram.projectId,
             name: diagram.name,
             time: diagram.time
           })));
@@ -137,15 +156,15 @@ function MyPage() {
                                   diagram.time >= 7
                                     ? "#4CAF50"
                                     : diagram.time < 3
-                                    ? "#F44336"
-                                    : "#FFEB3B",
+                                      ? "#F44336"
+                                      : "#FFEB3B",
                               }}
                               size={19}
                             />{" "}
                             {diagram.time} days left
                           </td>
                           <td>
-                            <MdOpenInNew />
+                            <MdOpenInNew style={{cursor: "pointer"}} onClick={(event) => handleOpenClick(event, diagram)} />
                           </td>
                         </tr>
                       ))}

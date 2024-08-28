@@ -302,7 +302,6 @@ function BpmnEditor() {
                 } else {
                     const eventBus = modelerInstance.get('eventBus');
                     const elementRegistry = modelerInstance.get('elementRegistry');
-                    console.log(eventBus);
                     eventBus.on('commandStack.element.updateProperties.executed', ({ context }) => {
                         const { element, properties, oldProperties } = context;
                         const nodeId = element.businessObject.id;
@@ -359,12 +358,27 @@ function BpmnEditor() {
     }, [importXML, diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
 
     useEffect(() => {
-        if (fileData) {
-            setDiagramXML(fileData);
-        } else {
-            setDiagramXML(null);
+        if (userRole) {
+            if (userRole === 'editing') {
+                axios.get('http://localhost:3001/api/diagram/getDraft', {
+                    params: { diagramId: diagramId, userEmail: userEmail }
+                })
+                    .then((res) => {
+                        setDiagramXML(res.data.fileData);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        setDiagramXML(null);
+                    })
+            } else {
+                if (fileData) {
+                    setDiagramXML(fileData);
+                } else {
+                    setDiagramXML(null);
+                }
+            }
         }
-    }, [fileData, diagramXML]);
+    }, [fileData, diagramXML, userRole]);
 
     useEffect(() => {
         const minimapElement = document.querySelector('.djs-minimap');
@@ -375,16 +389,16 @@ function BpmnEditor() {
                 minimapElement.classList.add('hidePanelFalse');
             }
         }
-    })
+    }, [hidePanel]);
 
     const updateSubProcessName = async (newName, nodeId) => {
         axios.post(`http://localhost:3001/api/diagram/updateSubProcess`, { name: newName, nodeId: nodeId, diagramId: diagramId })
-        .then((res) => {
-            console.log(res);
-        })
-        .catch(err => {
-            console.error("Error updating diagram name: ", err);
-        }) 
+            .then((res) => {
+                console.log(res);
+            })
+            .catch(err => {
+                console.error("Error updating diagram name: ", err);
+            })
     }
 
     // hide hierarchy side bar

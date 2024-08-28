@@ -207,7 +207,7 @@ const createSubProcess = async (req, res) => {
                 res.status(200).json({ message: "Diagram created successfully", data: { name: processName, id: results.recordset[0].lastDiagramId }, projectId: projectId });
             });
         } else {
-            if(result.name !== processName){
+            if (result.name !== processName) {
                 await updateDiagramName(result.id, processName);
             }
             res.status(200).json({ message: "Diagram already exists", data: result });
@@ -243,14 +243,14 @@ const getChildDiagram = async (diagramId, nodeId) => {
     }
 }
 const updateDiagramName = async (diagramId, newName) => {
-    try{
+    try {
         const request = new sql.Request();
         const query = `UPDATE diagram SET name = @newName WHERE id = @diagramId`;
         request.input("newName", sql.VarChar, newName);
         request.input("diagramId", diagramId);
         await request.query(query);
         return;
-    }catch(err){
+    } catch (err) {
         console.error(err);
     }
 }
@@ -266,7 +266,7 @@ const updateSubProcessName = async (req, res) => {
             res.status(500).json({ message: "Diagram doesn't exist" });
         }
     } catch (err) {
-
+        console.error(err);
     }
 
 }
@@ -546,5 +546,18 @@ const checkNewDiagram = async (diagramId) => {
     }
 }
 
+const getDraftData = async (req, res) => {
+    const { diagramId, userEmail } = req.query;
+    try{
+        const draftData = await getLatestDraftDiagram(diagramId, userEmail);
+        if(draftData){
+            res.status(200).json(draftData);
+        }else{
+            res.status(500).json({message: "Failed to load latest draft of the user"})
+        }
+    }catch(err){
+        console.error("Error fetching draft data: ", err);
+    }
+}
 
-module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, confirmPublish, getDiagramData, createSubProcess, updateSubProcessName, addDiagram };
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, confirmPublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram };

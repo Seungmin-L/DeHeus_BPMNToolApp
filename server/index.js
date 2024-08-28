@@ -41,6 +41,7 @@ app.get('/api/fetch/diagram', diagramController.getDiagramPath);
 app.get('/api/diagrams/get-diagram-with-project/:projectId/:diagramId/:userEmail', diagramController.getDiagramData);
 app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.getAttachment);
 app.get('/api/diagrams/getContributors', diagramController.getContributors);
+app.get('/api/diagram/getDraft', diagramController.getDraftData);
 
 app.get('/api/mypage/user/:identifier', userController.getUserInfo);
 app.get('/api/admin/users', adminController.getUserList);

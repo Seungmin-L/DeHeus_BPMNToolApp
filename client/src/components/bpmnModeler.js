@@ -180,7 +180,6 @@ function BpmnEditor() {
         fetchUserRole();
         fetchDiagramPath();
         fetchContributors();
-
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -231,7 +230,6 @@ function BpmnEditor() {
                 }
             }
         });
-
         // Import file or create a new diagram
         if (importXML) {
             modelerInstance.importXML(importXML)
@@ -276,6 +274,9 @@ function BpmnEditor() {
 
         // console.log(modeler?.get('elementRegistry'))
         if (modelerInstance) {
+            document.addEventListener("keydown", (e) => {
+                if (e.key === 'Tab') e.preventDefault();
+            });
             const eventBus = modelerInstance.get('eventBus');
             const keyboard = modelerInstance.get('keyboard');
             if (userRole) {
@@ -298,13 +299,21 @@ function BpmnEditor() {
                             }
                         }
                     });
-                    document.addEventListener("keydown", (e) => {
-                        if (e.key === 'Tab') e.preventDefault();
-                    });
                 } else {
                     const eventBus = modelerInstance.get('eventBus');
                     const elementRegistry = modelerInstance.get('elementRegistry');
-
+                    console.log(eventBus);
+                    eventBus.on('commandStack.element.updateProperties.executed', ({ context }) => {
+                        const { element, properties, oldProperties } = context;
+                        const nodeId = element.businessObject.id;
+                        if (element.businessObject.$type) {
+                            if (element.businessObject.$type === "bpmn:SubProcess") {
+                                if (oldProperties.name && properties.name) {
+                                    updateSubProcessName(properties.name, nodeId, diagramId);
+                                }
+                            }
+                        }
+                    });
                     eventBus.on('element.click', function (e) {
                         const element = elementRegistry.get(e.element.id);
                         const overlays = modelerInstance.get('overlays');
@@ -324,7 +333,7 @@ function BpmnEditor() {
                     // Save diagram on every change
                     modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
                     modelerInstance.on('commandStack.changed', saveDiagram);
-                    modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
+                    // modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
                     // Add Save shortcut (ctrl + s)
                     modelerInstance.get('editorActions').register('save', saveDiagram);
                     document.removeEventListener("keydown", (e) => {
@@ -367,6 +376,16 @@ function BpmnEditor() {
             }
         }
     })
+
+    const updateSubProcessName = async (newName, nodeId) => {
+        axios.post(`http://localhost:3001/api/diagram/updateSubProcess`, { name: newName, nodeId: nodeId, diagramId: diagramId })
+        .then((res) => {
+            console.log(res);
+        })
+        .catch(err => {
+            console.error("Error updating diagram name: ", err);
+        }) 
+    }
 
     // hide hierarchy side bar
     const handleHidden = () => {

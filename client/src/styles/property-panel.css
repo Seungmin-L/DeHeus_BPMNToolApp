@@ -1661,6 +1661,10 @@ textarea.bio-properties-panel-input {
     padding: 5px;
 }
 
+#bio-properties-panel-id{
+    pointer-events: none;
+}
+
 .bio-properties-panel-dropdown-properties-entry {
     padding: 0 12px;
     margin-bottom: 10px;

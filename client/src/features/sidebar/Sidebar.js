@@ -9,7 +9,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function Sidebar(props) {
-    const { handleHidden, diagramId, userName } = props;
+    const { handleHidden, diagramId, userName, onClick } = props;
     const { projectId } = useParams();
     const [processes, setProcesses] = useState(null);
     const [expandedRows, setExpandedRows] = useState([]);
@@ -26,9 +26,7 @@ export default function Sidebar(props) {
         const current = processList?.filter(process => process.id === diagramId);
         if (current.length === 0) {
             const list = [];
-            processList.forEach(process => {
-                process.children && process.children.length > 0 && findDiagram(process.children, list);
-            });
+            findDiagram(processList, list);
             if (list.length > 0) {
                 const newRows = list.filter(p => !expandedRows.includes(p));
                 setExpandedRows([...expandedRows, ...newRows]);
@@ -39,22 +37,25 @@ export default function Sidebar(props) {
     const findDiagram = (process, list) => {
         process.forEach(p => {
             if (p.id == diagramId) {
-                !list.includes(p.parent_diagram_id) &&
-                list.push(p.parent_diagram_id);
+                !list.includes(p.id) &&
+                    list.push(p.id);
             } else {
                 p.children && p.children.length > 0 && findDiagram(p.children, list);
             }
         });
         if (list.length > 0) {
-            process.forEach(p => {
-                if (list.includes(p.id)) {
-                    !list.includes(p.parent_diagram_id) && list.push(p.parent_diagram_id);
-                }
+            process && process.forEach(p => {
+                p.children && p.children.forEach(ch => {
+                    if (list.includes(ch.id)) {
+                        !list.includes(p.id) && list.push(p.id);
+                    }
+                }) 
             });
         }
     }
 
     const handleOpenClick = async (id, name) => {
+        onClick();
         try {
             const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${id}/${userName}`);
             // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!

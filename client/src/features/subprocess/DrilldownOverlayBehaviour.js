@@ -210,9 +210,9 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
         .then((res) => {
           if (res.data.message.endsWith("exists")) {
             console.log(res.data);
-            axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${res.data.data.id}/editor/${userName}`)
+            axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${res.data.data.id}/${userName}`)
               .then((response) => {
-                if (!response.data.message) {
+                if (response.data.fileData) {
                   const { diagramName, fileData } = response.data;
                   const url = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
                   const data = { id: res.data.data.id, url: url, userName: userName, fileData: fileData }

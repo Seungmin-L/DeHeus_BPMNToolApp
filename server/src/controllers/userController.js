@@ -3,9 +3,9 @@ const { sql } = require("../config/dbConfig");
 
 // For Diagram Checkout
 const confirmCheckOut = async (req, res) => {
-    const { diagramId, userName } = req.body;
-    console.log(diagramId);
-    console.log(userName);
+    const { diagramId, userEmail } = req.body;
+    // console.log(diagramId);
+    // console.log(userEmail);
 
     try {
         const request = new sql.Request();
@@ -20,7 +20,7 @@ const confirmCheckOut = async (req, res) => {
         `;
 
         request.input('diagramId', sql.Int, diagramId);
-        request.input('userEmail', sql.VarChar, userName);
+        request.input('userEmail', sql.VarChar, userEmail);
         request.input('checkoutTime', sql.DateTime, checkoutTime);
         request.input('expiryTime', sql.DateTime, expiryTime);
         await request.query(insertCheckoutQuery);
@@ -64,7 +64,9 @@ const getUserBasicInfo = async (identifier) => {
 
 const getCheckedOutDiagrams = async (identifier) => {
     const checkedOutDiagramsQuery = `
-        SELECT d.name AS diagramName, 
+        SELECT d.id AS diagramId,
+               d.name AS diagramName,
+               d.project_id AS projectId, 
                dc.checkout_time, 
                dc.expiry_time
         FROM diagram_checkout dc
@@ -81,6 +83,8 @@ const getCheckedOutDiagrams = async (identifier) => {
     const result = await request.query(checkedOutDiagramsQuery);
 
     return result.recordset.map(record => ({
+        id: record.diagramId,
+        projectId: record.projectId,
         name: record.diagramName,
         time: Math.ceil((new Date(record.expiry_time) - new Date()) / (1000 * 60 * 60 * 24))
     }));

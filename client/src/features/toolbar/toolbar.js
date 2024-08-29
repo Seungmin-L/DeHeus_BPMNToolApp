@@ -68,14 +68,6 @@ function Toolbar({
               </a>
             </li>
             <li>
-              <a id='export-doc' title='download BPMN diagram as doc' target='_blank'
-                onClick={(e) => {
-                  // e.stopPropagation();
-                  // exportDiagram(e.target.id, "diagram");
-                }}>DOC
-              </a>
-            </li>
-            <li>
               <a id='export-png' title='download BPMN diagram as png' target='_blank'
                 onClick={onExportPng}>PNG
               </a>
@@ -141,7 +133,7 @@ function Toolbar({
         {mode === 'editing' && ( // if editing
           <>
             <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} title="export" />
-            <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' title="add" />
+            <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' title="request" />
             <button onClick={onSave} dangerouslySetInnerHTML={{ __html: Icons.save }} className='clipboard-button' title="save" />
 
           </>

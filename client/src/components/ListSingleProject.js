@@ -1,6 +1,7 @@
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { BsClock } from "react-icons/bs";
 import {
   Button,
   Form,
@@ -19,7 +20,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import LeftNavBar from "./common/LeftNavBar";
 import NoAuth from "./common/NoAuth";
 import TopBar from "./common/TopBar";
-import { formatProcessDates } from '../utils/utils';
+import { formatProcessInfos } from '../utils/utils';
 
 
 function ListSingleProject() {
@@ -39,10 +40,12 @@ function ListSingleProject() {
       axios
         .get(`/api/processes/${projectId}`)
         .then((response) => {
-          console.log("Fetched processes:", response.data);
-          const formattedProcesses = formatProcessDates(response.data.processes); // 트리 구조로 된 프로세스 데이터 설정
+          // console.log("Fetched processes:", response.data);  // 디버깅
+          const formattedProcesses = formatProcessInfos(response.data.processes);
+          // console.log(response.data.processes);  // 디버깅
+          console.log(formattedProcesses);
           setProcesses(formattedProcesses);
-          setProjectName(response.data.projectName);  // 프로젝트 이름 설정
+          setProjectName(response.data.projectName);
           setOptions(response.data.processes.map(process => ({
             id: process.id,
             name: process.name
@@ -131,7 +134,21 @@ function ListSingleProject() {
             </span>
             {item.name}
           </td>
-          <td>{item.status}</td>
+          {/* <td>{item.status}</td> */}
+          <td>
+            {item.remainingTime !== null && (
+              <BsClock
+                style={{
+                  marginLeft: "3px",
+                  marginRight: "7px",
+                  color: item.statusColor,
+                }}
+                size={19}
+              />
+            )}
+            {" "}
+            {item.status}
+          </td>
           <td>{item.last_update}</td>
           <td>
             <MdOpenInNew

@@ -56,11 +56,13 @@ function BpmnEditor() {
     // const userName = "vnapp.pbmn@deheus.com"
     const container = useRef(null);
     const importFile = useRef(null);
+    const [importXML, setImportXML] = useState(null);
     const [modeler, setModeler] = useState(null);
     const [userEmail, setUserEmail] = useState("");  // *
     const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
     const [editor, setEditor] = useState(null);
     const [diagramPath, setDiagramPath] = useState(null);
+    const [contributors, setContributors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
@@ -99,6 +101,11 @@ function BpmnEditor() {
     const [message, setMessage] = useState('');
     const [diagramName, setDiagramName] = useState('DiagramName');  // *
 
+    // contributors
+    const [showContributorsModal, setShowContributorsModal] = useState(false);
+    const handleShowContributorsModal = () => setShowContributorsModal(true);
+    const handleCloseContributorsModal = () => setShowContributorsModal(false);
+
     // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
     const fetchUserRole = async () => {
         try {
@@ -120,7 +127,7 @@ function BpmnEditor() {
             } else if (userRole === 'admin') {
                 setUserName(userName);
                 setUserRole('admin');
-            } 
+            }
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setError('No contribution found');
@@ -130,7 +137,7 @@ function BpmnEditor() {
         } finally {
             setLoading(false);
         }
-        
+
     };
 
     const fetchDiagramPath = async () => {
@@ -153,6 +160,17 @@ function BpmnEditor() {
         }
     };
 
+    const fetchContributors = async () => {
+        try {
+            const response = await axios.get('/api/diagrams/getContributors', {
+                params: { diagramId }
+            });
+            setContributors(response.data.contributors);
+        } catch (err) {
+            console.error("An error occurred while fetching the contributors:", err.message);
+        }
+    };
+
     useEffect(() => {
         if (isAuthenticated && accounts.length > 0) {
             const userName = accounts[0].username;
@@ -161,7 +179,7 @@ function BpmnEditor() {
         }
         fetchUserRole();
         fetchDiagramPath();
-
+        fetchContributors();
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -212,9 +230,22 @@ function BpmnEditor() {
                 }
             }
         });
-        
         // Import file or create a new diagram
-        if (diagramXML) {
+        if (importXML) {
+            modelerInstance.importXML(importXML)
+                .then(({ warnings }) => {
+                    if (warnings.length) {
+                        console.warn(warnings);
+                    }
+                    modelerInstance.get("canvas").zoom("fit-viewport");
+                    modelerInstance.get('keyboard').bind(document);
+                })
+                .catch(err => {
+                    // console.log(err);
+                    console.error("Error rendering diagram:", err);
+                    setIsFileValid(false);
+                });
+        } else if (diagramXML) {
             modelerInstance.importXML(diagramXML)
                 .then(({ warnings }) => {
                     if (warnings.length) {
@@ -240,66 +271,83 @@ function BpmnEditor() {
                 });
         }
         setModeler(modelerInstance);
+
         // console.log(modeler?.get('elementRegistry'))
         if (modelerInstance) {
+            document.addEventListener("keydown", (e) => {
+                if (e.key === 'Tab') e.preventDefault();
+            });
             const eventBus = modelerInstance.get('eventBus');
             const keyboard = modelerInstance.get('keyboard');
-            if (userRole !== 'editing') {
-                eventBus.on('element.dblclick', priority, () => {
-                    return false;
-                });
+            if (userRole) {
+                console.log(userRole);
+                if (userRole !== 'editing') {
+                    eventBus.on('element.dblclick', priority, () => {
+                        return false;
+                    });
 
-                keyboard.addListener(priority, () => {
-                    return false;
-                });
+                    keyboard.addListener(priority, () => {
+                        return false;
+                    });
 
-                keyboard.addListener(20000, function (context) {
-                    var event = context.keyEvent;
-                    if (event.ctrlKey || event.metaKey) {
-                        if (searchKeys.indexOf(event.key) !== -1 || searchKeys.indexOf(event.code) !== -1) {
-                            modelerInstance.get('editorActions').trigger('find');
-                            return true;
+                    keyboard.addListener(20000, function (context) {
+                        var event = context.keyEvent;
+                        if (event.ctrlKey || event.metaKey) {
+                            if (searchKeys.indexOf(event.key) !== -1 || searchKeys.indexOf(event.code) !== -1) {
+                                modelerInstance.get('editorActions').trigger('find');
+                                return true;
+                            }
                         }
-                    }
-                });
-                document.addEventListener("keydown", (e) => {
-                    if (e.key === 'Tab') e.preventDefault();
-                })
-            } else {
-                const eventBus = modelerInstance.get('eventBus');
-                const elementRegistry = modelerInstance.get('elementRegistry');
-
-                eventBus.on('element.click', function (e) {
-                    const element = elementRegistry.get(e.element.id);
-                    const overlays = modelerInstance.get('overlays');
-                    const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-                    if (existingOverlays.length) {
-                        console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
-                    }
-                });
-                // Check file api availablitiy
-                if (!window.FileList || !window.FileReader) {
-                    window.alert(
-                        'Looks like you use an older browser that does not support drag and drop. ' +
-                        'Try using Chrome, Firefox or the Internet Explorer > 10.');
+                    });
                 } else {
-                    registerFileDrop(document.getElementById('modeler-container'));
-                }
-                // Save diagram on every change
-                modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
-                modelerInstance.on('commandStack.changed', saveDiagram);
-                modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
-                // Add Save shortcut (ctrl + s)
-                modelerInstance.get('editorActions').register('save', saveDiagram);
-                keyboard.addListener(function (context) {
-                    var event = context.keyEvent;
-                    if (event.ctrlKey || event.metaKey) {
-                        if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
-                            modelerInstance.get('editorActions').trigger('save');
-                            return true;
+                    const eventBus = modelerInstance.get('eventBus');
+                    const elementRegistry = modelerInstance.get('elementRegistry');
+                    eventBus.on('commandStack.element.updateProperties.executed', ({ context }) => {
+                        const { element, properties, oldProperties } = context;
+                        const nodeId = element.businessObject.id;
+                        if (element.businessObject.$type) {
+                            if (element.businessObject.$type === "bpmn:SubProcess") {
+                                if (oldProperties.name && properties.name) {
+                                    updateSubProcessName(properties.name, nodeId, diagramId);
+                                }
+                            }
                         }
+                    });
+                    eventBus.on('element.click', function (e) {
+                        const element = elementRegistry.get(e.element.id);
+                        const overlays = modelerInstance.get('overlays');
+                        const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
+                        if (existingOverlays.length) {
+                            console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
+                        }
+                    });
+                    // Check file api availablitiy
+                    if (!window.FileList || !window.FileReader) {
+                        window.alert(
+                            'Looks like you use an older browser that does not support drag and drop. ' +
+                            'Try using Chrome, Firefox or the Internet Explorer > 10.');
+                    } else {
+                        registerFileDrop(document.getElementById('modeler-container'));
                     }
-                });
+                    // Save diagram on every change
+                    modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
+                    modelerInstance.on('commandStack.changed', saveDiagram);
+                    // modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
+                    // Add Save shortcut (ctrl + s)
+                    modelerInstance.get('editorActions').register('save', saveDiagram);
+                    document.removeEventListener("keydown", (e) => {
+                        e.preventDefault();
+                    })
+                    keyboard.addListener(function (context) {
+                        var event = context.keyEvent;
+                        if (event.ctrlKey || event.metaKey) {
+                            if (saveKeys.indexOf(event.key) !== -1 || saveKeys.indexOf(event.code) !== -1) {
+                                modelerInstance.get('editorActions').trigger('save');
+                                return true;
+                            }
+                        }
+                    });
+                }
             }
         }
         updatePaletteVisibility();
@@ -307,26 +355,51 @@ function BpmnEditor() {
         return () => {
             modeler?.destroy();
         }
-    }, [diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
+    }, [importXML, diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
 
     useEffect(() => {
-        if (fileData) {
-            setDiagramXML(fileData);
-        } else {
-            setDiagramXML(null);
+        if (userRole) {
+            if (userRole === 'editing') {
+                axios.get('http://localhost:3001/api/diagram/getDraft', {
+                    params: { diagramId: diagramId, userEmail: userEmail }
+                })
+                    .then((res) => {
+                        setDiagramXML(res.data.fileData);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        setDiagramXML(null);
+                    })
+            } else {
+                if (fileData) {
+                    setDiagramXML(fileData);
+                } else {
+                    setDiagramXML(null);
+                }
+            }
         }
-    }, [fileData, diagramXML]);
+    }, [fileData, diagramXML, userRole]);
 
     useEffect(() => {
         const minimapElement = document.querySelector('.djs-minimap');
         if (minimapElement) {
-          if (!hidePanel) {
-            minimapElement.classList.remove('hidePanelFalse');
-          } else {
-            minimapElement.classList.add('hidePanelFalse');
-          }
+            if (!hidePanel) {
+                minimapElement.classList.remove('hidePanelFalse');
+            } else {
+                minimapElement.classList.add('hidePanelFalse');
+            }
         }
-    })
+    }, [hidePanel]);
+
+    const updateSubProcessName = async (newName, nodeId) => {
+        axios.post(`http://localhost:3001/api/diagram/updateSubProcess`, { name: newName, nodeId: nodeId, diagramId: diagramId })
+            .then((res) => {
+                console.log(res);
+            })
+            .catch(err => {
+                console.error("Error updating diagram name: ", err);
+            })
+    }
 
     // hide hierarchy side bar
     const handleHidden = () => {
@@ -344,7 +417,7 @@ function BpmnEditor() {
             if (file) {
                 reader.onload = (e) => {
                     var xml = e.target.result;
-                    setDiagramXML(xml);
+                    setImportXML(xml);
                 };
 
                 reader.readAsText(file);
@@ -359,8 +432,13 @@ function BpmnEditor() {
             e.dataTransfer.dropEffect = 'copy';
         }
 
-        container.addEventListener('dragover', handleDragOver, false);
-        container.addEventListener('drop', handleFileSelect, false);
+        if (userRole === 'editing') {
+            container.addEventListener('dragover', handleDragOver, false);
+            container.addEventListener('drop', handleFileSelect, false);
+        } else {
+            container.removeEventListener('dragover', container);
+            container.removeEventListener('drop', container);
+        }
     }
 
     // Download exported file (SVG, XML)
@@ -387,7 +465,7 @@ function BpmnEditor() {
                 console.log(err);
             });
             if (xml) {
-                setEncoded(document.getElementById(id), itemName + '.xml', xml);
+                setEncoded(document.getElementById(id), diagramName + '.xml', xml);
             };
         }
     };
@@ -399,7 +477,7 @@ function BpmnEditor() {
                 console.log(err);
             });
             if (svg) {
-                setEncoded(document.getElementById(id), itemName + '.svg', svg);
+                setEncoded(document.getElementById(id), diagramName + '.svg', svg);
             };
         }
     };
@@ -412,7 +490,7 @@ function BpmnEditor() {
             });
             if (svg) {
                 const url = await generateImage('png', svg);
-                downloadImage(document.getElementById(id), itemName + '.png', url);
+                downloadImage(document.getElementById(id), diagramName + '.png', url);
             };
         }
     };
@@ -425,7 +503,7 @@ function BpmnEditor() {
             });
             if (svg) {
                 const url = await generateImage('png', svg);
-                generatePdf(url, itemName);
+                generatePdf(url, diagramName);
             };
             handleClose();
         }
@@ -434,13 +512,14 @@ function BpmnEditor() {
     // Save diagram
     const saveDiagram = async () => {
         if (modelerInstance) {
+            // save bpmn diagram as xml
             const { xml } = await modelerInstance.saveXML({ format: true }).catch(err => {
-                console.log(err);
+                console.error("Error saving XML:", err);
             });
+
             if (xml) {
-                console.log(xml);
-                console.log(diagramId, userEmail);
-                // Save diagram in DB
+                console.log("Saved XML:", xml);
+                console.log("diagramId:", diagramId);
                 axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userEmail: userEmail })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
@@ -448,7 +527,7 @@ function BpmnEditor() {
                     .catch(error => {
                         console.error("Error saving diagram to the database:", error);
                     });
-            };
+            }
         }
     }
     const onElementDelete = (nodeId) => {
@@ -472,7 +551,7 @@ function BpmnEditor() {
         if (file) {
             reader.onload = (e) => {
                 var xml = e.target.result;
-                setDiagramXML(xml);
+                setImportXML(xml);
             };
 
             reader.readAsText(file);
@@ -484,19 +563,19 @@ function BpmnEditor() {
     // handle exports to files
     const handleExportXml = (e) => {
         e.stopPropagation();
-        exportXml(e.target.id, "diagram")
+        exportXml(e.target.id)
     }
     const handleExportSvg = (e) => {
         e.stopPropagation();
-        exportSvg(e.target.id, "diagram")
+        exportSvg(e.target.id)
     }
     const handleExportPng = (e) => {
         e.stopPropagation();
-        exportPng(e.target.id, "diagram")
+        exportPng(e.target.id)
     }
     const handleExportPdf = (e) => {
         e.stopPropagation();
-        exportPdf(e.target.id, "diagram");
+        exportPdf(e.target.id);
     }
     const handleClose = () => {
         setIsOpen(false);
@@ -505,9 +584,10 @@ function BpmnEditor() {
     // handle checkout function
     const handleCheckIn = async () => {
         try {
-            console.log(diagramId);
-            console.log(userName);
-            const response = await axios.post('http://localhost:3001/api/diagram/checkedout', { diagramId, userName });
+            // console.log(diagramId);
+            // console.log(userEmail);
+            // console.log(userName);
+            const response = await axios.post('http://localhost:3001/api/diagram/checkedout', { diagramId, userEmail });
 
             if (response.status === 200) {
                 alert("Checked In!");
@@ -558,9 +638,19 @@ function BpmnEditor() {
             });
     }
 
-    
+
     // Confirm Publish function
     const handleConfirmPublish = () => {
+        // console.log(diagramXML, diagramId);  // 디버깅
+        if (diagramXML) {
+            axios.post('http://localhost:3001/api/diagram/publish', { xml: diagramXML, diagramId: diagramId })
+                .then(response => {
+                    // console.log("Diagram published successfully:", response.data);  // 디버깅
+                })
+                .catch(error => {
+                    console.error("Error saving diagram to the database:", error);
+                });
+        }
         alert("Diagram Published!");
         handleCloseConfirmPublishModal();
     }
@@ -571,7 +661,7 @@ function BpmnEditor() {
         setDeclineReason('');
         handleCloseConfirmPublishModal();
     }
-    
+
     /**Tool bar functions */
     // handle zoom in
     const handleZoomIn = () => {
@@ -601,7 +691,7 @@ function BpmnEditor() {
             if (xml) {
                 console.log("Saved XML:", xml);
                 console.log("diagramId:", diagramId);
-                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userName: userName })
+                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userEmail: userEmail })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })
@@ -672,7 +762,7 @@ function BpmnEditor() {
         return (
             <div className='main-container' onClick={handleClose} style={{ "--height": window.innerHeight }}>
                 <div className='model-header'>
-                    <Topbar onLogoClick={toMain} />
+                    <Topbar onLogoClick={toMain} userName={userEmail} />
                     <Toolbar
                         mode={userRole} // "read-only" or "contributor" or "editing"
                         isOpen={isOpen}
@@ -699,7 +789,7 @@ function BpmnEditor() {
                         importFile={importFile}
                         onFileChange={onFileChange}
                         onCheckIn={handleShowCheckInModal}
-                        onContributor={handleContributor}
+                        onContributor={handleShowContributorsModal}
                         onShare={handleShowPublishModal}
                         onPublish={handleShowConfirmPublishModal}
                     />
@@ -708,7 +798,7 @@ function BpmnEditor() {
                     {isHidden ?
                         <BsArrowBarRight className='sidebar-btn hidden' onClick={handleHidden} />
                         :
-                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userEmail} />
+                        <Sidebar handleHidden={handleHidden} diagramId={diagramId} userName={userEmail} onClick={setImportXML} />
                     }
 
                     <div
@@ -725,6 +815,21 @@ function BpmnEditor() {
                     </div>
                 </div>
                 <div>
+                    <Modal show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                                <ul style={{ paddingLeft: '20px' }}>
+                                    {contributors.length > 0 ? contributors.map((contributor, index) => (
+                                        <li key={index}>{contributor.name} ({contributor.email})</li>
+                                    )) : <li>No contributors found.</li>}
+                                </ul>
+                            </div>
+                        </Modal.Body>
+                    </Modal>
+
                     <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
                         <Modal.Header closeButton>
                             <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Publish Request Form</Modal.Title>
@@ -781,27 +886,27 @@ function BpmnEditor() {
                         </Modal.Header>
                         <Modal.Body>
                             <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px', textAlign: 'center' }}>
-                            <p>If you agree to publish this diagram, please click <strong>Confirm</strong>. If not, please provide a reason and click <strong>Decline</strong>.</p>
+                                <p>If you agree to publish this diagram, please click <strong>Confirm</strong>. If not, please provide a reason and click <strong>Decline</strong>.</p>
                             </div>
                             <Form>
-                            <Form.Group className="mb-3" controlId="declineReason">
-                                <Form.Label style={{ textAlign: 'center', width: '100%' }}>Decline Reason (Optional)</Form.Label>
-                                <Form.Control
-                                as="textarea"
-                                rows={3}
-                                placeholder="Type the reason for declining"
-                                value={declineReason}
-                                onChange={(e) => setDeclineReason(e.target.value)}
-                                />
-                            </Form.Group>
+                                <Form.Group className="mb-3" controlId="declineReason">
+                                    <Form.Label style={{ textAlign: 'center', width: '100%' }}>Decline Reason (Optional)</Form.Label>
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={3}
+                                        placeholder="Type the reason for declining"
+                                        value={declineReason}
+                                        onChange={(e) => setDeclineReason(e.target.value)}
+                                    />
+                                </Form.Group>
                             </Form>
                         </Modal.Body>
                         <Modal.Footer style={{ justifyContent: 'space-around' }}>
                             <Button variant="success" onClick={handleConfirmPublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none" }}>
-                            Confirm
+                                Confirm
                             </Button>
                             <Button variant="danger" onClick={handleDeclinePublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#d9534f", border: "none" }}>
-                            Decline
+                                Decline
                             </Button>
                         </Modal.Footer>
                     </Modal>

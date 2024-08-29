@@ -35,7 +35,7 @@ app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.
 
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
-app.get('/api/processes/checkIfEditor', processesController.checkIfEditor);
+// app.get('/api/processes/checkIfEditor', processesController.checkIfEditor);
 
 app.get('/api/fetch/user-role', diagramController.getUserRole);
 app.get('/api/fetch/diagram', diagramController.getDiagramPath);

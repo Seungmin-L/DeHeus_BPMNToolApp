@@ -34,6 +34,7 @@ function Toolbar({
   onCheckIn,
   onShare,
   onPublish,
+  onCancel,
   mode,
 }) {
 
@@ -123,6 +124,11 @@ function Toolbar({
       </div>
 
       <div className="toolbar-right">
+        {mode === 'editing' && ( // if editing
+          <>
+            <button onClick={onCancel} dangerouslySetInnerHTML={{ __html: Icons.cancel }} title="cancel" />
+          </>
+        )}
         <button onClick={onContributor} dangerouslySetInnerHTML={{ __html: Icons.user }} title="contributors" />
         {mode === "contributor" && ( // if contributor
           <>

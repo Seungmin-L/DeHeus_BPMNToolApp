@@ -62,7 +62,6 @@ function BpmnEditor() {
     const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
     const [editor, setEditor] = useState(null);
     const [diagramPath, setDiagramPath] = useState(null);
-    const [contributors, setContributors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
@@ -805,6 +804,7 @@ function BpmnEditor() {
                         onContributor={handleShowContributorsModal}
                         onShare={handleShowPublishModal}
                         onPublish={handleShowConfirmPublishModal}
+                        // onCancel={handleCancelModal}
                     />
                 </div>
                 <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>

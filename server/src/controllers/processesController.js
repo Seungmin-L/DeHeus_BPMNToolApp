@@ -103,12 +103,22 @@ const listProcesses = async (req, res) => {
 
 
 const addProcess = async (req, res) => {
-  const { projectId, processName } = req.body;
+  const { projectId, processName, userEmail } = req.body;
   try {
-    await sql.query(`
+    const insertResult = await sql.query(`
       INSERT INTO diagram (project_id, name, created_at) 
       VALUES (${projectId}, ${"'" + processName + "'"}, GETDATE());
-  `);
+      
+      SELECT SCOPE_IDENTITY() AS id;
+    `);
+
+    // Log the user activity as 'Created'
+    const diagramId = insertResult.recordset[0].id;
+    await sql.query`
+      INSERT INTO user_activity_log (diagram_id, user_email, updated_time, type)
+      VALUES (${diagramId}, ${userEmail}, GETDATE(), 'Created');
+    `;
+    
     res.status(200).json({ message: "Process created successfully", data: processName, projectId: projectId });
   } catch (err) {
     console.error("Error creating process", err);

@@ -4,8 +4,8 @@ const { sql } = require("../config/dbConfig");
 // For Diagram Checkout
 const confirmCheckOut = async (req, res) => {
     const { diagramId, userEmail } = req.body;
-    // console.log(diagramId);
-    // console.log(userEmail);
+    // console.log(diagramId);  // 디버깅용 주석 처리
+    // console.log(userEmail);  // 디버깅용 주석 처리
 
     try {
         const request = new sql.Request();
@@ -14,6 +14,7 @@ const confirmCheckOut = async (req, res) => {
         const expiryTime = new Date(checkoutTime);
         expiryTime.setDate(checkoutTime.getDate() + 14);
 
+        // update diagram_checkout table
         const insertCheckoutQuery = `
             INSERT INTO diagram_checkout (diagram_id, user_email, checkout_time, expiry_time, status)
             VALUES (@diagramId, @userEmail, @checkoutTime, @expiryTime, 1);
@@ -25,6 +26,7 @@ const confirmCheckOut = async (req, res) => {
         request.input('expiryTime', sql.DateTime, expiryTime);
         await request.query(insertCheckoutQuery);
 
+        // update diagram table
         const updateDiagramQuery = `
             UPDATE diagram
             SET checkedout_by = @userEmail
@@ -32,6 +34,12 @@ const confirmCheckOut = async (req, res) => {
         `;
 
         await request.query(updateDiagramQuery);
+
+        // Log the user activity as 'Checked out'
+        await sql.query`
+            INSERT INTO user_activity_log (diagram_id, user_email, updated_time, type)
+            VALUES (${diagramId}, ${userEmail}, GETDATE(), 'Checked out');
+        `;
 
         res.status(200).json({ message: 'Check-in successful' });
     } catch (error) {

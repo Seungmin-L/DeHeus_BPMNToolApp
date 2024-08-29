@@ -188,7 +188,8 @@ function ListSingleProject() {
     if (formType === "Process" && processName !== "") {
       axios.post(`http://localhost:3001/api/processes/add`, {
         projectId: projectId,
-        processName: processName
+        processName: processName,
+        userEmail: userName
       })
         .then(res => {
           console.log(res.data);
@@ -209,7 +210,8 @@ function ListSingleProject() {
         axios.post(`http://localhost:3001/api/diagram/add`, {
           projectId: projectId,
           diagramName: diagramName,
-          diagramId: selectedProcess
+          diagramId: selectedProcess,
+          userEmail: userName
         })
           .then(res => {
             console.log(res.data);

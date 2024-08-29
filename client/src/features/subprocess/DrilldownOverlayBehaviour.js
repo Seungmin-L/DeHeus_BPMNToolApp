@@ -205,7 +205,8 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
         projectId: projectId,
         diagramId: diagramId,
         processName: name,
-        elementId: element.id
+        elementId: element.id,
+        userEmail: userName
       })
         .then((res) => {
           if (res.data.message.endsWith("exists")) {

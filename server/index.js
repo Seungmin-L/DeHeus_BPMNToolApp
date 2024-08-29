@@ -35,6 +35,7 @@ app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.
 
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
+app.get('/api/processes/checkIfEditor', processesController.checkIfEditor);
 
 app.get('/api/fetch/user-role', diagramController.getUserRole);
 app.get('/api/fetch/diagram', diagramController.getDiagramPath);
@@ -46,7 +47,7 @@ app.get('/api/diagram/getDraft', diagramController.getDraftData);
 app.get('/api/mypage/user/:identifier', userController.getUserInfo);
 app.get('/api/admin/users', adminController.getUserList);
 app.get('/api/admin/users/:identifier', adminController.getUserData);
-app.post('/api/admin/save-user-data', adminController.saveUserData);
+app.post('/api/admin/saveUserData', adminController.saveUserData);
 
 // for testing the server status when using docker container
 // app.get('/', (req, res) => {

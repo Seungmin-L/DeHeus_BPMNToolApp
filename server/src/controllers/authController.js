@@ -10,7 +10,7 @@ const authenticateUser = async (req, res) => {
     const decodedToken = jwt.decode(token, { complete: true });
     // console.log(decodedToken);
     const email = decodedToken.payload.unique_name;
-    console.log(`User Email: ${email}`);
+    // console.log(`User Email: ${email}`);  // 디버깅용 주석 처리
 
     const userResult = await sql.query`SELECT * FROM [user] WHERE email = ${email}`;
     if (userResult.recordset.length === 0) {

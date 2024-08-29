@@ -8,6 +8,8 @@ import { MdOpenInNew } from "react-icons/md";
 import LeftNavBar from "./common/LeftNavBar";
 import TopBar from "./common/TopBar";
 import { useNavigate } from "react-router-dom";
+import { convertUTCToLocal } from '../utils/utils';
+
 
 function MyPage() {
   const isAuthenticated = useIsAuthenticated();
@@ -63,7 +65,8 @@ function MyPage() {
 
           setActivityLog(data.activityLog.map(log => ({
             activity: `${log.activity} [${log.diagram_name}] in [${log.project_name}]`,
-            date: new Date(log.date).toLocaleString(),
+            // date: new Date(log.date).toLocaleString(),
+            date: convertUTCToLocal(log.date),
           })));
 
           console.log(response.data);

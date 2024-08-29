@@ -302,46 +302,63 @@ const confirmPublish = async (req, res) => {
         const { xml, diagramId } = req.body;
         const blobData = convertXMLToBlob(xml);
 
-        // find user first
+        // Get user data first
         const result = await sql.query`
             SELECT user_email 
             FROM diagram_checkout 
             WHERE diagram_id = ${diagramId} 
             AND status = 1
         `;
-
         const userEmail = result.recordset[0]?.user_email;
-
         if (!userEmail) {
             return res.status(400).json({ message: "Error: No user currently checked out this diagram" });
         }
 
-        // publish
+        // Get current date before updating multiple tables!!
+        const currentDate = new Date();
+
+        // Insert publish data first
         await sql.query`
             INSERT INTO diagram_published (diagram_id, file_data, file_type, published_by, published_at)
-            VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${userEmail}, GETDATE());
+            VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${userEmail}, ${currentDate});
         `;
 
-        // automatically checkout after publishing
+        // Update last_update in project table
+        const projectResult = await sql.query`
+            SELECT project_id 
+            FROM diagram 
+            WHERE id = ${diagramId}
+        `;
+        const projectId = projectResult.recordset[0]?.project_id;
+        if (projectId) {
+            await sql.query`
+                UPDATE project
+                SET last_update = ${currentDate}
+                WHERE id = ${projectId}
+            `;
+        }
+
+        // Automatically checkout after publishing
         await sql.query`
             DELETE FROM diagram_checkout
             WHERE diagram_id = ${diagramId}
             AND user_email = ${userEmail}
         `;
 
-        // automatically checkout after publishing
+        // Automatically set checkedout_by to NULL after publishing
         await sql.query`
             UPDATE diagram
             SET checkedout_by = NULL
             WHERE id = ${diagramId}
         `;
 
-        res.status(200).json({ message: "Diagram published and checkout entry removed successfully", diagramId: diagramId });
+        res.status(200).json({ message: "Diagram published and checkout info updated successfully", diagramId: diagramId });
     } catch (err) {
         console.error("Database error:", err);
         res.status(500).send("Failed to publish diagram");
     }
 };
+
 
 
 const addDiagram = async (req, res) => {

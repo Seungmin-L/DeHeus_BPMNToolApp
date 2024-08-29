@@ -3,8 +3,36 @@ const { sql } = require("../config/dbConfig");
 
 const listProcesses = async (req, res) => {
   const { projectId } = req.params;
+  const { userName } = req.query;
+  // console.log(projectId, userName);  // 디버깅 용도라서 주석 처리!!
 
   try {
+    // check if editor in the current project before fetching processes
+    const contributionQuery = `
+      SELECT editor 
+      FROM diagram_contribution 
+      WHERE user_email = @userName AND project_id = @projectId;
+    `;
+    
+    const request = new sql.Request();
+    request.input('projectId', sql.Int, projectId);
+    request.input('userName', sql.VarChar, userName);
+    
+    const contributionResult = await request.query(contributionQuery);
+    // console.log('Contribution Query Result:', contributionResult.recordset);  // 디버깅 용도라서 주석 처리!!
+
+    let role = '';
+    if (contributionResult.recordset.length > 0) {
+      const isEditor = contributionResult.recordset[0].editor;
+      // console.log('isEditor Value:', isEditor);  // 디버깅 용도라서 주석 처리!!
+      if (isEditor) {
+        role = 'editor';
+      } else {
+        role = 'read-only';
+      }
+    }
+    // console.log('Determined User Role:', role);  // 디버깅 용도라서 주석 처리!!
+
     const query = `
       SELECT 
         p.name AS projectName,
@@ -30,8 +58,6 @@ const listProcesses = async (req, res) => {
         d.id ASC;
     `;
     
-    const request = new sql.Request();
-    request.input('projectId', sql.Int, projectId);
     const result = await request.query(query);
 
     const projectName = result.recordset.length > 0 ? result.recordset[0].projectName : 'Unknown Project';
@@ -68,13 +94,12 @@ const listProcesses = async (req, res) => {
       }
     }
 
-    res.json({ projectName, processes: rootProcesses });
+    res.json({ projectName, processes: rootProcesses, role });
   } catch (err) {
     console.error("Error listing processes", err);
     res.status(500).send("Error listing processes");
   }
 };
-
 
 
 const addProcess = async (req, res) => {

@@ -62,7 +62,6 @@ function BpmnEditor() {
     const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
     const [editor, setEditor] = useState(null);
     const [diagramPath, setDiagramPath] = useState(null);
-    const [contributors, setContributors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
@@ -72,6 +71,7 @@ function BpmnEditor() {
     const [hidePanel, setHidePanel] = useState(false);
     const saveKeys = ['s', 'S'];
     const [showPublishModal, setShowPublishModal] = useState(false);
+    const [contributors, setContributors] = useState([]);
     let modelerInstance = null;
     const searchKeys = ['f', 'F'];
     let priority = 10000;
@@ -400,6 +400,18 @@ function BpmnEditor() {
                 console.error("Error updating diagram name: ", err);
             })
     }
+
+    // fetch contributors
+    useEffect(() => {
+        console.log(diagramId);
+        axios.get(`/api/diagrams/getContributors/${diagramId}`)
+            .then(response => {
+                const data = response.data;
+                setContributors(data.contributors);
+                console.log(contributors);
+            })
+            .catch(error => console.error('Error fetching contributors:', error));
+    }, [diagramId]);
 
     // hide hierarchy side bar
     const handleHidden = () => {
@@ -792,6 +804,7 @@ function BpmnEditor() {
                         onContributor={handleShowContributorsModal}
                         onShare={handleShowPublishModal}
                         onPublish={handleShowConfirmPublishModal}
+                        // onCancel={handleCancelModal}
                     />
                 </div>
                 <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>

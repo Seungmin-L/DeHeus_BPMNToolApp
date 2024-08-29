@@ -34,15 +34,19 @@ function ListSingleProject() {
   const navigate = useNavigate();
   const [options, setOptions] = useState([]);
   const [projectName, setProjectName] = useState([]);
+  const [userRole, setUserRole] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated) {
+      console.log(projectId, userName);
       axios
-        .get(`/api/processes/${projectId}`)
+        .get(`/api/processes/${projectId}`, {
+          params: { userName }
+        })
         .then((response) => {
-          // console.log("Fetched processes:", response.data);  // 디버깅
+          // console.log("Fetched processes:", response.data);  // 디버깅 용도라서 주석 처리!!
           const formattedProcesses = formatProcessInfos(response.data.processes);
-          // console.log(response.data.processes);  // 디버깅
+          // console.log(response.data.processes);  // 디버깅 용도라서 주석 처리!!
           console.log(formattedProcesses);
           setProcesses(formattedProcesses);
           setProjectName(response.data.projectName);
@@ -50,6 +54,9 @@ function ListSingleProject() {
             id: process.id,
             name: process.name
           })));
+          const userRole = response.data.role;
+          // console.log(userRole);  // 디버깅 용도라서 주석 처리!!
+          setUserRole(userRole);  // set user role to show the add diagram button only to editors
         })
         .catch((error) => {
           console.error("Error fetching processes", error);
@@ -65,7 +72,7 @@ function ListSingleProject() {
     );
   };
 
-  // // 기존 코드
+  
   const handleOpenClick = async (event, item) => {
     event.stopPropagation();
 
@@ -226,19 +233,21 @@ function ListSingleProject() {
       <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
         <div style={{ flexGrow: 1 }}>
-          <button
-            onClick={handleShowModal}
-            style={{
-              background: "none",
-              border: "none",
-              position: "fixed",
-              bottom: 25,
-              right: 25,
-              zIndex: 999,
-            }}
-          >
-            <BsFillPlusCircleFill size={50} style={{ color: "#2A85E2" }} />
-          </button>
+          {userRole === 'editor' && (
+            <button
+              onClick={handleShowModal}
+              style={{
+                background: "none",
+                border: "none",
+                position: "fixed",
+                bottom: 25,
+                right: 25,
+                zIndex: 999,
+              }}
+            >
+              <BsFillPlusCircleFill size={50} style={{ color: "#2A85E2" }} />
+            </button>
+          )}
           <Modal size="lg" show={showModal} onHide={handleCloseModal} centered>
             <Modal.Header closeButton>
               <Modal.Title className="w-100 text-center">

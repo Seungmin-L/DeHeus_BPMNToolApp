@@ -39,7 +39,7 @@ function TestingEmail() {
    // Delete and Cancel function
   const handleShowDeleteModal = () => setDeleteModal(true);
   const handleCloseDeleteModal = () => setDeleteModal(false);
-  const handleShowCancleModal = () => setCancelModal(true);
+  const handleShowCancelModal = () => setCancelModal(true);
   const handleCloseCancelModal = () => setCancelModal(false);
   
 
@@ -108,6 +108,16 @@ function TestingEmail() {
     handleCloseCheckInModal();
   }
 
+  const handleCancel = () => {
+    alert("Check out canceled!");
+    handleCloseCancelModal();
+  }
+
+  const handleDelete = () => {
+    alert("Diagram successfully deleted!");
+    handleCloseDeleteModal();
+  }
+
   return (
     <div>
       <TopBar onLogoClick={toggleNav} userName={userName} />
@@ -124,10 +134,10 @@ function TestingEmail() {
             <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
               Confirm Publish
             </Button>
-            <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+            <Button variant="warning" onClick={handleShowDeleteModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
               Delete
             </Button>
-            <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+            <Button variant="warning" onClick={handleShowCancelModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
               Cancel
             </Button>
 
@@ -208,6 +218,46 @@ function TestingEmail() {
                 </Button>
                 <Button variant="danger" onClick={handleDeclinePublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#d9534f", border: "none" }}>
                   Decline
+                </Button>
+              </Modal.Footer>
+            </Modal>
+
+            <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Delete Diagram</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                  <h5>Diagram Path</h5>
+                  <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} - {processName} - {diagramName}</p>
+                </div>
+                <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                  <p>Please click Delete button if you wish to permanantly delete the diagram from the database.</p>
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="success" onClick={handleDelete} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                  Delete
+                </Button>
+              </Modal.Footer>
+            </Modal>
+
+            <Modal show={showCancelModal} onHide={handleCloseCancelModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Cancel Check Out Confirm</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                  <h5>Diagram Path</h5>
+                  <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} - {processName} - {diagramName}</p>
+                </div>
+                <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                  <p>Please click Confirm button to cancel your check out to this diagram.</p>
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="success" onClick={handleCancel} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
+                  Confirm
                 </Button>
               </Modal.Footer>
             </Modal>

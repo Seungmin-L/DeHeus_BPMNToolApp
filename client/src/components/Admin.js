@@ -165,7 +165,7 @@ function Admin() {
     // console.log("Role Changes:", roleChanges);  // debugging console log
     // console.log("Project Updates:", projectUpdates);  // debugging console log
 
-    axios.post('/api/admin/save-user-data', {
+    axios.post('/api/admin/saveUserData', {
       userEmail: tempUser.email,
       projectUpdates,
       removedProjects,

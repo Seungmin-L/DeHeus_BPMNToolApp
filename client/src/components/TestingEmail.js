@@ -140,7 +140,7 @@ function TestingEmail() {
       <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
         <div style={{ flexGrow: 1 }}>
-        <button
+          <button
             onClick={handleShowAddModal}
             style={{
               background: "none",

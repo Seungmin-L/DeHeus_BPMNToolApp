@@ -27,10 +27,21 @@ function TestingEmail() {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showConfirmPublishModal, setShowConfirmPublishModal] = useState(false);
 
+  // Delete and Cancel function
+  const [showDeleteModal, setDeleteModal] = useState(false);
+  const [showCancelModal, setCancelModal] = useState(false);
+  
   const handleShowPublishModal = () => setShowPublishModal(true);
   const handleClosePublishModal = () => setShowPublishModal(false);
   const handleShowCheckInModal = () => setShowCheckInModal(true);
   const handleCloseCheckInModal = () => setShowCheckInModal(false);
+
+   // Delete and Cancel function
+  const handleShowDeleteModal = () => setDeleteModal(true);
+  const handleCloseDeleteModal = () => setDeleteModal(false);
+  const handleShowCancleModal = () => setCancelModal(true);
+  const handleCloseCancelModal = () => setCancelModal(false);
+  
 
   // Publish variables
   const currentUrl = window.location.href;
@@ -110,8 +121,14 @@ function TestingEmail() {
             <Button variant="secondary" onClick={handleShowCheckInModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
               Check In
             </Button>
-            <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#ffc107", border: "none", marginTop: "10px" }}>
+            <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
               Confirm Publish
+            </Button>
+            <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+              Delete
+            </Button>
+            <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+              Cancel
             </Button>
 
             <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>

@@ -4,7 +4,7 @@ const { sql } = require("../config/dbConfig");
 const listProcesses = async (req, res) => {
   const { projectId } = req.params;
   const { userName } = req.query;
-  console.log(projectId, userName);
+  // console.log(projectId, userName);  // 디버깅 용도라서 주석 처리!!
 
   try {
     // check if editor in the current project before fetching processes

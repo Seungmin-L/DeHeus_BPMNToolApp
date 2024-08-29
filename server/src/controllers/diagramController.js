@@ -21,8 +21,8 @@ const getUserRole = async (req, res) => {
             request.input('userEmail', sql.VarChar, userEmail);
             const userResult = await request.query(userQuery);
 
-            const userName = userResult.recordset.length > 0 
-                ? userResult.recordset[0].name 
+            const userName = userResult.recordset.length > 0
+                ? userResult.recordset[0].name
                 : 'Unknown User';
 
             const contributionQuery = `
@@ -62,7 +62,7 @@ const getUserRole = async (req, res) => {
             }
             res.status(200).json({ role: 'read-only', userName });
         }
-        
+
     } catch (error) {
         console.error('Error fetching user role:', error.message);
         res.status(500).json({ message: 'Error fetching user role', error: error.message });
@@ -133,6 +133,49 @@ const getDiagramPath = async (req, res) => {
     }
 };
 
+
+const getContributors = async (req, res) => {
+    const { diagramId } = req.query;
+    const contributors = [];
+
+    try {
+        const request = new sql.Request();
+
+        const contributorQuery = `
+            SELECT published_by 
+            FROM diagram_published
+            WHERE diagram_id = @diagramId;
+        `;
+        request.input('diagramId', sql.Int, diagramId);
+        const contributorResult = await request.query(contributorQuery);
+
+        for (const row of contributorResult.recordset) {
+            const userEmail = row.published_by.toLowerCase();
+
+            // Create a new request object for the user query
+            const userRequest = new sql.Request();
+            const userQuery = `
+                SELECT email, name
+                FROM [user]
+                WHERE email = @userEmailAddress;
+            `;
+            userRequest.input('userEmailAddress', sql.VarChar, userEmail);
+            const userResult = await userRequest.query(userQuery);
+
+            if (userResult.recordset.length > 0) {
+                const { email, name } = userResult.recordset[0];
+                contributors.push({ email, name });
+            }
+        }
+
+        res.status(200).json({ contributors });
+    } catch (error) {
+        console.error('Error fetching contributor:', error.message);
+        res.status(500).json({ message: 'Error fetching contributor', error: error.message });
+    }
+};
+
+
 // convert function for saving diagram
 function convertXMLToBlob(xmlString) {
     // xml to blob
@@ -148,14 +191,9 @@ function convertBlobtoXML(file_data) {
 const createSubProcess = async (req, res) => {
     try {
         const { projectId, diagramId, processName, elementId } = req.body;
-        const result = await sql.query(`
-            SELECT child_diagram_id as id
-            FROM diagram_relation
-            WHERE parent_diagram_id = ${diagramId} 
-            AND
-            parent_node_id = ${"'" + elementId + "'"}
-        `);
-        if (result.recordset.length === 0) {
+
+        const result = await getChildDiagram(diagramId, elementId);
+        if (!result) {
             sql.query(`
                 DECLARE @NewValue INT;
                 INSERT INTO diagram (project_id, name, created_at) 
@@ -169,13 +207,68 @@ const createSubProcess = async (req, res) => {
                 res.status(200).json({ message: "Diagram created successfully", data: { name: processName, id: results.recordset[0].lastDiagramId }, projectId: projectId });
             });
         } else {
-            res.status(200).json({ message: "Diagram already exists", data: result.recordset[0] });
+            if (result.name !== processName) {
+                await updateDiagramName(result.id, processName);
+            }
+            res.status(200).json({ message: "Diagram already exists", data: result });
         }
 
     } catch (err) {
         console.error("Database error:", err);
         res.status(500).send("Failed to create diagram draft");
     }
+}
+
+const getChildDiagram = async (diagramId, nodeId) => {
+    try {
+        const request = new sql.Request();
+        const query = `
+            SELECT child_diagram_id as id
+            FROM diagram_relation
+            WHERE parent_diagram_id = @diagramId
+            AND
+            parent_node_id = @nodeId
+        `;
+        request.input("diagramId", diagramId);
+        request.input("nodeId", sql.VarChar, nodeId);
+        const result = await request.query(query);
+        if (result.recordset.length > 0) {
+            const subProcess = result.recordset[0];
+            return subProcess;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+const updateDiagramName = async (diagramId, newName) => {
+    try {
+        const request = new sql.Request();
+        const query = `UPDATE diagram SET name = @newName WHERE id = @diagramId`;
+        request.input("newName", sql.VarChar, newName);
+        request.input("diagramId", diagramId);
+        await request.query(query);
+        return;
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+const updateSubProcessName = async (req, res) => {
+    const { name, nodeId, diagramId } = req.body;
+    try {
+        const subprocess = await getChildDiagram(diagramId, nodeId);
+        if (subprocess) {
+            await updateDiagramName(subprocess.id, name);
+            res.status(200).json({ message: "Diagram updated successfully" });
+        } else {
+            res.status(500).json({ message: "Diagram doesn't exist" });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+
 }
 
 const draftSave = async (req, res) => {
@@ -209,46 +302,63 @@ const confirmPublish = async (req, res) => {
         const { xml, diagramId } = req.body;
         const blobData = convertXMLToBlob(xml);
 
-        // find user first
+        // Get user data first
         const result = await sql.query`
             SELECT user_email 
             FROM diagram_checkout 
             WHERE diagram_id = ${diagramId} 
             AND status = 1
         `;
-
         const userEmail = result.recordset[0]?.user_email;
-
         if (!userEmail) {
             return res.status(400).json({ message: "Error: No user currently checked out this diagram" });
         }
 
-        // publish
+        // Get current date before updating multiple tables!!
+        const currentDate = new Date();
+
+        // Insert publish data first
         await sql.query`
             INSERT INTO diagram_published (diagram_id, file_data, file_type, published_by, published_at)
-            VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${userEmail}, GETDATE());
+            VALUES (${diagramId}, ${blobData}, 'application/bpmn+xml', ${userEmail}, ${currentDate});
         `;
 
-        // automatically checkout after publishing
+        // Update last_update in project table
+        const projectResult = await sql.query`
+            SELECT project_id 
+            FROM diagram 
+            WHERE id = ${diagramId}
+        `;
+        const projectId = projectResult.recordset[0]?.project_id;
+        if (projectId) {
+            await sql.query`
+                UPDATE project
+                SET last_update = ${currentDate}
+                WHERE id = ${projectId}
+            `;
+        }
+
+        // Automatically checkout after publishing
         await sql.query`
             DELETE FROM diagram_checkout
             WHERE diagram_id = ${diagramId}
             AND user_email = ${userEmail}
         `;
 
-        // automatically checkout after publishing
+        // Automatically set checkedout_by to NULL after publishing
         await sql.query`
             UPDATE diagram
             SET checkedout_by = NULL
             WHERE id = ${diagramId}
         `;
 
-        res.status(200).json({ message: "Diagram published and checkout entry removed successfully", diagramId: diagramId });
+        res.status(200).json({ message: "Diagram published and checkout info updated successfully", diagramId: diagramId });
     } catch (err) {
         console.error("Database error:", err);
         res.status(500).send("Failed to publish diagram");
     }
 };
+
 
 
 const addDiagram = async (req, res) => {
@@ -309,7 +419,7 @@ async function getLatestPublishedDiagram(projectId, diagramId) {
 }
 
 async function getDiagramData(req, res) {
-    const { projectId, diagramId, userEmail } = req.params; 
+    const { projectId, diagramId, userEmail } = req.params;
 
     try {
         if (userEmail.includes('.pbmn@')) {
@@ -324,7 +434,7 @@ async function getDiagramData(req, res) {
                     res.status(200).json(diagramId);
                 }
             }
-        }else{
+        } else {
             const draftData = await getLatestDraftDiagram(diagramId, userEmail);
             if (draftData) {
                 res.status(200).json(draftData);
@@ -453,43 +563,18 @@ const checkNewDiagram = async (diagramId) => {
     }
 }
 
-const getContributors = async (req, res) => {
-    const { diagramId } = req.params;
-    const contributors = [];
-    try {
-        const request = new sql.Request();
-
-        const contributionQuery = `
-            SELECT published_by 
-            FROM diagram_published
-            WHERE diagram_id = @diagramId;
-        `;
-        request.input('diagramId', sql.Int, diagramId);
-        const contributionResult = await request.query(contributionQuery);        
-        
-        for (const row of contributionResult.recordset) {
-            const userEmail = row.published_by;
-            console.log("🚀 ~ getContributors ~ userEmail:", userEmail)
-            const userQuery = `
-                SELECT email, name
-                FROM [user]
-                WHERE email = @userEmail;
-            `;
-            request.input('userEmail', sql.VarChar, userEmail);
-            const userResult = await request.query(userQuery);
-            console.log("🚀 ~ getContributors ~ userResult:", userResult)
-
-            if (userResult.recordset.length > 0) {
-                const { email, name } = userResult.recordset[0];
-                contributors.push({ email, name });
-            }
+const getDraftData = async (req, res) => {
+    const { diagramId, userEmail } = req.query;
+    try{
+        const draftData = await getLatestDraftDiagram(diagramId, userEmail);
+        if(draftData){
+            res.status(200).json(draftData);
+        }else{
+            res.status(500).json({message: "Failed to load latest draft of the user"})
         }
-
-        res.status(200).json({ contributors });
-    } catch (error) {
-        console.error('Error fetching contributor:', error.message);
-        res.status(500).json({ message: 'Error fetching contributor', error: error.message });
+    }catch(err){
+        console.error("Error fetching draft data: ", err);
     }
-};
+}
 
-module.exports = { getUserRole, getDiagramPath, draftSave, confirmPublish, getDiagramData, createSubProcess, addDiagram, getContributors };
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, confirmPublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram };

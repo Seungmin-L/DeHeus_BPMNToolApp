@@ -22,6 +22,7 @@ app.use(bodyParser.json());
 
 app.post('/api/authenticate', authController.authenticateUser);
 app.post('/api/project/add', projectsController.addProject);
+app.post('/api/project/delete', projectsController.deleteProject);
 app.post('/api/processes/add', processesController.addProcess);
 app.post('/api/diagram/add', diagramController.addDiagram);
 app.post('/api/diagram/save', diagramController.draftSave);

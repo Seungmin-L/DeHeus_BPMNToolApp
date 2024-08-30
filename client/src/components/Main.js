@@ -7,6 +7,8 @@ import NoAuth from "./common/NoAuth";
 import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
 import { formatProjectDates } from '../utils/utils';
+import { Form, Button, Modal } from "react-bootstrap";
+import {  BsFillPlusCircleFill } from "react-icons/bs";
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
@@ -22,7 +24,6 @@ function Main() {
     if (isAuthenticated && accounts.length > 0) {
       const userName = accounts[0].username;
       setUserName(userName);
-
       axios.get("/api/projects", {
         params: { userName }
       }).then(response => {
@@ -43,6 +44,24 @@ function Main() {
     navigate(`/project/${projectId}`);
   };
 
+  // Add project function
+  const [showAddModal, setAddModal] = useState(false);
+
+  const handleShowAddModal = () => setAddModal(true);
+  const handleCloseAddModal = () => setAddModal(false);
+
+  const [newProjectName, setNewProjectName] = useState('');
+
+  const handleCreate = () => {
+    // backend here
+    alert(`Project, ${newProjectName}, has been successfully added!`);
+
+
+
+    setNewProjectName('');
+    handleCloseAddModal();
+  }
+
   // if (!isAuthenticated) {
   //   return <NoAuth />;
   // }
@@ -53,6 +72,56 @@ function Main() {
       <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
         <div style={{ flexGrow: 1 }}>
+          { userName == "vnapp.pbmn@deheus.com" && (
+            <>
+              <button
+                onClick={handleShowAddModal}
+                style={{
+                  background: "none",
+                  border: "none",
+                  position: "fixed",
+                  bottom: 25,
+                  right: 25,
+                  zIndex: 999,
+                }}
+              >
+                <BsFillPlusCircleFill size={50} style={{ color: "#2A85E2" }} />
+              </button>
+              <Modal size="lg" show={showAddModal} onHide={handleCloseAddModal} centered>
+                <Modal.Header closeButton>
+                  <Modal.Title className="w-100 text-center">
+                    Create New Project
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  <Form.Group className="d-flex align-items-center">
+                    <Form.Label style={{ width: "25%" }}>Project Name</Form.Label>
+                    <Form.Control
+                      style={{ width: "75%" }}
+                      type="text"
+                      placeholder = "Enter the new project name here."
+                      value={newProjectName}
+                      onChange={(e) => setNewProjectName(e.target.value)}
+                    />
+                  </Form.Group>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center">
+                  <Button
+                    style={{
+                      color: "#fff",
+                      width: "100px",
+                      fontWeight: "550",
+                      backgroundColor: "#5cb85c",
+                      border: "none",
+                    }}
+                    onClick={handleCreate}
+                  >
+                    Create
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+              </>
+            )}
           <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
             <div className="mt-4" style={{ width: "85%" }}>
               <h3 className="mb-3">Accessible Projects</h3>

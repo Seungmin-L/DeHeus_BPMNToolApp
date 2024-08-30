@@ -4,6 +4,7 @@ import LeftNavBar from "./common/LeftNavBar";
 import TopBar from "./common/TopBar";
 import emailjs from '@emailjs/browser';
 import { Form, Button, Modal } from "react-bootstrap";
+import {  BsFillPlusCircleFill } from "react-icons/bs";
 
 function TestingEmail() {
   const isAuthenticated = useIsAuthenticated();
@@ -25,11 +26,29 @@ function TestingEmail() {
 
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
+  const [showConfirmPublishModal, setShowConfirmPublishModal] = useState(false);
+
+  // Delete and Cancel function
+  const [showDeleteModal, setDeleteModal] = useState(false);
+  const [showCancelModal, setCancelModal] = useState(false);
+  
+  // Add project function
+  const [showAddModal, setAddModal] = useState(false);
 
   const handleShowPublishModal = () => setShowPublishModal(true);
   const handleClosePublishModal = () => setShowPublishModal(false);
   const handleShowCheckInModal = () => setShowCheckInModal(true);
   const handleCloseCheckInModal = () => setShowCheckInModal(false);
+
+   // Delete and Cancel function
+  const handleShowDeleteModal = () => setDeleteModal(true);
+  const handleCloseDeleteModal = () => setDeleteModal(false);
+  const handleShowCancelModal = () => setCancelModal(true);
+  const handleCloseCancelModal = () => setCancelModal(false);
+  
+  // Add project function
+  const handleShowAddModal = () => setAddModal(true);
+  const handleCloseAddModal = () => setAddModal(false);
 
   // Publish variables
   const currentUrl = window.location.href;
@@ -40,6 +59,29 @@ function TestingEmail() {
   const [projectName, setProjectName] = useState('ProjectName');
   const [processName, setProcessName] = useState('ProcessName');
   const [diagramName, setDiagramName] = useState('DiagramName');
+
+  // Add Project variable
+  const [newProjectName, setNewProjectName] = useState('');
+
+  // Confirm Publish Modal function
+  const handleShowConfirmPublishModal = () => setShowConfirmPublishModal(true);
+  const handleCloseConfirmPublishModal = () => setShowConfirmPublishModal(false);
+
+  // Confirm Publish variables
+  const [declineReason, setDeclineReason] = useState('');
+
+  // Confirm Publish function
+  const handleConfirmPublish = () => {
+    alert("Diagram Published!");
+    handleCloseConfirmPublishModal();
+  }
+
+  // Decline Publish function
+  const handleDeclinePublish = () => {
+    alert(`Publish declined: ${declineReason}`);
+    setDeclineReason('');
+    handleCloseConfirmPublishModal();
+  }
 
   // Email sending function
   const handleSubmit = (e) => {
@@ -76,18 +118,90 @@ function TestingEmail() {
     handleCloseCheckInModal();
   }
 
+  const handleCancel = () => {
+    alert("Check out canceled!");
+    handleCloseCancelModal();
+  }
+
+  const handleDelete = () => {
+    alert("Diagram successfully deleted!");
+    handleCloseDeleteModal();
+  }
+
+  const handleCreate = () => {
+    alert(`Project, ${newProjectName}, has been successfully added!`);
+    setNewProjectName('');
+    handleCloseAddModal();
+  }
+
   return (
     <div>
       <TopBar onLogoClick={toggleNav} userName={userName} />
       <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
         <div style={{ flexGrow: 1 }}>
+          <button
+            onClick={handleShowAddModal}
+            style={{
+              background: "none",
+              border: "none",
+              position: "fixed",
+              bottom: 25,
+              right: 25,
+              zIndex: 999,
+            }}
+          >
+            <BsFillPlusCircleFill size={50} style={{ color: "#2A85E2" }} />
+          </button>
+          <Modal size="lg" show={showAddModal} onHide={handleCloseAddModal} centered>
+            <Modal.Header closeButton>
+              <Modal.Title className="w-100 text-center">
+                Create New Project
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="text-center">
+              <Form.Group className="d-flex align-items-center">
+                <Form.Label style={{ width: "25%" }}>Project Name</Form.Label>
+                <Form.Control
+                  style={{ width: "75%" }}
+                  type="text"
+                  placeholder = "Enter the new project name here."
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                />
+              </Form.Group>
+            </Modal.Body>
+            <Modal.Footer className="justify-content-center">
+              <Button
+                style={{
+                  color: "#fff",
+                  width: "100px",
+                  fontWeight: "550",
+                  backgroundColor: "#5cb85c",
+                  border: "none",
+                }}
+                onClick={handleCreate}
+              >
+                Create
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
           <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
             <Button variant="primary" onClick={handleShowPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
                 Publish
             </Button>
             <Button variant="secondary" onClick={handleShowCheckInModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
               Check In
+            </Button>
+            <Button variant="warning" onClick={handleShowConfirmPublishModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+              Confirm Publish
+            </Button>
+            <Button variant="warning" onClick={handleShowDeleteModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+              Delete
+            </Button>
+            <Button variant="warning" onClick={handleShowCancelModal} style={{ color: "#1C6091", fontWeight: "550", backgroundColor: "#d2e0ea", border: "none", marginTop: "20px" }}>
+              Cancel
             </Button>
 
             <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
@@ -136,6 +250,80 @@ function TestingEmail() {
               <Modal.Footer>
                 <Button variant="success" onClick={handleCheckIn} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none", display: "block", margin: "0 auto" }}>
                   Check In
+                </Button>
+              </Modal.Footer>
+            </Modal>
+
+            <Modal show={showConfirmPublishModal} onHide={handleCloseConfirmPublishModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Confirm Publish</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px', textAlign: 'center' }}>
+                  <p>If you agree to publish this diagram, please click <strong>Confirm</strong>. If not, please provide a reason and click <strong>Decline</strong>.</p>
+                </div>
+                <Form>
+                  <Form.Group className="mb-3" controlId="declineReason">
+                    <Form.Label style={{ textAlign: 'center', width: '100%' }}>Decline Reason (Optional)</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Type the reason for declining"
+                      value={declineReason}
+                      onChange={(e) => setDeclineReason(e.target.value)}
+                    />
+                  </Form.Group>
+                </Form>
+              </Modal.Body>
+              <Modal.Footer style={{ justifyContent: 'space-around' }}>
+                <Button variant="success" onClick={handleConfirmPublish} style={{ fontWeight: "550", backgroundColor: "#5cb85c", border: "none" }}>
+                  Confirm
+                </Button>
+                <Button variant="danger" onClick={handleDeclinePublish} style={{ fontWeight: "550", border: "none" }}>
+                  Decline
+                </Button>
+              </Modal.Footer>
+            </Modal>
+
+            <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Delete Diagram</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                  <h5>Diagram Path</h5>
+                  <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} - {processName} - {diagramName}</p>
+                </div>
+                <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                  <p>Please click Delete button if you wish to <strong>permanantly</strong> delete the diagram from the database.</p>
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="danger" onClick={handleDelete} style={{ fontWeight: "550", margin: "0 auto" }}>
+                  Delete
+                </Button>
+              </Modal.Footer>
+            </Modal>
+
+            <Modal show={showCancelModal} onHide={handleCloseCancelModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Cancel Confirm</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                  <h5>Diagram Path</h5>
+                  <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{projectName} - {processName} - {diagramName}</p>
+                </div>
+                <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                  <ul style={{ paddingLeft: '20px' }}>
+                    <li>Once you cancel your check out, any changes you made in this draft version will be deleted.</li>
+                  </ul>
+                  <p>Please click Cancel button to cancel your check out to this diagram.</p>
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="danger" onClick={handleCancel} style={{ fontWeight: "550", margin: "0 auto" }}>
+                  Cancel
                 </Button>
               </Modal.Footer>
             </Modal>

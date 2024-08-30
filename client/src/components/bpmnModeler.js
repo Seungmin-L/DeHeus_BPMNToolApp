@@ -847,8 +847,7 @@ function BpmnEditor() {
                         onShare={handleShowPublishModal}
                         onPublish={handleShowConfirmPublishModal}
                         onCancel={handleShowCancelModal}
-                        // 어드민 툴바에 딜리트 다이어그램 아이콘 추가해주세요! 완료하면 밑에 주석 없애시면 됩니당.
-                        // onDelete={handleShowDeleteModal}
+                        onDelete={handleShowDeleteModal}
                     />
                 </div>
                 <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>

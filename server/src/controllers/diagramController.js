@@ -325,6 +325,23 @@ const draftSave = async (req, res) => {
     }
 };
 
+// Log the user activity as 'Requested to publish'
+const requestPublish = async (req, res) => {
+    const { diagramId, userEmail } = req.body;
+
+    try {    
+        await sql.query`
+            INSERT INTO user_activity_log (diagram_id, user_email, updated_time, type)
+            VALUES (${diagramId}, ${userEmail}, GETDATE(), 'Requested to publish');
+        `;
+        res.status(200).json({ message: 'Requested to publish successful' });
+    } catch (error) {
+        console.error('Error during requesting to publish:', error.message);
+        res.status(500).json({ message: 'Requested to publish failed', error: error.message });
+    }
+
+}
+
 const confirmPublish = async (req, res) => {
     try {
         const { xml, diagramId } = req.body;
@@ -626,4 +643,4 @@ const getDraftData = async (req, res) => {
     }
 }
 
-module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, confirmPublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram };
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram };

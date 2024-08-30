@@ -641,6 +641,19 @@ function BpmnEditor() {
             .then((response) => {
                 console.log('Email sent successfully!', response);
                 alert("Email sent successfully!");
+
+                // POST request to log request publish to backend!!
+                axios.post('/api/diagram/requestPublish', {
+                    diagramId: diagramId,
+                    userEmail: userEmail,
+                })
+                .then((response) => {
+                    console.log('Publish request sent to backend:', response.data);
+                })
+                .catch((error) => {
+                    console.error('Error sending publish request to backend:', error);
+                });
+
                 setMessage('');
                 handleClosePublishModal();
             })

@@ -25,7 +25,9 @@ app.post('/api/project/add', projectsController.addProject);
 app.post('/api/processes/add', processesController.addProcess);
 app.post('/api/diagram/add', diagramController.addDiagram);
 app.post('/api/diagram/save', diagramController.draftSave);
+app.post('/api/diagram/requestPublish', diagramController.requestPublish);
 app.post('/api/diagram/publish', diagramController.confirmPublish);
+app.post('/api/diagram/publish/decline', diagramController.declinePublish);
 app.post('/api/diagram/createSub', diagramController.createSubProcess);
 app.post('/api/diagram/updateSubProcess', diagramController.updateSubProcessName);
 app.post('/api/diagram/checkedout', userController.confirmCheckOut);
@@ -35,7 +37,6 @@ app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.
 
 app.get('/api/projects', projectsController.listProjects);
 app.get('/api/processes/:projectId', processesController.listProcesses);
-// app.get('/api/processes/checkIfEditor', processesController.checkIfEditor);
 
 app.get('/api/fetch/user-role', diagramController.getUserRole);
 app.get('/api/fetch/diagram', diagramController.getDiagramPath);

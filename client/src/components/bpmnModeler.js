@@ -62,7 +62,6 @@ function BpmnEditor() {
     const [userRole, setUserRole] = useState(null); // for toolbar view (read-only, contributor, editing)
     const [editor, setEditor] = useState(null);
     const [diagramPath, setDiagramPath] = useState(null);
-    const [contributors, setContributors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isHidden, setIsHidden] = useState(false);
@@ -72,6 +71,7 @@ function BpmnEditor() {
     const [hidePanel, setHidePanel] = useState(false);
     const saveKeys = ['s', 'S'];
     const [showPublishModal, setShowPublishModal] = useState(false);
+    const [contributors, setContributors] = useState([]);
     let modelerInstance = null;
     const searchKeys = ['f', 'F'];
     let priority = 10000;
@@ -401,6 +401,18 @@ function BpmnEditor() {
             })
     }
 
+    // fetch contributors
+    useEffect(() => {
+        console.log(diagramId);
+        axios.get(`/api/diagrams/getContributors/${diagramId}`)
+            .then(response => {
+                const data = response.data;
+                setContributors(data.contributors);
+                console.log(contributors);
+            })
+            .catch(error => console.error('Error fetching contributors:', error));
+    }, [diagramId]);
+
     // hide hierarchy side bar
     const handleHidden = () => {
         setIsHidden(prev => !prev);
@@ -629,6 +641,19 @@ function BpmnEditor() {
             .then((response) => {
                 console.log('Email sent successfully!', response);
                 alert("Email sent successfully!");
+
+                // POST request to log request publish to backend!!
+                axios.post('/api/diagram/requestPublish', {
+                    diagramId: diagramId,
+                    userEmail: userEmail,
+                })
+                .then((response) => {
+                    console.log('Publish request sent to backend:', response.data);
+                })
+                .catch((error) => {
+                    console.error('Error sending publish request to backend:', error);
+                });
+
                 setMessage('');
                 handleClosePublishModal();
             })
@@ -658,6 +683,17 @@ function BpmnEditor() {
     // Decline Publish function
     const handleDeclinePublish = () => {
         alert(`Publish declined: ${declineReason}`);
+        // POST request to log decline publish to backend!!
+        axios.post('/api/diagram/publish/decline', {
+            diagramId: diagramId,
+            // declineReason: declineReason
+        })
+        .then((response) => {
+            // console.log('Decline Publish request sent to backend:', response.data);
+        })
+        .catch((error) => {
+            // console.error('Error sending decline publish request to backend:', error);
+        });
         setDeclineReason('');
         handleCloseConfirmPublishModal();
     }
@@ -792,6 +828,7 @@ function BpmnEditor() {
                         onContributor={handleShowContributorsModal}
                         onShare={handleShowPublishModal}
                         onPublish={handleShowConfirmPublishModal}
+                        // onCancel={handleCancelModal}
                     />
                 </div>
                 <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>

@@ -8,7 +8,7 @@ import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
 import { formatProjectDates } from '../utils/utils';
 import { Form, Button, Modal } from "react-bootstrap";
-import {  BsFillPlusCircleFill } from "react-icons/bs";
+import { BsFillPlusCircleFill } from "react-icons/bs";
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
@@ -54,12 +54,24 @@ function Main() {
 
   const handleCreate = () => {
     // backend here
-    alert(`Project, ${newProjectName}, has been successfully added!`);
 
+    if (projects) {
+      const duplicate = projects.filter((project) => project.name === newProjectName);
+      if (duplicate) {
+        alert(`Project, ${newProjectName}, already exists!`);
+      } else {
+        alert(`Project, ${newProjectName}, has been successfully added!`);
+        axios.post(`http://localhost:3001/api/project/add`, { projectName: newProjectName })
+          .then((res) => {
+            console.log(res);
+          })
+          .catch(err => console.error("Error creating new project: ", err))
+          .finally(() => {
+            window.location.reload();
+          });
+      }
+    }
 
-
-    setNewProjectName('');
-    handleCloseAddModal();
   }
 
   // if (!isAuthenticated) {
@@ -72,7 +84,7 @@ function Main() {
       <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
         <div style={{ flexGrow: 1 }}>
-          { userName == "vnapp.pbmn@deheus.com" && (
+          {userName == "vnapp.pbmn@deheus.com" && (
             <>
               <button
                 onClick={handleShowAddModal}
@@ -99,7 +111,7 @@ function Main() {
                     <Form.Control
                       style={{ width: "75%" }}
                       type="text"
-                      placeholder = "Enter the new project name here."
+                      placeholder="Enter the new project name here."
                       value={newProjectName}
                       onChange={(e) => setNewProjectName(e.target.value)}
                     />
@@ -120,8 +132,8 @@ function Main() {
                   </Button>
                 </Modal.Footer>
               </Modal>
-              </>
-            )}
+            </>
+          )}
           <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
             <div className="mt-4" style={{ width: "85%" }}>
               <h3 className="mb-3">Accessible Projects</h3>

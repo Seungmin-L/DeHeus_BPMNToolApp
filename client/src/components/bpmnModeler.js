@@ -95,6 +95,14 @@ function BpmnEditor() {
     const handleCloseConfirmPublishModal = () => setShowConfirmPublishModal(false);
     const [declineReason, setDeclineReason] = useState('');
 
+    // delete and cancel modal
+    const [showDeleteModal, setDeleteModal] = useState(false);
+    const [showCancelModal, setCancelModal] = useState(false);
+    const handleShowDeleteModal = () => setDeleteModal(true);
+    const handleCloseDeleteModal = () => setDeleteModal(false);
+    const handleShowCancelModal = () => setCancelModal(true);
+    const handleCloseCancelModal = () => setCancelModal(false);
+
     // Publish variables
     const currentUrl = window.location.href;
     const [link] = useState(currentUrl);
@@ -789,6 +797,16 @@ function BpmnEditor() {
         }
     }
 
+    const handleDelete = () => {
+        alert("Diagram successfully deleted!");
+        handleCloseDeleteModal();
+    }
+    
+    const handleCancel = () => {
+        alert("Check out canceled!");
+        handleCloseCancelModal();
+    }
+
 
     if (!isFileValid) {
         return (
@@ -828,7 +846,9 @@ function BpmnEditor() {
                         onContributor={handleShowContributorsModal}
                         onShare={handleShowPublishModal}
                         onPublish={handleShowConfirmPublishModal}
-                        // onCancel={handleCancelModal}
+                        onCancel={handleShowCancelModal}
+                        // 어드민 툴바에 딜리트 다이어그램 아이콘 추가해주세요! 완료하면 밑에 주석 없애시면 됩니당.
+                        // onDelete={handleShowDeleteModal}
                     />
                 </div>
                 <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>
@@ -944,6 +964,49 @@ function BpmnEditor() {
                             </Button>
                             <Button variant="danger" onClick={handleDeclinePublish} style={{ color: "#fff", fontWeight: "550", backgroundColor: "#d9534f", border: "none" }}>
                                 Decline
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Delete Diagram</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                            <h5>Diagram Path</h5>
+                            <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
+                            </div>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                            <p>Please click Delete button if you wish to <strong>permanantly</strong> delete the diagram from the database.</p>
+                            </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="danger" onClick={handleDelete} style={{ fontWeight: "550", margin: "0 auto" }}>
+                            Delete
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={showCancelModal} onHide={handleCloseCancelModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Cancel Confirm</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
+                            <h5>Diagram Path</h5>
+                            <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
+                            </div>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                            <ul style={{ paddingLeft: '20px' }}>
+                                <li>Once you cancel your check out, any changes you made in this draft version will be deleted.</li>
+                            </ul>
+                            <p>Please click Cancel button to cancel your check out to this diagram.</p>
+                            </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="danger" onClick={handleCancel} style={{ fontWeight: "550", margin: "0 auto" }}>
+                            Cancel
                             </Button>
                         </Modal.Footer>
                     </Modal>

@@ -27,6 +27,7 @@ app.post('/api/diagram/add', diagramController.addDiagram);
 app.post('/api/diagram/save', diagramController.draftSave);
 app.post('/api/diagram/requestPublish', diagramController.requestPublish);
 app.post('/api/diagram/publish', diagramController.confirmPublish);
+app.post('/api/diagram/publish/decline', diagramController.declinePublish);
 app.post('/api/diagram/createSub', diagramController.createSubProcess);
 app.post('/api/diagram/updateSubProcess', diagramController.updateSubProcessName);
 app.post('/api/diagram/checkedout', userController.confirmCheckOut);

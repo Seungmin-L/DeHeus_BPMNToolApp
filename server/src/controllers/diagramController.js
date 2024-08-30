@@ -410,7 +410,34 @@ const confirmPublish = async (req, res) => {
     }
 };
 
+// Log the user activity as 'Publish declined for'
+const declinePublish = async (req, res) => {
+    // const { diagramId, declineReason } = req.body;
+    const { diagramId } = req.body;
 
+    try {
+        const result = await sql.query`
+            SELECT user_email
+            FROM diagram_checkout
+            WHERE diagram_id = ${diagramId} AND status = 1;
+        `;
+
+        const userEmail = result.recordset[0]?.user_email;
+
+        if (userEmail) {
+            await sql.query`
+                INSERT INTO user_activity_log (diagram_id, user_email, updated_time, type)
+                VALUES (${diagramId}, ${userEmail}, GETDATE(), 'Publish declined for');
+            `;
+            res.status(200).json({ message: 'Logging publish declined successful' });
+        } else {
+            res.status(404).json({ message: 'No active checkout found for the specified diagram' });
+        }
+    } catch (error) {
+        console.error('Error during logging publish declined:', error.message);
+        res.status(500).json({ message: 'Requested to log publish declined failed', error: error.message });
+    }
+}
 
 const addDiagram = async (req, res) => {
     const { projectId, diagramName, diagramId, userEmail } = req.body;
@@ -643,4 +670,4 @@ const getDraftData = async (req, res) => {
     }
 }
 
-module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram };
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram };

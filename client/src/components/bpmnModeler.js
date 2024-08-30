@@ -683,6 +683,17 @@ function BpmnEditor() {
     // Decline Publish function
     const handleDeclinePublish = () => {
         alert(`Publish declined: ${declineReason}`);
+        // POST request to log decline publish to backend!!
+        axios.post('/api/diagram/publish/decline', {
+            diagramId: diagramId,
+            // declineReason: declineReason
+        })
+        .then((response) => {
+            // console.log('Decline Publish request sent to backend:', response.data);
+        })
+        .catch((error) => {
+            // console.error('Error sending decline publish request to backend:', error);
+        });
         setDeclineReason('');
         handleCloseConfirmPublishModal();
     }

@@ -133,26 +133,26 @@ const getDiagramPath = async (req, res) => {
     }
 };
 
-
+// get contributors for diagram
 const getContributors = async (req, res) => {
     const { diagramId } = req.query;
     const contributors = [];
+    let index = 0;
 
     try {
         const request = new sql.Request();
-
+        // get published user email by date order
         const contributorQuery = `
             SELECT published_by 
             FROM diagram_published
-            WHERE diagram_id = @diagramId;
+            WHERE diagram_id = @diagramId
+            ORDER BY published_at;
         `;
         request.input('diagramId', sql.Int, diagramId);
         const contributorResult = await request.query(contributorQuery);
 
         for (const row of contributorResult.recordset) {
             const userEmail = row.published_by.toLowerCase();
-
-            // Create a new request object for the user query
             const userRequest = new sql.Request();
             const userQuery = `
                 SELECT email, name
@@ -164,7 +164,8 @@ const getContributors = async (req, res) => {
 
             if (userResult.recordset.length > 0) {
                 const { email, name } = userResult.recordset[0];
-                contributors.push({ email, name });
+                index += 1;
+                contributors.push({ email, name, index });
             }
         }
 
@@ -174,7 +175,6 @@ const getContributors = async (req, res) => {
         res.status(500).json({ message: 'Error fetching contributor', error: error.message });
     }
 };
-
 
 // convert function for saving diagram
 function convertXMLToBlob(xmlString) {
@@ -670,4 +670,34 @@ const getDraftData = async (req, res) => {
     }
 }
 
-module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram };
+// check if diagram is publish requested 
+const checkRequested = async (req, res) => {
+    const { diagramId } = req.query;
+    try {
+        const request = new sql.Request();
+        const query = `
+            SELECT TOP 1 type
+            FROM user_activity_log
+            WHERE diagram_id = @diagramId
+              AND type NOT IN ('Edited', 'Viewed')
+              AND type IS NOT NULL
+            ORDER BY updated_time DESC;
+        `;
+        request.input('diagramId', sql.Int, diagramId);
+
+        const result = await request.query(query);
+        console.log("Query Result:", result.recordset);
+
+        if (result.recordset.length > 0 && result.recordset[0].type === "Requested to publish") {
+            res.status(200).json({ requestedToPublish: true });
+        } else {
+            res.status(200).json({ requestedToPublish: false });
+        }
+    } catch (error) {
+        console.error('Error fetching check request:', error.message);
+        res.status(500).json({ message: 'Error fetching check request', error: error.message });
+    }
+}
+
+
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram, checkRequested };

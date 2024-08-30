@@ -37,6 +37,7 @@ function Toolbar({
   onCancel,
   onDelete,
   mode,
+  isRequested,
 }) {
 
   // for fonts

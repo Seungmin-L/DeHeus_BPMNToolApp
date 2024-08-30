@@ -54,9 +54,16 @@ const addProject = (req, res) => {
   const { projectName } = req.body;
   try {
     sql.query(`
+      IF NOT EXISTS( 
+      SELECT 1 FROM project 
+      WHERE
+      name = ${"'" + projectName + "'"}
+      )
+      BEGIN 
       INSERT INTO project
       (name, last_update)
       VALUES (${"'" + projectName + "'"}, GETDATE())
+      END
     `)
       .then((result) => {
         res.status(200).send("Project created succesfully");

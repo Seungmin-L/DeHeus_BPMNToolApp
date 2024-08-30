@@ -72,19 +72,24 @@ BpmnSearchProvider.prototype.find = function (pattern) {
     if (element.businessObject &&
       element.businessObject.extensionElements) {
       var parameters = element.businessObject.extensionElements.values[0].values;
-      for (let i = 0; i < parameters.length; i++) {
-        let tokens = matchAndSplit(parameters[i].name || '', pattern);
-        console.log(tokens);
-        tertiaryTokens = tertiaryTokens.concat(tokens);
+      if (parameters) {
+        for (let i = 0; i < parameters.length; i++) {
+          let tokens = matchAndSplit(parameters[i].name || '', pattern);
+          console.log(tokens);
+          tertiaryTokens = tertiaryTokens.concat(tokens);
+        }
       }
     }
-
     return {
       primaryTokens: matchAndSplit(getLabel(element), pattern),
       secondaryTokens: matchAndSplit(element.id, pattern),
       tertiaryTokens: tertiaryTokens,
       fourthTokens: matchAndSplit(element.businessObject.documentation || '', pattern),
       fifthTokens: typeof element.businessObject.attachment === 'string' ? arrayMatchAndSplit([...element.businessObject.attachment.split(',')], pattern) : arrayMatchAndSplit(element.businessObject.attachment, pattern),
+      sixthTokens: matchAndSplit(element.businessObject.endToEndProp || '', pattern),
+      seventhTokens: matchAndSplit(element.businessObject.functionProp || '', pattern),
+      eighthTokens: matchAndSplit(element.businessObject.departmentProp || '', pattern),
+      ninthTokens: matchAndSplit(element.businessObject.domainProp || '', pattern),
       element: element
     };
   });
@@ -92,7 +97,7 @@ BpmnSearchProvider.prototype.find = function (pattern) {
 
   // exclude non-matched elements
   elements = filter(elements, function (element) {
-    return hasMatched(element.primaryTokens) || hasMatched(element.secondaryTokens) || hasMatched(element.tertiaryTokens) || hasMatched(element.fourthTokens) || hasMatched(element.fifthTokens);
+    return hasMatched(element.primaryTokens) || hasMatched(element.secondaryTokens) || hasMatched(element.tertiaryTokens) || hasMatched(element.fourthTokens) || hasMatched(element.fifthTokens) || hasMatched(element.sixthTokens) || hasMatched(element.seventhTokens) || hasMatched(element.eighthTokens) || hasMatched(element.ninthTokens);
   });
 
   elements = sortBy(elements, function (element) {
@@ -163,11 +168,11 @@ function matchAndSplit(text, pattern) {
     });
 
     if (pattern.length + i < text.length) {
-      if(isDocumentation && text.length - (pattern.length + i) > 10){
+      if (isDocumentation && text.length - (pattern.length + i) > 10) {
         tokens.push({
           normal: originalText.substr(pattern.length + i, 10) + "..."
-        }); 
-      }else{
+        });
+      } else {
         tokens.push({
           normal: originalText.substr(pattern.length + i, text.length)
         });

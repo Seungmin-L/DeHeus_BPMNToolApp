@@ -104,3 +104,7 @@
 .publish-button {
     width: 33px !important;
 }
+
+.delete-button {
+    fill: #e40000;
+}

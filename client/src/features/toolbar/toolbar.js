@@ -35,6 +35,7 @@ function Toolbar({
   onShare,
   onPublish,
   onCancel,
+  onDelete,
   mode,
 }) {
 
@@ -129,6 +130,9 @@ function Toolbar({
             <button onClick={onCancel} dangerouslySetInnerHTML={{ __html: Icons.cancel }} title="cancel" />
           </>
         )}
+        {mode === "admin" && ( // if admin
+          <button onClick={onDelete} dangerouslySetInnerHTML={{ __html: Icons.delete }} className='delete-button' title="delete"/>
+        )}
         <button onClick={onContributor} dangerouslySetInnerHTML={{ __html: Icons.user }} title="contributors" />
         {mode === "contributor" && ( // if contributor
           <>
@@ -146,12 +150,7 @@ function Toolbar({
 
         )}
         {mode === "admin" && ( // if admin
-          <button
-            onClick={onPublish}
-            dangerouslySetInnerHTML={{ __html: Icons.publish }}
-            className='publish-button'
-            title="publish"
-          />
+          <button onClick={onPublish} dangerouslySetInnerHTML={{ __html: Icons.publish }} className='publish-button' title="publish"/>
         )}
       </div>
 

@@ -49,6 +49,47 @@ const confirmCheckOut = async (req, res) => {
 }
 
 
+const cancelCheckOut = async (req, res) => {
+    const { diagramId, userEmail } = req.body;
+    // console.log(diagramId);  // 디버깅용 주석 처리
+    // console.log(userEmail);  // 디버깅용 주석 처리
+
+    try {
+        // Delete current draft version if exists
+        await sql.query`
+            DELETE FROM diagram_draft
+            WHERE diagram_id = ${diagramId}
+            AND created_by = ${userEmail}
+        `;
+
+        // Automatically checkout after publishing
+        await sql.query`
+            DELETE FROM diagram_checkout
+            WHERE diagram_id = ${diagramId}
+            AND user_email = ${userEmail}
+        `;
+
+        // Automatically set checkedout_by to NULL after publishing
+        await sql.query`
+            UPDATE diagram
+            SET checkedout_by = NULL
+            WHERE id = ${diagramId}
+        `;
+
+        // Log the user activity as 'Checkout cancelled for'
+        await sql.query`
+            INSERT INTO user_activity_log (diagram_id, user_email, updated_time, type)
+            VALUES (${diagramId}, ${userEmail}, GETDATE(), 'Checkout cancelled for');
+        `;
+
+        res.status(200).json({ message: 'Cancel checked-out successful' });
+    } catch (error) {
+        console.error('Error during cancel checked-out:', error.message);
+        res.status(500).json({ message: 'Cancel checked-out failed', error: error.message });
+    }
+}
+
+
 
 // For My Page Listing
 const getUserBasicInfo = async (identifier) => {
@@ -151,4 +192,4 @@ const getUserInfo = async (req, res) => {
 };
 
 
-module.exports = { getUserInfo, confirmCheckOut };
+module.exports = { getUserInfo, confirmCheckOut, cancelCheckOut };

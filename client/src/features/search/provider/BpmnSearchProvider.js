@@ -74,8 +74,7 @@ BpmnSearchProvider.prototype.find = function (pattern) {
       var parameters = element.businessObject.extensionElements.values[0].values;
       if (parameters) {
         for (let i = 0; i < parameters.length; i++) {
-          let tokens = matchAndSplit(parameters[i].name || '', pattern);
-          console.log(tokens);
+          let tokens = matchAndSplitProperties(parameters[i].name || '', pattern);
           tertiaryTokens = tertiaryTokens.concat(tokens);
         }
       }
@@ -86,10 +85,10 @@ BpmnSearchProvider.prototype.find = function (pattern) {
       tertiaryTokens: tertiaryTokens,
       fourthTokens: matchAndSplit(element.businessObject.documentation || '', pattern),
       fifthTokens: typeof element.businessObject.attachment === 'string' ? arrayMatchAndSplit([...element.businessObject.attachment.split(',')], pattern) : arrayMatchAndSplit(element.businessObject.attachment, pattern),
-      sixthTokens: matchAndSplit(element.businessObject.endToEndProp || '', pattern),
-      seventhTokens: matchAndSplit(element.businessObject.functionProp || '', pattern),
-      eighthTokens: matchAndSplit(element.businessObject.departmentProp || '', pattern),
-      ninthTokens: matchAndSplit(element.businessObject.domainProp || '', pattern),
+      sixthTokens: matchAndSplitProperties(element.businessObject.endToEndProp || '', pattern),
+      seventhTokens: matchAndSplitProperties(element.businessObject.functionProp || '', pattern),
+      eighthTokens: matchAndSplitProperties(element.businessObject.departmentProp || '', pattern),
+      ninthTokens: matchAndSplitProperties(element.businessObject.domainProp || '', pattern),
       element: element
     };
   });
@@ -194,6 +193,58 @@ function matchAndSplit(text, pattern) {
  *
  * @return {Token[]}
  */
+function matchAndSplitProperties(text, pattern) {
+  var tokens = [];
+  if (!text) {
+    return tokens;
+  }
+
+  if (text === '') {
+    return tokens;
+  }
+
+  var originalText = text;
+
+  if (typeof text === 'string') {
+    text = text.toLowerCase();
+  } else {
+    return;
+  }
+
+  pattern = pattern.toLowerCase();
+
+  var i = text.indexOf(pattern);
+
+  if (i > -1) {
+    if (i !== 0) {
+      tokens.push({
+        normal: originalText.substr(0, i)
+      });
+    }
+
+    if (pattern.length + i < text.length) {
+      tokens.push({
+        matched: originalText.substr(i, pattern.length)
+      });
+      tokens.push({
+        normal: originalText.substr(pattern.length + i, text.length) + "<br/>"
+      });
+    } else {
+      tokens.push({
+        matched: originalText.substr(i, pattern.length) + "<br/>"
+      });
+    }
+  }
+  return tokens;
+}
+
+
+/**
+ * @param {string} text
+ * @param {string} pattern
+ *
+ * @return {Token[]}
+ */
 function arrayMatchAndSplit(array, pattern) {
   var tokens = [];
   if (!array) {
@@ -216,13 +267,16 @@ function arrayMatchAndSplit(array, pattern) {
         });
       }
 
-      tokens.push({
-        matched: originalText.substr(i, pattern.length)
-      });
-
       if (pattern.length + i < text.length) {
         tokens.push({
-          normal: originalText.substr(pattern.length + i, text.length)
+          matched: originalText.substr(i, pattern.length)
+        });
+        tokens.push({
+          normal: originalText.substr(pattern.length + i, text.length) + "<br/>"
+        });
+      } else {
+        tokens.push({
+          matched: originalText.substr(i, pattern.length) + "<br/>"
         });
       }
     }

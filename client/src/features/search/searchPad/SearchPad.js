@@ -320,6 +320,26 @@ import {
       createInnerTextNode(node, result.fifthTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
     }
 
+    // sixth tokens (represent element end to end) are always available
+    if(result.sixthTokens.length > 0){
+      createInnerTextNode(node, result.sixthTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
+    }
+
+    // seventh tokens (represent element function) are always available
+    if(result.seventhTokens.length > 0){
+      createInnerTextNode(node, result.seventhTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
+    }
+
+    // fifth tokens (represent element department) are always available
+    if(result.eighthTokens.length > 0){
+      createInnerTextNode(node, result.eighthTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
+    }
+
+    // ninth tokens (represent element domain) are always available
+    if(result.ninthTokens.length > 0){
+      createInnerTextNode(node, result.ninthTokens, SearchPad.RESULT_SECONDARY_HTML); // Add this line
+    }
+
     domAttr(node, SearchPad.RESULT_ID_ATTRIBUTE, id);
   
     this._resultsContainer.appendChild(node);
@@ -545,13 +565,19 @@ import {
   function createHtmlText(tokens) {
     var htmlText = '';
     var text = '';
-
+    let length = "<br/>".length;
     if (Array.isArray(tokens)) {
       tokens.forEach(function(token, index) {
         if(token.matched){
-          text += '<strong class="' + SearchPad.RESULT_HIGHLIGHT_CLASS + '">' + escapeHTML(token.matched) + '</strong>';
+          if(token.matched.endsWith("<br/>")){
+            text += '<strong class="' + SearchPad.RESULT_HIGHLIGHT_CLASS + '">' + escapeHTML(token.matched.slice(0, token.matched.length - length)) + '</strong>';
+            if(index < tokens.length - 1)text += '<br/>';
+          }else text += '<strong class="' + SearchPad.RESULT_HIGHLIGHT_CLASS + '">' + escapeHTML(token.matched) + '</strong>';
         } else if (token) {
-          text += ('' + escapeHTML(token.normal) + '');
+          if(token.normal.endsWith("<br/>")){
+            text += ('' + escapeHTML(token.normal.slice(0, token.normal.length - length)) + '');
+            if(index < tokens.length - 1)text += '<br/>';
+          }else text += ('' + escapeHTML(token.normal) + '');
         }
         htmlText = text;
         // console.log('token:');

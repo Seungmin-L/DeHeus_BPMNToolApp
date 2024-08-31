@@ -128,7 +128,7 @@ function ListSingleProject() {
           className={isExpanded ? rowClass(level) : ""}
         >
           <td style={{ paddingLeft: level * 20 + "px", width: "60%" }}>
-            <span style={{ marginRight: "5px" }}>
+            <span style={{ margin: "0 5px" }}>
               {hasChildren ? (
                 isExpanded ? (
                   <BsChevronDown />
@@ -349,8 +349,8 @@ function ListSingleProject() {
               </Button>
             </Modal.Footer>
           </Modal>
-          <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
-            <div className="mt-4" style={{ width: "85%" }}>
+          <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark overflow-auto">
+            <div className="my-4" style={{ width: "85%" }}>
               <h3 className="mb-3">{projectName}</h3>
               <style type="text/css">
                 {`

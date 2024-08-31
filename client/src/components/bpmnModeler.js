@@ -180,6 +180,19 @@ function BpmnEditor() {
         }
     };
 
+    // fetch diagram publish isRequested
+    const checkRequested = async () => {
+        try {
+            const response = await axios.get('/api/diagram/checkRequested', {
+                params: { diagramId }
+            });
+            setIsRequest(response.data.requestedToPublish);
+            console.log(response.data.requestedToPublish)
+        } catch (err) {
+            console.error("An error occurred while fetching isRequest:", err.message);
+        }
+    };
+
     useEffect(() => {
         if (isAuthenticated && accounts.length > 0) {
             const userName = accounts[0].username;
@@ -189,6 +202,7 @@ function BpmnEditor() {
         fetchUserRole();
         fetchDiagramPath();
         fetchContributors();
+        checkRequested();
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -411,26 +425,17 @@ function BpmnEditor() {
     }
 
     // fetch contributors
-    useEffect(() => {
-        axios.get(`/api/diagrams/getContributors/${diagramId}`)
-            .then(response => {
-                const data = response.data;
-                setContributors(data.contributors);
-                // console.log(contributors);
-            })
-            .catch(error => console.error('Error fetching contributors:', error));
-    }, [diagramId]);
+    // useEffect(() => {
+    //     axios.get(`/api/diagrams/getContributors/${diagramId}`)
+    //         .then(response => {
+    //             const data = response.data;
+    //             setContributors(data.contributors);
+    //             // console.log(contributors);
+    //         })
+    //         .catch(error => console.error('Error fetching contributors:', error));
+    // }, [diagramId]);
 
-    // fetch diagram publish isRequested
-    useEffect(() => {
-        axios.get(`/api/diagram/checkRequested/${diagramId}`)
-            .then(response => {
-                const data = response.data;
-                setIsRequest(data.requestedToPublish);
-                console.log(isRequested);
-            })
-            .catch(error => console.error('Error fetching isRequested:', error));
-    }, [diagramId]);
+
 
     // hide hierarchy side bar
     const handleHidden = () => {
@@ -657,7 +662,7 @@ function BpmnEditor() {
                 alert("Email sent successfully!");
 
                 // POST request to log request publish to backend!!
-                axios.post('/api/diagram/requestPublish', {
+                axios.post('http://localhost:3001/api/diagram/requestPublish', {
                     diagramId: diagramId,
                     userEmail: userEmail,
                 })

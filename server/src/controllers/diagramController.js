@@ -485,7 +485,7 @@ async function getLatestPublishedDiagram(projectId, diagramId) {
         request.input('diagramId', sql.Int, diagramId);
 
         const result = await request.query(query);
-        console.log("Query Result:", result.recordset);
+        // console.log("Query Result:", result.recordset);
 
         if (result.recordset.length > 0) {
             const { file_data, file_type, published_at, diagramName } = result.recordset[0];
@@ -571,7 +571,7 @@ async function getLatestDraftDiagram(diagramId, userEmail) {
         request.input('userEmail', sql.VarChar(MAX), userEmail);
 
         const result = await request.query(query);
-        console.log("Query Result:", result.recordset);
+        // console.log("Query Result:", result.recordset);
 
         if (result.recordset.length > 0) {
             const { file_data, file_type, diagramName } = result.recordset[0];
@@ -642,7 +642,7 @@ const checkNewDiagram = async (diagramId) => {
         request.input('diagramId', sql.Int, diagramId);
 
         const result = await request.query(query);
-        console.log("Query Result:", result.recordset);
+        // console.log("Query Result:", result.recordset);
 
         if (result.recordset.length === 0) {
             return { message: "available", id: diagramId };
@@ -673,6 +673,7 @@ const getDraftData = async (req, res) => {
 // check if diagram is publish requested 
 const checkRequested = async (req, res) => {
     const { diagramId } = req.query;
+    console.log("Received diagramId:", diagramId); // Add this line to log the diagramId
     try {
         const request = new sql.Request();
         const query = `

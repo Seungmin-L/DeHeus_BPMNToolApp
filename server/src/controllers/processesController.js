@@ -42,7 +42,7 @@ const listProcesses = async (req, res) => {
         dc.expiry_time,
         dc.status,
         u.name AS userName,
-        dp.published_at AS lastUpdate,
+        dp.lastUpdate,
         dr.parent_diagram_id,
         dr.child_diagram_id
       FROM 
@@ -50,8 +50,12 @@ const listProcesses = async (req, res) => {
         LEFT JOIN diagram d ON p.id = d.project_id
         LEFT JOIN diagram_checkout dc ON d.id = dc.diagram_id AND dc.status = 1
         LEFT JOIN [user] u ON dc.user_email = u.email
-        LEFT JOIN diagram_published dp ON d.id = dp.diagram_id
         LEFT JOIN diagram_relation dr ON d.id = dr.child_diagram_id
+        LEFT JOIN (
+          SELECT diagram_id, MAX(published_at) AS lastUpdate
+          FROM diagram_published
+          GROUP BY diagram_id
+        ) dp ON d.id = dp.diagram_id
       WHERE 
         p.id = @projectId
       ORDER BY 

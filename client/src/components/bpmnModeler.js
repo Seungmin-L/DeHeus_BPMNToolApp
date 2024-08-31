@@ -802,9 +802,24 @@ function BpmnEditor() {
         handleCloseDeleteModal();
     }
     
-    const handleCancel = () => {
-        alert("Check out canceled!");
-        handleCloseCancelModal();
+    const handleCancelCheckout = async () => {
+        try {
+            // console.log(diagramId);  // 디버깅용 주석 처리
+            // console.log(userEmail);  // 디버깅용 주석 처리
+            const response = await axios.post('/api/diagram/cancelCheckout', { diagramId, userEmail });
+
+            if (response.status === 200) {
+                alert("Checked-out canceled!");
+                handleCloseCancelModal();
+                window.location.reload();
+            } else {
+                console.error("Cancel Checked-out failed:", response.data.message);
+                alert("Cancel Checked-out failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error during cancel checked-out:", error.message);
+            alert("Error during cancel checked-out. Please try again.");
+        }
     }
 
 
@@ -1004,7 +1019,7 @@ function BpmnEditor() {
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button variant="danger" onClick={handleCancel} style={{ fontWeight: "550", margin: "0 auto" }}>
+                            <Button variant="danger" onClick={handleCancelCheckout} style={{ fontWeight: "550", margin: "0 auto" }}>
                             Cancel
                             </Button>
                         </Modal.Footer>

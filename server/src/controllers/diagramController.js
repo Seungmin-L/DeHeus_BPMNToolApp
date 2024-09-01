@@ -673,7 +673,6 @@ const getDraftData = async (req, res) => {
 // check if diagram is publish requested 
 const checkRequested = async (req, res) => {
     const { diagramId } = req.query;
-    console.log("Received diagramId:", diagramId); // Add this line to log the diagramId
     try {
         const request = new sql.Request();
         const query = `
@@ -687,7 +686,7 @@ const checkRequested = async (req, res) => {
         request.input('diagramId', sql.Int, diagramId);
 
         const result = await request.query(query);
-        console.log("Query Result:", result.recordset);
+        // console.log("Query Result:", result.recordset);
 
         if (result.recordset.length > 0 && result.recordset[0].type === "Requested to publish") {
             res.status(200).json({ requestedToPublish: true });
@@ -700,5 +699,25 @@ const checkRequested = async (req, res) => {
     }
 }
 
+// return all diagrams
+const getAllDiagrams = async (req, res) => {
+    const { projectId } = req.query;
+    try {
+        const request = new sql.Request();
+        const diagramQuery = `
+            SELECT id, name 
+            FROM diagram
+            WHERE project_id = @projectId;
+        `;
+        request.input('projectId', sql.VarChar, projectId);
+        const result = await request.query(diagramQuery);
+        res.status(200).json({ result });
+    } catch (error) {
+        console.error('Error fetching diagrams:', error.message);
+        res.status(500).json({ message: 'Error fetching diagrams', error: error.message });
+    }
+}
 
-module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram, checkRequested };
+
+
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram, checkRequested, getAllDiagrams };

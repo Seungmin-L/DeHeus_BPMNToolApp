@@ -47,7 +47,7 @@ function ListSingleProject() {
           // console.log("Fetched processes:", response.data);  // 디버깅 용도라서 주석 처리!!
           const formattedProcesses = formatProcessInfos(response.data.processes);
           // console.log(response.data.processes);  // 디버깅 용도라서 주석 처리!!
-          console.log(formattedProcesses);
+          // console.log(formattedProcesses);
           setProcesses(formattedProcesses);
           setProjectName(response.data.projectName);
           setOptions(response.data.processes.map(process => ({
@@ -231,7 +231,7 @@ function ListSingleProject() {
 
   return (
     <div>
-      <TopBar onLogoClick={toggleNav} userName={userName} />
+      <TopBar onLogoClick={toggleNav} userName={userName} projectId={projectId} />
       <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
         <div style={{ flexGrow: 1 }}>

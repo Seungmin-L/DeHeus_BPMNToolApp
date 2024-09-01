@@ -45,6 +45,8 @@ app.get('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.g
 app.get('/api/diagrams/getContributors', diagramController.getContributors);
 app.get('/api/diagram/getDraft', diagramController.getDraftData);
 app.get('/api/diagram/checkRequested', diagramController.checkRequested);
+app.get('/api/diagrams/getAll', diagramController.getAllDiagrams);
+
 
 app.get('/api/mypage/user/:identifier', userController.getUserInfo);
 app.get('/api/admin/users', adminController.getUserList);

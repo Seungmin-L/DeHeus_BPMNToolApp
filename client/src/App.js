@@ -1,4 +1,4 @@
-import { MsalProvider } from "@azure/msal-react";
+import { MsalProvider, useIsAuthenticated } from "@azure/msal-react";
 import React from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
@@ -13,6 +13,12 @@ import TestingEmail from "./components/TestingEmail";
 import BpmnEditor from "./components/bpmnModeler";
 import { NavigationHelper } from "./util/navigation";
 import PageForNav from "./components/common/PageForNavigation";
+import NoAuth from "./components/common/NoAuth";
+
+function ProtectedRoute({ element }) {
+  const isAuthenticated = useIsAuthenticated();
+  return isAuthenticated ? element : <NoAuth />;
+}
 
 function App() {
   return (
@@ -21,15 +27,15 @@ function App() {
         <NavigationHelper/>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/main" element={<Main />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/mypage" element={<MyPage />} />
-          <Route path="/project/:projectId" element={<ListSingleProject />} />
-          <Route path="/project/:projectId/:diagramName" element={<BpmnEditor />} />
-          <Route path="/testingemail" element={<TestingEmail />} />
-          <Route path="*" element={<Error />} />
-          <Route path="/:filename" element={<BpmnEditor />} />
-          <Route path="/project/:projectId/:diagramName/:diagramId" element={<PageForNav/>}/>
+          <Route path="/main" element={<ProtectedRoute element={<Main />} />} />
+          <Route path="/admin" element={<ProtectedRoute element={<Admin />} />} />
+          <Route path="/mypage" element={<ProtectedRoute element={<MyPage />} />} />
+          <Route path="/project/:projectId" element={<ProtectedRoute element={<ListSingleProject />} />} />
+          <Route path="/project/:projectId/:diagramName" element={<ProtectedRoute element={<BpmnEditor />} />} />
+          <Route path="/testingemail" element={<ProtectedRoute element={<TestingEmail />} />} />
+          <Route path="*" element={<ProtectedRoute element={<Error />} />} />
+          <Route path="/:filename" element={<ProtectedRoute element={<BpmnEditor />} />} />
+          <Route path="/project/:projectId/:diagramName/:diagramId" element={<ProtectedRoute element={<PageForNav/>}/>} />
         </Routes>
       </Router>
     </MsalProvider>

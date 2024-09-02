@@ -21,6 +21,7 @@ import LeftNavBar from "./common/LeftNavBar";
 import TopBar from "./common/TopBar";
 import { convertUTCToLocal } from '../utils/utils';
 import {  BsFillPlusCircleFill } from "react-icons/bs";
+import NoAuth from "./common/NoAuth";
 
 function Admin() {
   const isAuthenticated = useIsAuthenticated();
@@ -201,6 +202,10 @@ function Admin() {
     projects: [],
   });
 
+  if (userName!='vnapp.pbmn@deheus.com') {
+    return <NoAuth />;
+  }
+  
   const handleShowNewUserModal = () => {
     setNewUser({
       email: '',

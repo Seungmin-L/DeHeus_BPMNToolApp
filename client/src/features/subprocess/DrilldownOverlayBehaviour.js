@@ -200,7 +200,6 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
     const projectId = window.location.pathname.split("/")[2];
     const name = element.businessObject.name;
     const { userName, diagramId } = getLocation();
-    console.log(userName, diagramId);
     if (name) {
       axios.post(`${API_URL}/api/diagram/createSub`, {
         projectId: projectId,
@@ -211,7 +210,6 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
       })
         .then((res) => {
           if (res.data.message.endsWith("exists")) {
-            console.log(res.data);
             axios.get(`${API_URL}/api/diagrams/get-diagram-with-project/${projectId}/${res.data.data.id}/${userName}`)
               .then((response) => {
                 if (response.data.fileData) {
@@ -220,14 +218,18 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
                   const data = { id: res.data.data.id, url: url, userName: userName, fileData: fileData }
                   const newWindow = window.open(url, "_blank");
                   newWindow.addEventListener("load", () => {
-                    newWindow.postMessage(data, window.location.origin);
+                    setTimeout(() => {
+                      newWindow.postMessage(data, window.location.origin);
+                    }, 500);
                   });
                 }else{
                   const url = `/project/${projectId}/${name.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
                   const data = { id: res.data.data.id, url: url, userName: userName }
                   const newWindow = window.open(url, "_blank");
                   newWindow.addEventListener("load", () => {
-                    newWindow.postMessage(data, window.location.origin);
+                    setTimeout(() => {
+                      newWindow.postMessage(data, window.location.origin);
+                    }, 500);
                   });
                 }
               }).catch((error) => {
@@ -241,12 +243,13 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
             // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
             // console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
           } else {
-            console.log(res.data);
             const url = `/project/${projectId}/${res.data.data.name.replace(/ /g, '-')}`;
             const newWindow = window.open(url, "_blank");
             const data = { id: res.data.data.id, url: url, userName: userName };
             newWindow.addEventListener("load", () => {
-              newWindow.postMessage(data, window.location.origin);
+              setTimeout(() => {
+                newWindow.postMessage(data, window.location.origin);
+              }, 500);
             });
           }
         })

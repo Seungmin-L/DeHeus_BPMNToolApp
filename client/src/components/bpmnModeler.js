@@ -207,7 +207,6 @@ function BpmnEditor() {
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
-
         modelerInstance = new BpmnModeler({
             container: container.current,
             keyboard: { bindTo: document },
@@ -254,6 +253,7 @@ function BpmnEditor() {
                 }
             }
         });
+
         // Import file or create a new diagram
         if (importXML) {
             modelerInstance.importXML(importXML)
@@ -695,7 +695,7 @@ function BpmnEditor() {
         const serviceId = 'service_deheusvn_bpmnapp';
         const templateId = 'template_rfow6sk';
         const publicKey = 'oQHqsgvCGRFGdRGwg';
-        
+
         const templateParams = {
             to_email: 'RequestUserEmail', // set User
             to_name: 'RequestUserName', // set User
@@ -713,13 +713,13 @@ function BpmnEditor() {
                 axios.post(`${API_URL}/api/diagram/publish/decline`, {
                     diagramId: diagramId
                 })
-                .then((response) => {
-                    console.log('Decline Publish request sent to backend:', response.data);
-                })
-                .catch((error) => {
-                    console.error('Error sending decline publish request to backend:', error);
-                });
-                
+                    .then((response) => {
+                        console.log('Decline Publish request sent to backend:', response.data);
+                    })
+                    .catch((error) => {
+                        console.error('Error sending decline publish request to backend:', error);
+                    });
+
                 setDeclineReason('');
                 handleCloseConfirmPublishModal();
                 window.location.reload();
@@ -834,7 +834,7 @@ function BpmnEditor() {
             alert("Failed to delete diagram.");
         }
     }
-    
+
     const handleCancelCheckout = async () => {
         try {
             // console.log(diagramId);  // 디버깅용 주석 처리
@@ -920,27 +920,27 @@ function BpmnEditor() {
                     </div>
                 </div>
                 <div>
-                <Modal show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
-                    <Modal.Header closeButton>
-                        <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px', fontWeight: 'bold' }}>
-                                <div style={{ textAlign: 'left' }}>Name</div>
-                                <div style={{ textAlign: 'left' }}>Email</div>
-                                <div style={{ textAlign: 'left' }}>Version</div>
-                            </div>
-                            {contributors.length > 0 ? contributors.map((contributor, index) => (
-                                <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px' }}>
-                                    <div style={{ textAlign: 'left' }}>{contributor.name}</div>
-                                    <div style={{ textAlign: 'left' }}>{contributor.email}</div>
-                                    <div style={{ textAlign: 'left' }}>#{contributor.index}</div>
+                    <Modal show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px', fontWeight: 'bold' }}>
+                                    <div style={{ textAlign: 'left' }}>Name</div>
+                                    <div style={{ textAlign: 'left' }}>Email</div>
+                                    <div style={{ textAlign: 'left' }}>Version</div>
                                 </div>
-                            )) : <div>No contributors found.</div>}
-                        </div>
-                    </Modal.Body>
-                </Modal>
+                                {contributors.length > 0 ? contributors.map((contributor, index) => (
+                                    <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px' }}>
+                                        <div style={{ textAlign: 'left' }}>{contributor.name}</div>
+                                        <div style={{ textAlign: 'left' }}>{contributor.email}</div>
+                                        <div style={{ textAlign: 'left' }}>#{contributor.index}</div>
+                                    </div>
+                                )) : <div>No contributors found.</div>}
+                            </div>
+                        </Modal.Body>
+                    </Modal>
 
 
 
@@ -1036,10 +1036,10 @@ function BpmnEditor() {
                                 <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                            <ul style={{ paddingLeft: '20px' }}>
-                                <li>Once you delete this diagram, <strong>ALL SUB DIAGRAMS</strong> under this will also be deleted.</li>
-                            </ul>
-                            <p>Are you sure? Please click Delete button if you wish to <strong>PERMANENTLY</strong> delete the diagram from the database.</p>
+                                <ul style={{ paddingLeft: '20px' }}>
+                                    <li>Once you delete this diagram, <strong>ALL SUB DIAGRAMS</strong> under this will also be deleted.</li>
+                                </ul>
+                                <p>Are you sure? Please click Delete button if you wish to <strong>PERMANENTLY</strong> delete the diagram from the database.</p>
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
@@ -1067,7 +1067,7 @@ function BpmnEditor() {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="danger" onClick={handleCancelCheckout} style={{ fontWeight: "550", margin: "0 auto" }}>
-                            Cancel
+                                Cancel
                             </Button>
                         </Modal.Footer>
                     </Modal>

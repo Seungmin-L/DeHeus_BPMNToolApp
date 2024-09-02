@@ -385,7 +385,7 @@ function BpmnEditor() {
         if (userRole) {
             if (userRole === 'editing') {
                 axios.get(`${API_URL}/api/diagram/getDraft`, {
-                    params: { diagramId: diagramId, userEmail: userEmail }
+                    params: { projectId: projectId, diagramId: diagramId, userEmail: userEmail }
                 })
                     .then((res) => {
                         setDiagramXML(res.data.fileData);

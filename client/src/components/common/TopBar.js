@@ -15,6 +15,7 @@ import logo from "../../assets/logos/logo_deheus.png";
 import { useNavigate, useParams } from "react-router-dom";
 
 function TopBar({ onLogoClick, userName, projectId }) {
+  const API_URL = process.env.REACT_APP_API_URL;
   const { instance } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ function TopBar({ onLogoClick, userName, projectId }) {
   useEffect(() => {
     if (isAuthenticated) {
       axios
-        .get(`http://localhost:3001/api/diagrams/getAll`, {
+        .get(`${API_URL}/api/diagrams/getAll`, {
           params: { projectId }
         })
         .then((response) => {

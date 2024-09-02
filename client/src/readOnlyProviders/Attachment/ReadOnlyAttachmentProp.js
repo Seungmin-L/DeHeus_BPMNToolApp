@@ -55,6 +55,7 @@ var hooks = require('@bpmn-io/properties-panel/preact/hooks');
 var classnames = require('classnames');
 
 function AttachmentList(props) {
+  const API_URL = process.env.REACT_APP_API_URL;
   const {
     diagramId,
     element,
@@ -67,7 +68,7 @@ function AttachmentList(props) {
   const onClick = e => {
     e.stopPropagation();
     // Function for getting selected attachment file
-    axios.get(`/api/attachments/${diagramId}/${nodeId}/${e.target.name}`, { responseType: 'blob' })
+    axios.get(`${API_URL}/api/attachments/${diagramId}/${nodeId}/${e.target.name}`, { responseType: 'blob' })
       .then((res) => {
         var url = URL.createObjectURL(res.data);
         window.open(url);

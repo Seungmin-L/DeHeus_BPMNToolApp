@@ -24,6 +24,7 @@ import { formatProcessInfos } from '../utils/utils';
 
 
 function ListSingleProject() {
+  const API_URL = process.env.REACT_APP_API_URL;
   const { projectId } = useParams();
   const isAuthenticated = useIsAuthenticated();
   const { accounts } = useMsal();
@@ -40,7 +41,7 @@ function ListSingleProject() {
     if (isAuthenticated) {
       console.log(projectId, userName);
       axios
-        .get(`/api/processes/${projectId}`, {
+        .get(`${API_URL}/api/processes/${projectId}`, {
           params: { userName }
         })
         .then((response) => {
@@ -79,7 +80,7 @@ function ListSingleProject() {
     // console.log("Item object:", item);  // 디버깅 용도라서 주석 처리!!
 
     try {
-      const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${item.id}/${userName}`);
+      const response = await axios.get(`${API_URL}/api/diagrams/get-diagram-with-project/${projectId}/${item.id}/${userName}`);
       // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
       // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
       if (response.data.fileData) {
@@ -186,7 +187,7 @@ function ListSingleProject() {
 
   const handleCreate = () => {
     if (formType === "Process" && processName !== "") {
-      axios.post(`http://localhost:3001/api/processes/add`, {
+      axios.post(`${API_URL}/api/processes/add`, {
         projectId: projectId,
         processName: processName,
         userEmail: userName
@@ -207,7 +208,7 @@ function ListSingleProject() {
           "for Process:",
           selectedProcess
         );
-        axios.post(`http://localhost:3001/api/diagram/add`, {
+        axios.post(`${API_URL}/api/diagram/add`, {
           projectId: projectId,
           diagramName: diagramName,
           diagramId: selectedProcess,

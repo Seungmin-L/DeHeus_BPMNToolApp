@@ -13,7 +13,7 @@ const adminController = require('./src/controllers/adminController');
 const userController = require('./src/controllers/userController');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 
 connectDB();  // when the server starts, automatically connect to the database
 

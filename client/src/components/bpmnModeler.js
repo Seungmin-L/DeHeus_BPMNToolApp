@@ -424,19 +424,6 @@ function BpmnEditor() {
             })
     }
 
-    // fetch contributors
-    // useEffect(() => {
-    //     axios.get(`/api/diagrams/getContributors/${diagramId}`)
-    //         .then(response => {
-    //             const data = response.data;
-    //             setContributors(data.contributors);
-    //             // console.log(contributors);
-    //         })
-    //         .catch(error => console.error('Error fetching contributors:', error));
-    // }, [diagramId]);
-
-
-
     // hide hierarchy side bar
     const handleHidden = () => {
         setIsHidden(prev => !prev);

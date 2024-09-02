@@ -57,7 +57,10 @@ function Main() {
   const handleShowAddModal = () => setAddModal(true);
   const handleCloseAddModal = () => setAddModal(false);
   const handleShowDeleteModal = () => setShowDeleteModal(true);
-  const handleCloseDeleteModal = () => setShowDeleteModal(false);
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setIsLoading(false);
+  }
 
   const [newProjectName, setNewProjectName] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
@@ -83,8 +86,8 @@ function Main() {
   }
 
   const handleDelete = () => {
+    setIsLoading(true);
     if (selectedProject) {
-      setIsLoading(true);
       axios.post(`${API_URL}/api/project/delete`, { projectId: selectedProject.id })
         .then((res) => {
           alert(res.data.message);

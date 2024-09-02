@@ -135,7 +135,7 @@ export default function Sidebar(props) {
                 getCurrentDiagram(res.data.processes);
             })
             .catch((err) => console.error(err));
-    }, [diagramId, processes]);
+    }, [diagramId]);
     return (
         <div className='hierarchy-sidebar'>
             <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)" }}>

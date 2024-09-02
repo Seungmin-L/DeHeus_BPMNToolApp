@@ -657,7 +657,6 @@ const checkNewDiagram = async (diagramId) => {
 
 const getDraftData = async (req, res) => {
     const { projectId, diagramId, userEmail } = req.query;
-    console.log(diagramId, userEmail);
     try{
         const draftData = await getLatestDraftDiagram(diagramId, userEmail);
         if(draftData){

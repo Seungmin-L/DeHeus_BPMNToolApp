@@ -689,21 +689,48 @@ function BpmnEditor() {
     }
 
     // Decline Publish function
-    const handleDeclinePublish = () => {
-        alert(`Publish declined: ${declineReason}`);
-        // POST request to log decline publish to backend!!
-        axios.post('/api/diagram/publish/decline', {
-            diagramId: diagramId,
-            // declineReason: declineReason
-        })
-        .then((response) => {
-            // console.log('Decline Publish request sent to backend:', response.data);
-        })
-        .catch((error) => {
-            // console.error('Error sending decline publish request to backend:', error);
-        });
-        setDeclineReason('');
-        handleCloseConfirmPublishModal();
+    const handleDeclinePublish = (e) => {
+        // Email user about the decline result
+        e.preventDefault();
+        const serviceId = 'service_deheusvn_bpmnapp';
+        const templateId = 'template_rfow6sk';
+        const publicKey = 'oQHqsgvCGRFGdRGwg';
+        
+        const templateParams = {
+            to_email: 'RequestUserEmail', // set User
+            to_name: 'RequestUserName', // set User
+            diagram_name: diagramName,
+            decline_reason: declineReason,
+            link: link + "/" + diagramId,
+        };
+
+        emailjs.send(serviceId, templateId, templateParams, publicKey)
+            .then((response) => {
+                console.log('Email sent successfully!', response);
+                alert("Email sent successfully!");
+
+                //
+                // Back POST here~ S2S2S2
+                //
+                // POST request to log decline publish to backend!!
+                // axios.post('/api/diagram/publish/decline', {
+                //     diagramId: diagramId,
+                //     // declineReason: declineReason
+                // })
+                // .then((response) => {
+                //     // console.log('Decline Publish request sent to backend:', response.data);
+                // })
+                // .catch((error) => {
+                //     // console.error('Error sending decline publish request to backend:', error);
+                // });
+                
+                setDeclineReason('');
+                handleCloseConfirmPublishModal();
+            })
+            .catch((error) => {
+                console.error('Error sending email:', error);
+                alert("Error sending email");
+            });
     }
 
     /**Tool bar functions */
@@ -797,9 +824,18 @@ function BpmnEditor() {
         }
     }
 
-    const handleDelete = () => {
-        alert("Diagram successfully deleted!");
-        handleCloseDeleteModal();
+    const handleDelete = async (diagramId) => {
+        try {
+            const response = await axios.post('/api/diagram/delete', { diagramId });
+            if (response.status === 200) {
+                alert("Diagram successfully deleted!");
+                handleCloseDeleteModal();
+                window.location.href = '/main';
+            }
+        } catch (error) {
+            console.error("Error deleting diagram:", error.message);
+            alert("Failed to delete diagram.");
+        }
     }
     
     const handleCancelCheckout = async () => {
@@ -992,7 +1028,10 @@ function BpmnEditor() {
                             <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                            <p>Please click Delete button if you wish to <strong>permanantly</strong> delete the diagram from the database.</p>
+                            <ul style={{ paddingLeft: '20px' }}>
+                                <li>Once you delete this diagram, <strong>ALL SUB DIAGRAMS</strong> under this will also be deleted.</li>
+                            </ul>
+                            <p>Are you sure? Please click Delete button if you wish to <strong>PERMANENTLY</strong> delete the diagram from the database.</p>
                             </div>
                         </Modal.Body>
                         <Modal.Footer>

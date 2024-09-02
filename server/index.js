@@ -33,6 +33,7 @@ app.post('/api/diagram/createSub', diagramController.createSubProcess);
 app.post('/api/diagram/updateSubProcess', diagramController.updateSubProcessName);
 app.post('/api/diagram/checkedout', userController.confirmCheckOut);
 app.post('/api/diagram/cancelCheckout', userController.cancelCheckOut);
+app.post('/api/diagram/delete', diagramController.deleteDiagram);
 app.post('/api/attachments/:diagramId', attachmentsController.addAttachments);
 app.post('/api/attachments/:diagramId/:nodeId', attachmentsController.deleteAllAttachments);
 app.post('/api/attachments/:diagramId/:nodeId/:fileName', attachmentsController.deleteAttachments);

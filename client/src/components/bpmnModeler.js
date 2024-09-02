@@ -709,20 +709,16 @@ function BpmnEditor() {
                 console.log('Email sent successfully!', response);
                 alert("Email sent successfully!");
 
-                //
-                // Back POST here~ S2S2S2
-                //
                 // POST request to log decline publish to backend!!
-                // axios.post('/api/diagram/publish/decline', {
-                //     diagramId: diagramId,
-                //     // declineReason: declineReason
-                // })
-                // .then((response) => {
-                //     // console.log('Decline Publish request sent to backend:', response.data);
-                // })
-                // .catch((error) => {
-                //     // console.error('Error sending decline publish request to backend:', error);
-                // });
+                axios.post('/api/diagram/publish/decline', {
+                    diagramId: diagramId
+                })
+                .then((response) => {
+                    console.log('Decline Publish request sent to backend:', response.data);
+                })
+                .catch((error) => {
+                    console.error('Error sending decline publish request to backend:', error);
+                });
                 
                 setDeclineReason('');
                 handleCloseConfirmPublishModal();

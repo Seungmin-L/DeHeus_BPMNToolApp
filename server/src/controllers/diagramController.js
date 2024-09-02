@@ -656,13 +656,19 @@ const checkNewDiagram = async (diagramId) => {
 }
 
 const getDraftData = async (req, res) => {
-    const { diagramId, userEmail } = req.query;
+    const { projectId, diagramId, userEmail } = req.query;
+    console.log(diagramId, userEmail);
     try{
         const draftData = await getLatestDraftDiagram(diagramId, userEmail);
         if(draftData){
             res.status(200).json(draftData);
         }else{
-            res.status(500).json({message: "Failed to load latest draft of the user"})
+            const publishData = await getLatestPublishedDiagram(projectId, diagramId);
+            if(publishData){
+                res.status(200).json(publishData);
+            }else{
+                res.status(500).json({message: "Failed to load latest draft of the user"});
+            }
         }
     }catch(err){
         console.error("Error fetching draft data: ", err);

@@ -675,4 +675,4 @@ const deleteDiagram = async (req, res) => {
     
 }
 
-module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram };
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram, deleteDiagram };

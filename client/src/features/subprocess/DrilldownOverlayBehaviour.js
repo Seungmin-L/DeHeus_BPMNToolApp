@@ -196,12 +196,13 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
   button.setAttribute('title', title);
 
   button.addEventListener('click', function () {
+    const API_URL = process.env.REACT_APP_API_URL;
     const projectId = window.location.pathname.split("/")[2];
     const name = element.businessObject.name;
     const { userName, diagramId } = getLocation();
     console.log(userName, diagramId);
     if (name) {
-      axios.post(`http://localhost:3001/api/diagram/createSub`, {
+      axios.post(`${API_URL}/api/diagram/createSub`, {
         projectId: projectId,
         diagramId: diagramId,
         processName: name,
@@ -211,7 +212,7 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
         .then((res) => {
           if (res.data.message.endsWith("exists")) {
             console.log(res.data);
-            axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${res.data.data.id}/${userName}`)
+            axios.get(`${API_URL}/api/diagrams/get-diagram-with-project/${projectId}/${res.data.data.id}/${userName}`)
               .then((response) => {
                 if (response.data.fileData) {
                   const { diagramName, fileData } = response.data;

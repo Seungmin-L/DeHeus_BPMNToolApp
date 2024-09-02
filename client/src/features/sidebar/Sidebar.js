@@ -9,6 +9,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function Sidebar(props) {
+    const API_URL = process.env.REACT_APP_API_URL;
     const { handleHidden, diagramId, userName, onClick } = props;
     const { projectId } = useParams();
     const [processes, setProcesses] = useState(null);
@@ -57,7 +58,7 @@ export default function Sidebar(props) {
     const handleOpenClick = async (id, name) => {
         onClick();
         try {
-            const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${id}/${userName}`);
+            const response = await axios.get(`${API_URL}/api/diagrams/get-diagram-with-project/${projectId}/${id}/${userName}`);
             // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
             // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
             if (response.data.fileData) {
@@ -128,7 +129,7 @@ export default function Sidebar(props) {
         )
     }
     useEffect(() => {
-        axios.get(`/api/processes/${projectId}`)
+        axios.get(`${API_URL}/api/processes/${projectId}`)
             .then((res) => {
                 setProcesses(res.data.processes);
                 getCurrentDiagram(res.data.processes);

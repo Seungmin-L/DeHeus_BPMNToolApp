@@ -4,13 +4,14 @@ import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function PageForNav() {
+    const API_URL = process.env.REACT_APP_API_URL;
     const { projectId, diagramName, diagramId } = useParams();
     const isAuthenticated = useIsAuthenticated();
     const { accounts } = useMsal();
     const navigate = useNavigate();
     const getDiagramXML = async (name) => {
         try{
-            const response = await axios.get(`http://localhost:3001/api/diagrams/get-diagram-with-project/${projectId}/${diagramId}/${name}`)
+            const response = await axios.get(`${API_URL}/api/diagrams/get-diagram-with-project/${projectId}/${diagramId}/${name}`)
             if (response.data && response.data.fileData) {
                 const url = `/project/${projectId}/${diagramName}`;
                 

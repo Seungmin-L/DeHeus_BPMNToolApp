@@ -11,6 +11,7 @@ import { Form, Button, Modal } from "react-bootstrap";
 import { BsFillPlusCircleFill, BsThreeDots, BsTrash } from "react-icons/bs";
 
 function Main() {
+  const API_URL = process.env.REACT_APP_API_URL;
   const isAuthenticated = useIsAuthenticated();
   const { accounts } = useMsal();
   const [userName, setUserName] = useState("");
@@ -24,7 +25,7 @@ function Main() {
     if (isAuthenticated && accounts.length > 0) {
       const userName = accounts[0].username;
       setUserName(userName);
-      axios.get("/api/projects", {
+      axios.get(`${API_URL}/api/projects`, {
         params: { userName }
       }).then(response => {
         const formattedProjects = formatProjectDates(response.data);
@@ -64,7 +65,7 @@ function Main() {
       if (duplicate.length > 0) {
         alert(`Project, ${newProjectName}, already exists!`);
       } else {
-        axios.post(`http://localhost:3001/api/project/add`, { projectName: newProjectName })
+        axios.post(`${API_URL}/api/project/add`, { projectName: newProjectName })
           .then((res) => {
             alert(`Project, ${newProjectName}, has been successfully added!`);
           })
@@ -78,7 +79,7 @@ function Main() {
 
   const handleDelete = () => {
     if (selectedProject) {
-      axios.post('http://localhost:3001/api/project/delete', { projectId: selectedProject.id })
+      axios.post(`${API_URL}/api/project/delete`, { projectId: selectedProject.id })
         .then((res) => {
           alert(res.data.message);
           if (res.data.message.endsWith("successfully!")) {

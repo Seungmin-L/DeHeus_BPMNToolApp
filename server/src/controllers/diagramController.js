@@ -717,7 +717,11 @@ const getAllDiagrams = async (req, res) => {
     }
 }
 
+const deleteDiagram = async (req, res) => {
+    const { diagramId } = req.body;
+}
 
 
-module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram, checkRequested, getAllDiagrams };
+
+module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram, checkRequested, getAllDiagrams, deleteDiagram };
 

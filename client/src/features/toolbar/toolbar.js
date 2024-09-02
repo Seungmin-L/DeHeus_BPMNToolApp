@@ -37,6 +37,7 @@ function Toolbar({
   onCancel,
   onDelete,
   mode,
+  isRequested,
 }) {
 
   // for fonts
@@ -149,7 +150,7 @@ function Toolbar({
           </>
 
         )}
-        {mode === "admin" && ( // if admin
+        {mode === "admin" && isRequested === true && ( // if admin
           <button onClick={onPublish} dangerouslySetInnerHTML={{ __html: Icons.publish }} className='publish-button' title="publish"/>
         )}
       </div>

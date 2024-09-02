@@ -73,6 +73,7 @@ function BpmnEditor() {
     const saveKeys = ['s', 'S'];
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [contributors, setContributors] = useState([]);
+    const [isRequested, setIsRequest] = useState(false);
     let modelerInstance = null;
     const searchKeys = ['f', 'F'];
     let priority = 10000;
@@ -180,6 +181,19 @@ function BpmnEditor() {
         }
     };
 
+    // fetch diagram publish isRequested
+    const checkRequested = async () => {
+        try {
+            const response = await axios.get('/api/diagram/checkRequested', {
+                params: { diagramId }
+            });
+            setIsRequest(response.data.requestedToPublish);
+            console.log(response.data.requestedToPublish)
+        } catch (err) {
+            console.error("An error occurred while fetching isRequest:", err.message);
+        }
+    };
+
     useEffect(() => {
         if (isAuthenticated && accounts.length > 0) {
             const userName = accounts[0].username;
@@ -189,6 +203,7 @@ function BpmnEditor() {
         fetchUserRole();
         fetchDiagramPath();
         fetchContributors();
+        checkRequested();
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
@@ -410,18 +425,6 @@ function BpmnEditor() {
             })
     }
 
-    // fetch contributors
-    // useEffect(() => {
-    //     console.log(diagramId);
-    //     axios.get(`/api/diagrams/getContributors/${diagramId}`)
-    //         .then(response => {
-    //             const data = response.data;
-    //             setContributors(data.contributors);
-    //             console.log(contributors);
-    //         })
-    //         .catch(error => console.error('Error fetching contributors:', error));
-    // }, [diagramId]);
-
     // hide hierarchy side bar
     const handleHidden = () => {
         setIsHidden(prev => !prev);
@@ -624,11 +627,6 @@ function BpmnEditor() {
         }
     }
 
-    // handle contributor
-    const handleContributor = () => {
-
-    }
-
     // send a request to publish
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -656,12 +654,12 @@ function BpmnEditor() {
                     diagramId: diagramId,
                     userEmail: userEmail,
                 })
-                .then((response) => {
-                    console.log('Publish request sent to backend:', response.data);
-                })
-                .catch((error) => {
-                    console.error('Error sending publish request to backend:', error);
-                });
+                    .then((response) => {
+                        console.log('Publish request sent to backend:', response.data);
+                    })
+                    .catch((error) => {
+                        console.error('Error sending publish request to backend:', error);
+                    });
 
                 setMessage('');
                 handleClosePublishModal();
@@ -896,6 +894,7 @@ function BpmnEditor() {
                         onPublish={handleShowConfirmPublishModal}
                         onCancel={handleShowCancelModal}
                         onDelete={handleShowDeleteModal}
+                        isRequested={isRequested}
                     />
                 </div>
                 <div className={userRole === 'editing' ? 'model-body' : 'model-body disabled'}>
@@ -919,20 +918,30 @@ function BpmnEditor() {
                     </div>
                 </div>
                 <div>
-                    <Modal show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
-                        <Modal.Header closeButton>
-                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                                <ul style={{ paddingLeft: '20px' }}>
-                                    {contributors.length > 0 ? contributors.map((contributor, index) => (
-                                        <li key={index}>{contributor.name} ({contributor.email})</li>
-                                    )) : <li>No contributors found.</li>}
-                                </ul>
+                <Modal show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px', fontWeight: 'bold' }}>
+                                <div style={{ textAlign: 'left' }}>Name</div>
+                                <div style={{ textAlign: 'left' }}>Email</div>
+                                <div style={{ textAlign: 'left' }}>Version</div>
                             </div>
-                        </Modal.Body>
-                    </Modal>
+                            {contributors.length > 0 ? contributors.map((contributor, index) => (
+                                <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px' }}>
+                                    <div style={{ textAlign: 'left' }}>{contributor.name}</div>
+                                    <div style={{ textAlign: 'left' }}>{contributor.email}</div>
+                                    <div style={{ textAlign: 'left' }}>#{contributor.index}</div>
+                                </div>
+                            )) : <div>No contributors found.</div>}
+                        </div>
+                    </Modal.Body>
+                </Modal>
+
+
+
 
                     <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
                         <Modal.Header closeButton>
@@ -1021,8 +1030,8 @@ function BpmnEditor() {
                         </Modal.Header>
                         <Modal.Body>
                             <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
-                            <h5>Diagram Path</h5>
-                            <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
+                                <h5>Diagram Path</h5>
+                                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
                             <ul style={{ paddingLeft: '20px' }}>
@@ -1033,7 +1042,7 @@ function BpmnEditor() {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="danger" onClick={handleDelete} style={{ fontWeight: "550", margin: "0 auto" }}>
-                            Delete
+                                Delete
                             </Button>
                         </Modal.Footer>
                     </Modal>
@@ -1044,14 +1053,14 @@ function BpmnEditor() {
                         </Modal.Header>
                         <Modal.Body>
                             <div style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '5px', marginBottom: '15px' }}>
-                            <h5>Diagram Path</h5>
-                            <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
+                                <h5>Diagram Path</h5>
+                                <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                            <ul style={{ paddingLeft: '20px' }}>
-                                <li>Once you cancel your check out, any changes you made in this draft version will be deleted.</li>
-                            </ul>
-                            <p>Please click Cancel button to cancel your check out to this diagram.</p>
+                                <ul style={{ paddingLeft: '20px' }}>
+                                    <li>Once you cancel your check out, any changes you made in this draft version will be deleted.</li>
+                                </ul>
+                                <p>Please click Cancel button to cancel your check out to this diagram.</p>
                             </div>
                         </Modal.Body>
                         <Modal.Footer>

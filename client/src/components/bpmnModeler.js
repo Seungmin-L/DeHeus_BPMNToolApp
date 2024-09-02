@@ -678,6 +678,7 @@ function BpmnEditor() {
             axios.post(`${API_URL}/api/diagram/publish`, { xml: diagramXML, diagramId: diagramId })
                 .then(response => {
                     // console.log("Diagram published successfully:", response.data);  // 디버깅
+                    window.location.reload();
                 })
                 .catch(error => {
                     console.error("Error saving diagram to the database:", error);
@@ -721,6 +722,7 @@ function BpmnEditor() {
                 
                 setDeclineReason('');
                 handleCloseConfirmPublishModal();
+                window.location.reload();
             })
             .catch((error) => {
                 console.error('Error sending email:', error);

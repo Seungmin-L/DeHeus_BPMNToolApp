@@ -411,16 +411,16 @@ function BpmnEditor() {
     }
 
     // fetch contributors
-    useEffect(() => {
-        console.log(diagramId);
-        axios.get(`${API_URL}/api/diagrams/getContributors/${diagramId}`)
-            .then(response => {
-                const data = response.data;
-                setContributors(data.contributors);
-                console.log(contributors);
-            })
-            .catch(error => console.error('Error fetching contributors:', error));
-    }, [diagramId]);
+    // useEffect(() => {
+    //     console.log(diagramId);
+    //     axios.get(`/api/diagrams/getContributors/${diagramId}`)
+    //         .then(response => {
+    //             const data = response.data;
+    //             setContributors(data.contributors);
+    //             console.log(contributors);
+    //         })
+    //         .catch(error => console.error('Error fetching contributors:', error));
+    // }, [diagramId]);
 
     // hide hierarchy side bar
     const handleHidden = () => {

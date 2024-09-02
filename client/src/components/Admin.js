@@ -20,20 +20,24 @@ import { FaFile } from "react-icons/fa";
 import LeftNavBar from "./common/LeftNavBar";
 import TopBar from "./common/TopBar";
 import { convertUTCToLocal } from '../utils/utils';
+import {  BsFillPlusCircleFill } from "react-icons/bs";
+import NoAuth from "./common/NoAuth";
 
 function Admin() {
+  const API_URL = process.env.REACT_APP_API_URL;
   const isAuthenticated = useIsAuthenticated();
   const { accounts } = useMsal();
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
-  const [projects, setProjects] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [removedProjects, setRemovedProjects] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated && accounts.length > 0) {
-      setUserName(accounts[0].username);
+      const userName = accounts[0].username;
+      setUserName(userName);
 
-      axios.get("/api/admin/users")
+      axios.get(`${API_URL}/api/admin/users`)
         .then(response => {
           setUsers(response.data);
         })
@@ -41,11 +45,16 @@ function Admin() {
           console.error("Error fetching users", error);
         });
 
-      axios.get("/api/projects")
-        .then(response => {
-          setProjects(response.data);
-        })
-        .catch(error => {
+      // Bring all projects
+      axios.get(`${API_URL}/api/projects`, {
+          params: { userName }
+        }).then(response => {
+          const filteredProjects = response.data.map(project => ({
+            id: project.id,
+            name: project.name
+          }));
+          setAllProjects(filteredProjects);
+        }).catch(error => {
           console.error("Error fetching projects", error);
         });
     }
@@ -64,7 +73,7 @@ function Admin() {
 
     const userIdentifier = user.email.split('@')[0];
 
-    axios.get(`/api/admin/users/${userIdentifier}`)
+    axios.get(`${API_URL}/api/admin/users/${userIdentifier}`)
     .then(response => {
         const existingProjects = response.data.projects.map(project => ({
             projectId: project.projectId,
@@ -165,7 +174,7 @@ function Admin() {
     // console.log("Role Changes:", roleChanges);  // debugging console log
     // console.log("Project Updates:", projectUpdates);  // debugging console log
 
-    axios.post('/api/admin/saveUserData', {
+    axios.post(`${API_URL}/api/admin/saveUserData`, {
       userEmail: tempUser.email,
       projectUpdates,
       removedProjects,
@@ -184,15 +193,102 @@ function Admin() {
   };
   
 
+  // Add new user~~~!!!
+  const [showNewUserModal, setShowNewUserModal] = useState(false);
+
+  const [newUser, setNewUser] = useState({
+    email: '',
+    name: '',
+    department: '',
+    projects: [],
+  });
+
+  if (userName!='vnapp.pbmn@deheus.com') {
+    return <NoAuth />;
+  }
+  
+  const handleShowNewUserModal = () => {
+    setNewUser({
+      email: '',
+      name: '',
+      department: '',
+      projects: [],
+    });
+    setShowNewUserModal(true);
+  };
+  const handleCloseNewUserModal = () => {
+    setShowNewUserModal(false);
+  };
+
+  const handleAddNewUserProject = (projectId, projectName) => {
+    const newProject = {
+      projectId: projectId,
+      projectName: projectName,
+      role: "Read-only",
+    };
+    setNewUser(prevNewUser => ({
+      ...prevNewUser,
+      projects: [...prevNewUser.projects, newProject],
+    }));
+  };
+
+  const newUserAvailableProjects = allProjects.filter(project => 
+    !newUser.projects.some(assignedProject => assignedProject.projectId === project.id)
+  );
+
+  const handleNewUserRoleChange = (projectIndex, newRole) => {
+    setNewUser((prevNewUser) => {
+      const updatedProjects = prevNewUser.projects.map((project, index) => {
+        if (index === projectIndex) {
+          return { ...project, role: newRole };
+        }
+        return project;
+      });
+      return { ...prevNewUser, projects: updatedProjects };
+    });
+  };
+
+  const handleRemoveNewUserProject = (projectIndex) => {
+    setNewUser((prevNewUser) => ({
+      ...prevNewUser,
+      projects: prevNewUser.projects.filter((_, index) => index !== projectIndex),
+    }));
+  };
+
+  const handleAddNewUser = () => {
+
+    //
+    // BACK API HERE! S2S2S2
+    // console.log(newUser) 확인하고 필요한 것 수정하시면 됩니다아
+    //
+
+    alert("New user added successfully!!");
+    handleCloseNewUserModal();
+
+  };
+
   return (
     <div>
       <TopBar onLogoClick={toggleNav} userName={userName} />
       <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
         <div style={{ flexGrow: 1 }}>
+        <button
+            onClick={handleShowNewUserModal}
+            style={{
+              background: "none",
+              border: "none",
+              position: "fixed",
+              bottom: 25,
+              right: 25,
+              zIndex: 999,
+            }}
+          >
+            <BsFillPlusCircleFill size={50} style={{ color: "#2A85E2" }} />
+          </button>
           <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
             <div className="mt-4" style={{ width: "85%" }}>
-              <h3>User Account Information</h3>
+                <h3>User Account Information</h3>
               <Table>
                 <thead>
                   <tr>
@@ -416,6 +512,146 @@ function Admin() {
               Save
             </Button>
           </Modal.Footer>
+          </Modal>
+
+          <Modal size="lg" show={showNewUserModal} onHide={handleCloseNewUserModal} centered>
+            <Modal.Header closeButton>
+              <Modal.Title className="w-100 text-center">
+                Add New User
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form.Group className="d-flex align-items-center mb-2">
+                <Form.Label style={{ width: "9%" }}>Email</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={newUser.email || ""}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                />
+              </Form.Group>
+              <div className="d-flex align-items-center mb-2">
+                <Form.Group
+                  style={{ width: "60%" }}
+                  className="d-flex align-items-center "
+                >
+                  <Form.Label style={{ width: "16%" }}>Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={newUser.name || ""}
+                    onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  />
+                </Form.Group>
+                <Form.Group
+                  style={{ width: "40%" }}
+                  className="d-flex align-items-center"
+                >
+                  <Form.Label style={{ width: "50%", paddingLeft: "25px" }}>
+                    Department
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={newUser.department || ""}
+                    onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
+                  />
+                </Form.Group>
+              </div>
+              <Form.Group className="mb-2">
+                <div className="d-flex align-items-center">
+                  <Form.Label className="me-2">
+                    Accessible Projects
+                  </Form.Label>
+                  <Dropdown>
+                    <Dropdown.Toggle
+                      variant="success"
+                      id="dropdown-basic"
+                      className="d-flex mb-1"
+                      style={{
+                        border: "none",
+                        height: "27px",
+                        background: "transparent",
+                      }}
+                    >
+                      <BsPlusCircle size={17} style={{ color: "#2A85E2" }} />
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      {newUserAvailableProjects.length > 0 ? (
+                        newUserAvailableProjects.map(project => (
+                          <Dropdown.Item
+                            key={project.id}
+                            onClick={() => handleAddNewUserProject(project.id, project.name)}
+                          >
+                            {project.name}
+                          </Dropdown.Item>
+                        ))
+                      ) : (
+                        <Dropdown.Item disabled>No projects available</Dropdown.Item>
+                      )}
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+                <ListGroup>
+                  {newUser.projects && newUser.projects.length > 0 ? (
+                    newUser.projects.map((project, index) => (
+                      <ListGroup.Item
+                        key={index}
+                        className="d-flex justify-content-between align-items-center"
+                        style={{ paddingLeft: "30px" }}
+                      >
+                        <div style={{ width: "55%" }}>
+                          {project.projectName}
+                        </div>
+                        <div
+                          className="d-flex align-items-center"
+                          style={{ width: "40%" }}
+                        >
+                          <Form.Label
+                            style={{ marginRight: "10px" }}
+                            className="pr-2"
+                          >
+                            Role
+                          </Form.Label>
+                          <DropdownButton
+                            title={project.role}
+                            onSelect={(newRole) =>
+                              handleNewUserRoleChange(index, newRole)
+                            }
+                            variant="outline-secondary"
+                            style={{ width: "100%" }}
+                          >
+                            <Dropdown.Item eventKey="Read-only">
+                              Read-only
+                            </Dropdown.Item>
+                            <Dropdown.Item eventKey="Editor">
+                              Editor
+                            </Dropdown.Item>
+                          </DropdownButton>
+                        </div>
+                        <div style={{ width: "5%" }}>
+                          <BsDashCircle
+                            style={{
+                              cursor: "pointer",
+                              color: "#F44336",
+                              marginLeft: "10px",
+                            }}
+                            onClick={() => handleRemoveNewUserProject(index)}
+                          />
+                        </div>
+                      </ListGroup.Item>
+                    ))
+                  ) : (
+                    <ListGroup.Item>No projects assigned</ListGroup.Item>
+                  )}
+                </ListGroup>
+              </Form.Group>
+            </Modal.Body>
+            <Modal.Footer className="justify-content-center">
+              <Button
+                style={{ color: "#fff", fontWeight: "550", backgroundColor: "#5cb85c", border: "none" }}
+                onClick={handleAddNewUser}
+              >
+                Add User
+              </Button>
+            </Modal.Footer>
           </Modal>
         </div>
       </div>

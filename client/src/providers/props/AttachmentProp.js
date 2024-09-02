@@ -34,6 +34,7 @@ function reader(file, callback) {
 }
 
 function Attachment(props) {
+  const API_URL = process.env.REACT_APP_API_URL;
   const { element, id } = props;
   const modeling = useService('modeling');
   const debounce = useService('debounceInput');
@@ -55,7 +56,7 @@ function Attachment(props) {
     reader(value, (err, res) => {
       const file = { name: value.name, data: res };
       // Function for adding an attachment file in the storage
-      axios.post(`http://localhost:3001/api/attachments/${diagramId}`, {
+      axios.post(`${API_URL}/api/attachments/${diagramId}`, {
         nodeId: nodeId,
         file: file,
         type: value.type
@@ -70,7 +71,7 @@ function Attachment(props) {
 
   const deleteValue = async (names, value) => {
     // Function for deleting attachment files
-    axios.post(`http://localhost:3001/api/attachments/${diagramId}/${nodeId}/${value}`)
+    axios.post(`${API_URL}/api/attachments/${diagramId}/${nodeId}/${value}`)
       .then(res => console.log({ msg: res.data.message, file: res.data.file }))
       .catch(err => console.log(err));
     return modeling.updateProperties(element, {
@@ -93,6 +94,7 @@ var hooks = require('../../../node_modules/@bpmn-io/properties-panel/preact/hook
 var classnames = require('classnames');
 
 function AttachmentList(props) {
+  const API_URL = process.env.REACT_APP_API_URL;
   const {
     diagramId,
     element,
@@ -121,7 +123,7 @@ function AttachmentList(props) {
   const onClick = e => {
     e.stopPropagation();
     // Function for getting selected attachment file
-    axios.get(`/api/attachments/${diagramId}/${nodeId}/${e.target.name}`, { responseType: 'blob' })
+    axios.get(`${API_URL}/api/attachments/${diagramId}/${nodeId}/${e.target.name}`, { responseType: 'blob' })
       .then((res) => {
         var url = URL.createObjectURL(res.data);
         window.open(url);

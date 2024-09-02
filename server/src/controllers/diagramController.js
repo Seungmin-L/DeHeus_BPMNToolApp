@@ -412,7 +412,6 @@ const confirmPublish = async (req, res) => {
 
 // Log the user activity as 'Publish declined for'
 const declinePublish = async (req, res) => {
-    // const { diagramId, declineReason } = req.body;
     const { diagramId } = req.body;
 
     try {
@@ -721,3 +720,4 @@ const getAllDiagrams = async (req, res) => {
 
 
 module.exports = { getUserRole, getDiagramPath, getContributors, draftSave, requestPublish, confirmPublish, declinePublish, getDiagramData, getDraftData, createSubProcess, updateSubProcessName, addDiagram, checkRequested, getAllDiagrams };
+

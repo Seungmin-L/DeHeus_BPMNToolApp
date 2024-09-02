@@ -308,7 +308,7 @@ const draftSave = async (req, res) => {
             WHERE diagram_id = ${diagramId} 
             AND user_email = ${userEmail} 
             AND type = 'Edited' 
-            AND DATEDIFF(MINUTE, updated_time, GETDATE()) = 0;
+            AND DATEDIFF(MINUTE, updated_time, GETDATE()) <= 30;
         `;
 
         if (existingLog.recordset.length === 0) {

@@ -72,19 +72,23 @@ BpmnSearchProvider.prototype.find = function (pattern) {
     if (element.businessObject &&
       element.businessObject.extensionElements) {
       var parameters = element.businessObject.extensionElements.values[0].values;
-      for (let i = 0; i < parameters.length; i++) {
-        let tokens = matchAndSplit(parameters[i].name || '', pattern);
-        console.log(tokens);
-        tertiaryTokens = tertiaryTokens.concat(tokens);
+      if (parameters) {
+        for (let i = 0; i < parameters.length; i++) {
+          let tokens = matchAndSplitProperties(parameters[i].name || '', pattern);
+          tertiaryTokens = tertiaryTokens.concat(tokens);
+        }
       }
     }
-
     return {
       primaryTokens: matchAndSplit(getLabel(element), pattern),
       secondaryTokens: matchAndSplit(element.id, pattern),
       tertiaryTokens: tertiaryTokens,
       fourthTokens: matchAndSplit(element.businessObject.documentation || '', pattern),
       fifthTokens: typeof element.businessObject.attachment === 'string' ? arrayMatchAndSplit([...element.businessObject.attachment.split(',')], pattern) : arrayMatchAndSplit(element.businessObject.attachment, pattern),
+      sixthTokens: matchAndSplitProperties(element.businessObject.endToEndProp || '', pattern),
+      seventhTokens: matchAndSplitProperties(element.businessObject.functionProp || '', pattern),
+      eighthTokens: matchAndSplitProperties(element.businessObject.departmentProp || '', pattern),
+      ninthTokens: matchAndSplitProperties(element.businessObject.domainProp || '', pattern),
       element: element
     };
   });
@@ -92,7 +96,7 @@ BpmnSearchProvider.prototype.find = function (pattern) {
 
   // exclude non-matched elements
   elements = filter(elements, function (element) {
-    return hasMatched(element.primaryTokens) || hasMatched(element.secondaryTokens) || hasMatched(element.tertiaryTokens) || hasMatched(element.fourthTokens) || hasMatched(element.fifthTokens);
+    return hasMatched(element.primaryTokens) || hasMatched(element.secondaryTokens) || hasMatched(element.tertiaryTokens) || hasMatched(element.fourthTokens) || hasMatched(element.fifthTokens) || hasMatched(element.sixthTokens) || hasMatched(element.seventhTokens) || hasMatched(element.eighthTokens) || hasMatched(element.ninthTokens);
   });
 
   elements = sortBy(elements, function (element) {
@@ -163,11 +167,11 @@ function matchAndSplit(text, pattern) {
     });
 
     if (pattern.length + i < text.length) {
-      if(isDocumentation && text.length - (pattern.length + i) > 10){
+      if (isDocumentation && text.length - (pattern.length + i) > 10) {
         tokens.push({
           normal: originalText.substr(pattern.length + i, 10) + "..."
-        }); 
-      }else{
+        });
+      } else {
         tokens.push({
           normal: originalText.substr(pattern.length + i, text.length)
         });
@@ -182,6 +186,58 @@ function matchAndSplit(text, pattern) {
   }
   return tokens;
 }
+
+/**
+ * @param {string} text
+ * @param {string} pattern
+ *
+ * @return {Token[]}
+ */
+function matchAndSplitProperties(text, pattern) {
+  var tokens = [];
+  if (!text) {
+    return tokens;
+  }
+
+  if (text === '') {
+    return tokens;
+  }
+
+  var originalText = text;
+
+  if (typeof text === 'string') {
+    text = text.toLowerCase();
+  } else {
+    return;
+  }
+
+  pattern = pattern.toLowerCase();
+
+  var i = text.indexOf(pattern);
+
+  if (i > -1) {
+    if (i !== 0) {
+      tokens.push({
+        normal: originalText.substr(0, i)
+      });
+    }
+
+    if (pattern.length + i < text.length) {
+      tokens.push({
+        matched: originalText.substr(i, pattern.length)
+      });
+      tokens.push({
+        normal: originalText.substr(pattern.length + i, text.length) + "<br/>"
+      });
+    } else {
+      tokens.push({
+        matched: originalText.substr(i, pattern.length) + "<br/>"
+      });
+    }
+  }
+  return tokens;
+}
+
 
 /**
  * @param {string} text
@@ -211,13 +267,16 @@ function arrayMatchAndSplit(array, pattern) {
         });
       }
 
-      tokens.push({
-        matched: originalText.substr(i, pattern.length)
-      });
-
       if (pattern.length + i < text.length) {
         tokens.push({
-          normal: originalText.substr(pattern.length + i, text.length)
+          matched: originalText.substr(i, pattern.length)
+        });
+        tokens.push({
+          normal: originalText.substr(pattern.length + i, text.length) + "<br/>"
+        });
+      } else {
+        tokens.push({
+          matched: originalText.substr(i, pattern.length) + "<br/>"
         });
       }
     }

@@ -19,6 +19,10 @@ export type SearchResult = {
   tertiaryTokens: Token[];
   fourthTokens: Token[];
   fifthTokens: Token[];
+  sixthTokens: Token[];
+  seventhTokens: Token[];
+  eighthTokens: Token[];
+  ninthTokens: Token[];
   element: Element;
 };
 

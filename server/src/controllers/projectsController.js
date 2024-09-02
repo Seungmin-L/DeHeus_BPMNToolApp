@@ -78,4 +78,29 @@ const addProject = (req, res) => {
   }
 }
 
-module.exports = { listProjects, addProject };
+const deleteProject = async (req, res) => {
+  const { projectId } = req.body;
+  try {
+    const result = await sql.query(`
+      IF NOT EXISTS (
+      SELECT 1 FROM diagram 
+      WHERE 
+      project_id = ${projectId}
+      )
+      BEGIN
+      DELETE FROM project 
+      WHERE 
+      id = ${projectId}
+      END  
+    `);
+    if(result.rowsAffected.length === 0){
+      res.status(200).json({message: "Please remove all diagrams before deleting a project!"});
+    }else{
+      res.status(200).json({message: "Project deleted successfully!", id: projectId});
+    }
+  } catch (err) {
+    console.error("Error deleting project: ", err);
+  }
+}
+
+module.exports = { listProjects, addProject, deleteProject };

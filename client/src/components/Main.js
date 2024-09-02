@@ -8,7 +8,7 @@ import TopBar from './common/TopBar';
 import LeftNavBar from './common/LeftNavBar';
 import { formatProjectDates } from '../utils/utils';
 import { Form, Button, Modal } from "react-bootstrap";
-import { BsFillPlusCircleFill } from "react-icons/bs";
+import { BsFillPlusCircleFill, BsThreeDots, BsTrash } from "react-icons/bs";
 
 function Main() {
   const isAuthenticated = useIsAuthenticated();
@@ -46,24 +46,27 @@ function Main() {
 
   // Add project function
   const [showAddModal, setAddModal] = useState(false);
+  // Delete project function
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleShowAddModal = () => setAddModal(true);
   const handleCloseAddModal = () => setAddModal(false);
+  const handleShowDeleteModal = () => setShowDeleteModal(true);
+  const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
   const [newProjectName, setNewProjectName] = useState('');
+  const [selectedProject, setSelectedProject] = useState(null);
 
   const handleCreate = () => {
     // backend here
-
     if (projects) {
       const duplicate = projects.filter((project) => project.name === newProjectName);
-      if (duplicate) {
+      if (duplicate.length > 0) {
         alert(`Project, ${newProjectName}, already exists!`);
       } else {
-        alert(`Project, ${newProjectName}, has been successfully added!`);
         axios.post(`http://localhost:3001/api/project/add`, { projectName: newProjectName })
           .then((res) => {
-            console.log(res);
+            alert(`Project, ${newProjectName}, has been successfully added!`);
           })
           .catch(err => console.error("Error creating new project: ", err))
           .finally(() => {
@@ -71,12 +74,28 @@ function Main() {
           });
       }
     }
-
   }
 
-  // if (!isAuthenticated) {
-  //   return <NoAuth />;
-  // }
+  const handleDelete = () => {
+    if (selectedProject) {
+      axios.post('http://localhost:3001/api/project/delete', { projectId: selectedProject.id })
+        .then((res) => {
+          alert(res.data.message);
+          if (res.data.message.endsWith("successfully!")) {
+            window.location.reload()
+          } else {
+            handleCloseDeleteModal();
+          }
+        })
+        .catch(err => {
+          console.error("Error deleting project: ", err);
+        })
+    }
+  }
+
+  if (!isAuthenticated) {
+    return <NoAuth />;
+  }
 
   return (
     <div>
@@ -134,14 +153,35 @@ function Main() {
               </Modal>
             </>
           )}
-          <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark">
-            <div className="mt-4" style={{ width: "85%" }}>
+          {selectedProject &&
+            <Modal size="lg" show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+              <Modal.Header closeButton>
+                <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Delete {selectedProject.name}</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                  <p>
+                    Please click Delete button if you wish to <strong>permanantly</strong> delete the project from the database.
+                    <br />Make sure that there is <strong>no process</strong> left in the project.
+                  </p>
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="danger" onClick={handleDelete} style={{ fontWeight: "550", margin: "0 auto" }}>
+                  Delete
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          }
+          <div className="d-flex flex-column align-items-center w-100 vh-100 bg-light text-dark overflow-auto">
+            <div className="my-4" style={{ width: "85%" }}>
               <h3 className="mb-3">Accessible Projects</h3>
               <Table>
                 <thead>
                   <tr>
                     <th>Project Name</th>
                     <th>Last Update</th>
+                    {userName === "vnapp.pbmn@deheus.com" && <th></th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -149,6 +189,11 @@ function Main() {
                     <tr key={project.id} onClick={() => handleProjectClick(project.id)} style={{ cursor: "pointer" }}>
                       <td>{project.name}</td>
                       <td>{project.last_update}</td>
+                      {userName === "vnapp.pbmn@deheus.com" && <td onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProject(project);
+                        if (project) handleShowDeleteModal();
+                      }}><BsTrash color="red" title="Delete" /></td>}
                     </tr>
                   ))}
                 </tbody>

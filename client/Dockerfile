@@ -1,13 +1,13 @@
 FROM node:16
 
-WORKDIR /server
+WORKDIR /client
 
 COPY package*.json ./
 
 COPY . .
 
-EXPOSE 3001
+EXPOSE 3000
 
 RUN npm install
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]

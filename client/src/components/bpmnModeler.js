@@ -689,21 +689,48 @@ function BpmnEditor() {
     }
 
     // Decline Publish function
-    const handleDeclinePublish = () => {
-        alert(`Publish declined: ${declineReason}`);
-        // POST request to log decline publish to backend!!
-        axios.post('/api/diagram/publish/decline', {
-            diagramId: diagramId,
-            // declineReason: declineReason
-        })
-        .then((response) => {
-            // console.log('Decline Publish request sent to backend:', response.data);
-        })
-        .catch((error) => {
-            // console.error('Error sending decline publish request to backend:', error);
-        });
-        setDeclineReason('');
-        handleCloseConfirmPublishModal();
+    const handleDeclinePublish = (e) => {
+        // Email user about the decline result
+        e.preventDefault();
+        const serviceId = 'service_deheusvn_bpmnapp';
+        const templateId = 'template_rfow6sk';
+        const publicKey = 'oQHqsgvCGRFGdRGwg';
+        
+        const templateParams = {
+            to_email: 'RequestUserEmail', // set User
+            to_name: 'RequestUserName', // set User
+            diagram_name: diagramName,
+            decline_reason: declineReason,
+            link: link + "/" + diagramId,
+        };
+
+        emailjs.send(serviceId, templateId, templateParams, publicKey)
+            .then((response) => {
+                console.log('Email sent successfully!', response);
+                alert("Email sent successfully!");
+
+                //
+                // Back POST here~ S2S2S2
+                //
+                // POST request to log decline publish to backend!!
+                // axios.post('/api/diagram/publish/decline', {
+                //     diagramId: diagramId,
+                //     // declineReason: declineReason
+                // })
+                // .then((response) => {
+                //     // console.log('Decline Publish request sent to backend:', response.data);
+                // })
+                // .catch((error) => {
+                //     // console.error('Error sending decline publish request to backend:', error);
+                // });
+                
+                setDeclineReason('');
+                handleCloseConfirmPublishModal();
+            })
+            .catch((error) => {
+                console.error('Error sending email:', error);
+                alert("Error sending email");
+            });
     }
 
     /**Tool bar functions */

@@ -48,6 +48,7 @@ import { Form, Button, Modal } from "react-bootstrap";
 
 
 function BpmnEditor() {
+    const API_URL = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
     const location = useLocation();
     const diagramId = location.state?.itemId; // 프로젝트 리스트에서 접근할 때 state로 가지고 온 다이어그램 id
@@ -117,7 +118,7 @@ function BpmnEditor() {
     // fetches contribution. if the user is editor the user role will be set to contributor, if not read-only
     const fetchUserRole = async () => {
         try {
-            const response = await axios.get('/api/fetch/user-role', {
+            const response = await axios.get(`${API_URL}/api/fetch/user-role`, {
                 params: { projectId, diagramId, userEmail }
             });
             const userName = response.data.userName;
@@ -150,7 +151,7 @@ function BpmnEditor() {
 
     const fetchDiagramPath = async () => {
         try {
-            const response = await axios.get('/api/fetch/diagram', {
+            const response = await axios.get(`${API_URL}/api/fetch/diagram`, {
                 params: { diagramId, projectId }
             });
 
@@ -170,7 +171,7 @@ function BpmnEditor() {
 
     const fetchContributors = async () => {
         try {
-            const response = await axios.get('/api/diagrams/getContributors', {
+            const response = await axios.get(`${API_URL}/api/diagrams/getContributors`, {
                 params: { diagramId }
             });
             setContributors(response.data.contributors);
@@ -368,7 +369,7 @@ function BpmnEditor() {
     useEffect(() => {
         if (userRole) {
             if (userRole === 'editing') {
-                axios.get('http://localhost:3001/api/diagram/getDraft', {
+                axios.get(`${API_URL}/api/diagram/getDraft`, {
                     params: { diagramId: diagramId, userEmail: userEmail }
                 })
                     .then((res) => {
@@ -400,7 +401,7 @@ function BpmnEditor() {
     }, [hidePanel]);
 
     const updateSubProcessName = async (newName, nodeId) => {
-        axios.post(`http://localhost:3001/api/diagram/updateSubProcess`, { name: newName, nodeId: nodeId, diagramId: diagramId })
+        axios.post(`${API_URL}/api/diagram/updateSubProcess`, { name: newName, nodeId: nodeId, diagramId: diagramId })
             .then((res) => {
                 console.log(res);
             })
@@ -410,16 +411,16 @@ function BpmnEditor() {
     }
 
     // fetch contributors
-    useEffect(() => {
-        console.log(diagramId);
-        axios.get(`/api/diagrams/getContributors/${diagramId}`)
-            .then(response => {
-                const data = response.data;
-                setContributors(data.contributors);
-                console.log(contributors);
-            })
-            .catch(error => console.error('Error fetching contributors:', error));
-    }, [diagramId]);
+    // useEffect(() => {
+    //     console.log(diagramId);
+    //     axios.get(`/api/diagrams/getContributors/${diagramId}`)
+    //         .then(response => {
+    //             const data = response.data;
+    //             setContributors(data.contributors);
+    //             console.log(contributors);
+    //         })
+    //         .catch(error => console.error('Error fetching contributors:', error));
+    // }, [diagramId]);
 
     // hide hierarchy side bar
     const handleHidden = () => {
@@ -540,7 +541,7 @@ function BpmnEditor() {
             if (xml) {
                 console.log("Saved XML:", xml);
                 console.log("diagramId:", diagramId);
-                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userEmail: userEmail })
+                axios.post(`${API_URL}/api/diagram/save`, { xml: xml, diagramId: diagramId, userEmail: userEmail })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })
@@ -555,7 +556,7 @@ function BpmnEditor() {
             console.log("undefined");
             return;
         }
-        axios.post(`http://localhost:3001/api/attachments/${diagramId}/${nodeId}`)
+        axios.post(`${API_URL}/api/attachments/${diagramId}/${nodeId}`)
             .then(res => console.log(res.data))
             .catch(err => console.error("Error fetching processes", err));
     }
@@ -607,7 +608,7 @@ function BpmnEditor() {
             // console.log(diagramId);
             // console.log(userEmail);
             // console.log(userName);
-            const response = await axios.post('http://localhost:3001/api/diagram/checkedout', { diagramId, userEmail });
+            const response = await axios.post(`${API_URL}/api/diagram/checkedout`, { diagramId, userEmail });
 
             if (response.status === 200) {
                 alert("Checked In!");
@@ -651,7 +652,7 @@ function BpmnEditor() {
                 alert("Email sent successfully!");
 
                 // POST request to log request publish to backend!!
-                axios.post('/api/diagram/requestPublish', {
+                axios.post(`${API_URL}/api/diagram/requestPublish`, {
                     diagramId: diagramId,
                     userEmail: userEmail,
                 })
@@ -676,7 +677,7 @@ function BpmnEditor() {
     const handleConfirmPublish = () => {
         // console.log(diagramXML, diagramId);  // 디버깅
         if (diagramXML) {
-            axios.post('http://localhost:3001/api/diagram/publish', { xml: diagramXML, diagramId: diagramId })
+            axios.post(`${API_URL}/api/diagram/publish`, { xml: diagramXML, diagramId: diagramId })
                 .then(response => {
                     // console.log("Diagram published successfully:", response.data);  // 디버깅
                 })
@@ -709,20 +710,16 @@ function BpmnEditor() {
                 console.log('Email sent successfully!', response);
                 alert("Email sent successfully!");
 
-                //
-                // Back POST here~ S2S2S2
-                //
                 // POST request to log decline publish to backend!!
-                // axios.post('/api/diagram/publish/decline', {
-                //     diagramId: diagramId,
-                //     // declineReason: declineReason
-                // })
-                // .then((response) => {
-                //     // console.log('Decline Publish request sent to backend:', response.data);
-                // })
-                // .catch((error) => {
-                //     // console.error('Error sending decline publish request to backend:', error);
-                // });
+                axios.post(`${API_URL}/api/diagram/publish/decline`, {
+                    diagramId: diagramId
+                })
+                .then((response) => {
+                    console.log('Decline Publish request sent to backend:', response.data);
+                })
+                .catch((error) => {
+                    console.error('Error sending decline publish request to backend:', error);
+                });
                 
                 setDeclineReason('');
                 handleCloseConfirmPublishModal();
@@ -762,7 +759,7 @@ function BpmnEditor() {
             if (xml) {
                 console.log("Saved XML:", xml);
                 console.log("diagramId:", diagramId);
-                axios.post('http://localhost:3001/api/diagram/save', { xml: xml, diagramId: diagramId, userEmail: userEmail })
+                axios.post(`${API_URL}/api/diagram/save`, { xml: xml, diagramId: diagramId, userEmail: userEmail })
                     .then(response => {
                         console.log("Diagram saved successfully:", response.data);
                     })
@@ -826,7 +823,7 @@ function BpmnEditor() {
 
     const handleDelete = async (diagramId) => {
         try {
-            const response = await axios.post('/api/diagram/delete', { diagramId });
+            const response = await axios.post(`${API_URL}/api/diagram/delete`, { diagramId });
             if (response.status === 200) {
                 alert("Diagram successfully deleted!");
                 handleCloseDeleteModal();
@@ -842,7 +839,7 @@ function BpmnEditor() {
         try {
             // console.log(diagramId);  // 디버깅용 주석 처리
             // console.log(userEmail);  // 디버깅용 주석 처리
-            const response = await axios.post('/api/diagram/cancelCheckout', { diagramId, userEmail });
+            const response = await axios.post(`${API_URL}/api/diagram/cancelCheckout`, { diagramId, userEmail });
 
             if (response.status === 200) {
                 alert("Checked-out canceled!");

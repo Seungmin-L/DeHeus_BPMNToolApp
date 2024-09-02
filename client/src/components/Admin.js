@@ -24,6 +24,7 @@ import {  BsFillPlusCircleFill } from "react-icons/bs";
 import NoAuth from "./common/NoAuth";
 
 function Admin() {
+  const API_URL = process.env.REACT_APP_API_URL;
   const isAuthenticated = useIsAuthenticated();
   const { accounts } = useMsal();
   const [users, setUsers] = useState([]);
@@ -36,7 +37,7 @@ function Admin() {
       const userName = accounts[0].username;
       setUserName(userName);
 
-      axios.get("/api/admin/users")
+      axios.get(`${API_URL}/api/admin/users`)
         .then(response => {
           setUsers(response.data);
         })
@@ -45,7 +46,7 @@ function Admin() {
         });
 
       // Bring all projects
-      axios.get("/api/projects", {
+      axios.get(`${API_URL}/api/projects`, {
           params: { userName }
         }).then(response => {
           const filteredProjects = response.data.map(project => ({
@@ -72,7 +73,7 @@ function Admin() {
 
     const userIdentifier = user.email.split('@')[0];
 
-    axios.get(`/api/admin/users/${userIdentifier}`)
+    axios.get(`${API_URL}/api/admin/users/${userIdentifier}`)
     .then(response => {
         const existingProjects = response.data.projects.map(project => ({
             projectId: project.projectId,
@@ -173,7 +174,7 @@ function Admin() {
     // console.log("Role Changes:", roleChanges);  // debugging console log
     // console.log("Project Updates:", projectUpdates);  // debugging console log
 
-    axios.post('/api/admin/saveUserData', {
+    axios.post(`${API_URL}/api/admin/saveUserData`, {
       userEmail: tempUser.email,
       projectUpdates,
       removedProjects,

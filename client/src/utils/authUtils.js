@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { loginRequest } from "../config/authConfig";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const verifyUserRegistration = async (accessToken, navigate, setLoginError, handleLogout) => {
   try {
-    const response = await axios.post('http://localhost:3001/api/authenticate', {
+    const response = await axios.post(`${API_URL}/api/authenticate`, {
       token: accessToken,
     }, {
       headers: {

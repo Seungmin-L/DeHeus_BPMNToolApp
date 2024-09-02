@@ -12,6 +12,7 @@ import { convertUTCToLocal } from '../utils/utils';
 
 
 function MyPage() {
+  const API_URL = process.env.REACT_APP_API_URL;
   const isAuthenticated = useIsAuthenticated();
   const [userName, setUserName] = useState("");
   const { accounts } = useMsal();
@@ -28,7 +29,7 @@ function MyPage() {
 
   const handleOpenClick = async (event, item) => {
     event.stopPropagation();
-    axios.get('http://localhost:3001/api/diagram/getDraft', {
+    axios.get(`${API_URL}/api/diagram/getDraft`, {
       params: { diagramId: item.id, userEmail: userName }
     })
       .then((res) => {
@@ -47,7 +48,7 @@ function MyPage() {
 
       const identifier = accounts[0].username.split('@')[0];
 
-      axios.get(`/api/mypage/user/${identifier}`)
+      axios.get(`${API_URL}/api/mypage/user/${identifier}`)
         .then(response => {
           const data = response.data;
           setUserInfo({

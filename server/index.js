@@ -1,6 +1,6 @@
 const express = require("express");
 require('dotenv').config();
-const { connectDB } = require('./src/config/dbConfig');
+const { connectDB, getDBConnection } = require('./src/config/dbConfig');
 const cors = require("cors");
 const corsOptions = require('./src/config/corsOptions');
 const bodyParser = require('body-parser');
@@ -58,10 +58,25 @@ app.get('/api/admin/getRequestUser', adminController.getRequestUser);
 app.post('/api/admin/saveUserData', adminController.saveUserData);
 app.post('/api/admin/addNewUser', adminController.addNewUser);
 
-// for testing the server status when using docker container
-// app.get('/', (req, res) => {
-//   res.send('Welcome to the backend server!');
-// });
+// checking database connection after deployment
+app.get('/health', async (req, res) => {
+  const pool = getDBConnection();
+  if (!pool) {
+      return res.status(500).send('Database connection failed');
+  }
+
+  try {
+      const result = await pool.request().query('SELECT 1');
+      if (result) {
+          res.status(200).send('Database connected');
+      } else {
+          res.status(500).send('Database query failed');
+      }
+  } catch (error) {
+      console.error('Database Error: ', error);
+      res.status(500).send('Database connection failed');
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);

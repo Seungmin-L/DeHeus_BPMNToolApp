@@ -689,45 +689,62 @@ function BpmnEditor() {
     }
 
     // Decline Publish function
-    const handleDeclinePublish = (e) => {
+    const handleDeclinePublish = async (e) => {
         // Email user about the decline result
         e.preventDefault();
-        const serviceId = 'service_deheusvn_bpmnapp';
-        const templateId = 'template_rfow6sk';
-        const publicKey = 'oQHqsgvCGRFGdRGwg';
 
-        const templateParams = {
-            to_email: 'RequestUserEmail', // set User
-            to_name: 'RequestUserName', // set User
-            diagram_name: diagramName,
-            decline_reason: declineReason,
-            link: link + "/" + diagramId,
-        };
+        try {
+            // Fetch the user email and name from the backend based on the diagramId
+            const response = await axios.get(`${API_URL}/api/admin/getRequestUser`, {
+                params: { diagramId: diagramId }
+            });
 
-        emailjs.send(serviceId, templateId, templateParams, publicKey)
-            .then((response) => {
-                console.log('Email sent successfully!', response);
-                alert("Email sent successfully!");
+            if (response.status === 200) {
+                const { userEmail, userName } = response.data;
 
-                // POST request to log decline publish to backend!!
-                axios.post(`${API_URL}/api/diagram/publish/decline`, {
-                    diagramId: diagramId
-                })
+                const serviceId = 'service_deheusvn_bpmnapp';
+                const templateId = 'template_vyxsf68';
+                const publicKey = 'oQHqsgvCGRFGdRGwg';
+
+                const templateParams = {
+                    to_email: userEmail,
+                    to_name: userName,
+                    diagram_name: diagramName,
+                    decline_reason: declineReason,
+                    link: link + "/" + diagramId,
+                };
+
+                emailjs.send(serviceId, templateId, templateParams, publicKey)
                     .then((response) => {
-                        console.log('Decline Publish request sent to backend:', response.data);
+                        console.log('Email sent successfully!', response);
+                        alert("Email sent successfully!");
+
+                        // POST request to log decline publish to backend!!
+                        axios.post(`${API_URL}/api/diagram/publish/decline`, {
+                            diagramId: diagramId
+                        })
+                            .then((response) => {
+                                console.log('Decline Publish request sent to backend:', response.data);
+                            })
+                            .catch((error) => {
+                                console.error('Error sending decline publish request to backend:', error);
+                            });
+
+                        setDeclineReason('');
+                        handleCloseConfirmPublishModal();
+                        window.location.reload();
                     })
                     .catch((error) => {
-                        console.error('Error sending decline publish request to backend:', error);
+                        console.error('Error sending email:', error);
+                        alert("Error sending email");
                     });
-
-                setDeclineReason('');
-                handleCloseConfirmPublishModal();
-                window.location.reload();
-            })
-            .catch((error) => {
-                console.error('Error sending email:', error);
-                alert("Error sending email");
-            });
+            } else {
+                alert("Failed to retrieve requester information.");
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Error during fetching request user.");
+        }
     }
 
     /**Tool bar functions */

@@ -238,5 +238,43 @@ const saveUserData = async (req, res) => {
     }
 };
 
+const getRequestUser = async (req, res) => {
+    const { diagramId } = req.query;
+    console.log(diagramId);
 
-module.exports = { getUserList, getUserData, listAvailableProjects, saveUserData };
+    try {
+        const request = new sql.Request();
+        request.input('diagramId', sql.Int, diagramId);
+        const emailQuery = `
+            SELECT created_by AS userEmail
+            FROM [diagram_draft]
+            WHERE diagram_id = @diagramId;
+        `;
+        const emailResult = await request.query(emailQuery);
+
+        if (emailResult.recordset.length > 0) {
+            const userEmail = emailResult.recordset[0].userEmail;
+            request.input('userEmail', sql.VarChar, userEmail);
+            const nameQuery = `
+                SELECT name AS userName
+                FROM [user]
+                WHERE email = @userEmail;
+            `;
+            const nameResult = await request.query(nameQuery);
+
+            if (nameResult.recordset.length > 0) {
+                const userName = nameResult.recordset[0].userName;
+                res.status(200).json({ userEmail, userName });
+            } else {
+                res.status(404).json({ message: 'User not found in the user table' });
+            }
+        } else {
+            res.status(404).json({ message: 'No draft found for the specified diagram' });
+        }
+    } catch (error) {
+        console.error('Error fetching request user:', error.message);
+        res.status(500).json({ message: 'Error fetching request user', error: error.message });
+    }
+};
+
+module.exports = { getUserList, getUserData, listAvailableProjects, saveUserData, getRequestUser };

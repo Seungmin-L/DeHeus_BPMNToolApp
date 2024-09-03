@@ -694,7 +694,6 @@ function BpmnEditor() {
         e.preventDefault();
 
         try {
-            // Fetch the user email and name from the backend based on the diagramId
             const response = await axios.get(`${API_URL}/api/admin/getRequestUser`, {
                 params: { diagramId: diagramId }
             });
@@ -838,17 +837,19 @@ function BpmnEditor() {
         }
     }
 
-    const handleDelete = async (diagramId) => {
+    const handleDelete = async () => {
         try {
             const response = await axios.post(`${API_URL}/api/diagram/delete`, { diagramId });
             if (response.status === 200) {
                 alert("Diagram successfully deleted!");
                 handleCloseDeleteModal();
                 window.location.href = '/main';
+            } else {
+                alert("Failed to delete the diagram.")
             }
         } catch (error) {
-            console.error("Error deleting diagram:", error.message);
-            alert("Failed to delete diagram.");
+            console.error("Error deleting the diagram:", error.message);
+            alert("Error occurred while trying to delete the diagram.");
         }
     }
 

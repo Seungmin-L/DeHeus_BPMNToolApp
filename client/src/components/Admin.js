@@ -257,15 +257,20 @@ function Admin() {
   };
 
   const handleAddNewUser = () => {
-
-    //
-    // BACK API HERE! S2S2S2
-    // console.log(newUser) 확인하고 필요한 것 수정하시면 됩니다아
-    //
-
-    alert("New user added successfully!!");
-    handleCloseNewUserModal();
-
+    axios.post(`${API_URL}/api/admin/addNewUser`, newUser)
+      .then(response => {
+        console.log("New user added successfully:", response.data);
+        alert("New user added successfully!!");
+        handleCloseNewUserModal();
+      })
+      .catch(error => {
+        console.error("Error adding new user", error);
+        if (error.response && error.response.status === 400) {
+          alert(error.response.data.message);
+        } else {
+          alert("Failed to add new user. Please try again.");
+        }
+      });
   };
 
   return (

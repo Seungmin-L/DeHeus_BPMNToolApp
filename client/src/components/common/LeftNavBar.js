@@ -1,7 +1,7 @@
 import React from 'react';
 import { Nav } from 'react-bootstrap';
 
-function LeftNavBar() {
+function LeftNavBar({ isAdmin }) {
   const leftNavBarStyle = {
     backgroundColor: '#2A85E2',
     width: '10%',
@@ -20,8 +20,8 @@ function LeftNavBar() {
     <div style={leftNavBarStyle}>
       <Nav className="flex-column">
         <Nav.Link href="/" style={navItemStyle}>Home</Nav.Link>
-        <Nav.Link href="/" style={navItemStyle}>--------------</Nav.Link>
-        <Nav.Link href="/" style={navItemStyle}>--------------</Nav.Link>
+        {isAdmin && <Nav.Link href="/users" style={navItemStyle}>User Info</Nav.Link>}
+        <Nav.Link href="/mypage" style={navItemStyle}>My Page</Nav.Link>
       </Nav>
     </div>
   );

@@ -234,7 +234,7 @@ function ListSingleProject() {
     <div>
       <TopBar onLogoClick={toggleNav} userName={userName} projectId={projectId} />
       <div className="d-flex">
-        {isNavVisible && <LeftNavBar />}
+        {isNavVisible && <LeftNavBar isAdmin={userName === "vnapp.pbmn@deheus.com"} />}
         <div style={{ flexGrow: 1 }}>
           {userRole === 'editor' && (
             <button

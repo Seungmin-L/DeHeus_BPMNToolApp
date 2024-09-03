@@ -31,6 +31,7 @@ function Admin() {
   const [userName, setUserName] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
   const [removedProjects, setRemovedProjects] = useState([]);
+  const isAdmin = true;
 
   useEffect(() => {
     if (isAuthenticated && accounts.length > 0) {
@@ -271,7 +272,7 @@ function Admin() {
     <div>
       <TopBar onLogoClick={toggleNav} userName={userName} />
       <div className="d-flex">
-        {isNavVisible && <LeftNavBar />}
+        {isNavVisible && <LeftNavBar isAdmin={isAdmin}/>}
         <div style={{ flexGrow: 1 }}>
         <button
             onClick={handleShowNewUserModal}

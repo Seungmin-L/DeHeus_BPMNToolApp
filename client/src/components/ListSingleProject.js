@@ -33,7 +33,7 @@ function ListSingleProject() {
   const [expandedRows, setExpandedRows] = useState([]);
   const [isNavVisible, setIsNavVisible] = useState(false);
   const navigate = useNavigate();
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState([{id: "", name: "<None>"}]);
   const [projectName, setProjectName] = useState([]);
   const [userRole, setUserRole] = useState([]);
 
@@ -51,10 +51,10 @@ function ListSingleProject() {
           // console.log(formattedProcesses);
           setProcesses(formattedProcesses);
           setProjectName(response.data.projectName);
-          setOptions(response.data.processes.map(process => ({
+          setOptions([...options, ...response.data.processes.map(process => ({
             id: process.id,
             name: process.name
-          })));
+          }))]);
           const userRole = response.data.role;
           // console.log(userRole);  // 디버깅 용도라서 주석 처리!!
           setUserRole(userRole);  // set user role to show the add diagram button only to editors
@@ -234,7 +234,7 @@ function ListSingleProject() {
     <div>
       <TopBar onLogoClick={toggleNav} userName={userName} projectId={projectId} />
       <div className="d-flex">
-        {isNavVisible && <LeftNavBar />}
+        {isNavVisible && <LeftNavBar isAdmin={userName === "vnapp.pbmn@deheus.com"} />}
         <div style={{ flexGrow: 1 }}>
           {userRole === 'editor' && (
             <button

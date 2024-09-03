@@ -208,7 +208,6 @@ function BpmnEditor() {
         if (modelerInstance) return;
         // If there's a modeler instance already, destroy it
         if (modeler) modeler.destroy();
-
         modelerInstance = new BpmnModeler({
             container: container.current,
             keyboard: { bindTo: document },
@@ -255,6 +254,7 @@ function BpmnEditor() {
                 }
             }
         });
+
         // Import file or create a new diagram
         if (importXML) {
             modelerInstance.importXML(importXML)
@@ -386,7 +386,7 @@ function BpmnEditor() {
         if (userRole) {
             if (userRole === 'editing') {
                 axios.get(`${API_URL}/api/diagram/getDraft`, {
-                    params: { diagramId: diagramId, userEmail: userEmail }
+                    params: { projectId: projectId, diagramId: diagramId, userEmail: userEmail }
                 })
                     .then((res) => {
                         setDiagramXML(res.data.fileData);
@@ -690,45 +690,61 @@ function BpmnEditor() {
     }
 
     // Decline Publish function
-    const handleDeclinePublish = (e) => {
+    const handleDeclinePublish = async (e) => {
         // Email user about the decline result
         e.preventDefault();
-        const serviceId = 'service_deheusvn_bpmnapp';
-        const templateId = 'template_rfow6sk';
-        const publicKey = 'oQHqsgvCGRFGdRGwg';
-        
-        const templateParams = {
-            to_email: 'RequestUserEmail', // set User
-            to_name: 'RequestUserName', // set User
-            diagram_name: diagramName,
-            decline_reason: declineReason,
-            link: link + "/" + diagramId,
-        };
 
-        emailjs.send(serviceId, templateId, templateParams, publicKey)
-            .then((response) => {
-                console.log('Email sent successfully!', response);
-                alert("Email sent successfully!");
-
-                // POST request to log decline publish to backend!!
-                axios.post(`${API_URL}/api/diagram/publish/decline`, {
-                    diagramId: diagramId
-                })
-                .then((response) => {
-                    console.log('Decline Publish request sent to backend:', response.data);
-                })
-                .catch((error) => {
-                    console.error('Error sending decline publish request to backend:', error);
-                });
-                
-                setDeclineReason('');
-                handleCloseConfirmPublishModal();
-                window.location.reload();
-            })
-            .catch((error) => {
-                console.error('Error sending email:', error);
-                alert("Error sending email");
+        try {
+            const response = await axios.get(`${API_URL}/api/admin/getRequestUser`, {
+                params: { diagramId: diagramId }
             });
+
+            if (response.status === 200) {
+                const { userEmail, userName } = response.data;
+
+                const serviceId = 'service_deheusvn_bpmnapp';
+                const templateId = 'template_vyxsf68';
+                const publicKey = 'oQHqsgvCGRFGdRGwg';
+
+                const templateParams = {
+                    to_email: userEmail,
+                    to_name: userName,
+                    diagram_name: diagramName,
+                    decline_reason: declineReason,
+                    link: link + "/" + diagramId,
+                };
+
+                emailjs.send(serviceId, templateId, templateParams, publicKey)
+                    .then((response) => {
+                        console.log('Email sent successfully!', response);
+                        alert("Email sent successfully!");
+
+                        // POST request to log decline publish to backend!!
+                        axios.post(`${API_URL}/api/diagram/publish/decline`, {
+                            diagramId: diagramId
+                        })
+                            .then((response) => {
+                                console.log('Decline Publish request sent to backend:', response.data);
+                            })
+                            .catch((error) => {
+                                console.error('Error sending decline publish request to backend:', error);
+                            });
+
+                        setDeclineReason('');
+                        handleCloseConfirmPublishModal();
+                        window.location.reload();
+                    })
+                    .catch((error) => {
+                        console.error('Error sending email:', error);
+                        alert("Error sending email");
+                    });
+            } else {
+                alert("Failed to retrieve requester information.");
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Error during fetching request user.");
+        }
     }
 
     /**Tool bar functions */
@@ -822,20 +838,22 @@ function BpmnEditor() {
         }
     }
 
-    const handleDelete = async (diagramId) => {
+    const handleDelete = async () => {
         try {
             const response = await axios.post(`${API_URL}/api/diagram/delete`, { diagramId });
             if (response.status === 200) {
                 alert("Diagram successfully deleted!");
                 handleCloseDeleteModal();
                 window.location.href = '/main';
+            } else {
+                alert("Failed to delete the diagram.")
             }
         } catch (error) {
-            console.error("Error deleting diagram:", error.message);
-            alert("Failed to delete diagram.");
+            console.error("Error deleting the diagram:", error.message);
+            alert("Error occurred while trying to delete the diagram.");
         }
     }
-    
+
     const handleCancelCheckout = async () => {
         try {
             // console.log(diagramId);  // 디버깅용 주석 처리
@@ -1034,10 +1052,10 @@ function BpmnEditor() {
                                 <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#1C6091' }}>{diagramPath}</p>
                             </div>
                             <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                            <ul style={{ paddingLeft: '20px' }}>
-                                <li>Once you delete this diagram, <strong>ALL SUB DIAGRAMS</strong> under this will also be deleted.</li>
-                            </ul>
-                            <p>Are you sure? Please click Delete button if you wish to <strong>PERMANENTLY</strong> delete the diagram from the database.</p>
+                                <ul style={{ paddingLeft: '20px' }}>
+                                    <li>Once you delete this diagram, <strong>ALL SUB DIAGRAMS</strong> under this will also be deleted.</li>
+                                </ul>
+                                <p>Are you sure? Please click Delete button if you wish to <strong>PERMANENTLY</strong> delete the diagram from the database.</p>
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
@@ -1065,7 +1083,7 @@ function BpmnEditor() {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="danger" onClick={handleCancelCheckout} style={{ fontWeight: "550", margin: "0 auto" }}>
-                            Cancel
+                                Cancel
                             </Button>
                         </Modal.Footer>
                     </Modal>

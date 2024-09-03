@@ -95,7 +95,7 @@ export default function Sidebar(props) {
                     <td className="process-list-item" style={{
                         paddingLeft: (level + 1) * 5 + "px",
                         backgroundColor: process.id == diagramId ? "rgb(211, 224, 234)" : "white",
-                        display: "flex", justifyContent: "space-between", cursor: "pointer"
+                        display: "flex", justifyContent: "space-between", cursor: "pointer", width: "250px"
                     }}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -135,7 +135,7 @@ export default function Sidebar(props) {
                 getCurrentDiagram(res.data.processes);
             })
             .catch((err) => console.error(err));
-    }, [diagramId]);
+    }, [diagramId, processes]);
     return (
         <div className='hierarchy-sidebar'>
             <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)" }}>

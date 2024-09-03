@@ -9,6 +9,7 @@ import LeftNavBar from './common/LeftNavBar';
 import { formatProjectDates } from '../utils/utils';
 import { Form, Button, Modal } from "react-bootstrap";
 import { BsFillPlusCircleFill, BsThreeDots, BsTrash } from "react-icons/bs";
+import Loading from "./common/Loading";
 
 function Main() {
   const API_URL = process.env.REACT_APP_API_URL;
@@ -45,6 +46,9 @@ function Main() {
     navigate(`/project/${projectId}`);
   };
 
+  // Loading page
+  const [isLoading, setIsLoading] = useState(false);
+
   // Add project function
   const [showAddModal, setAddModal] = useState(false);
   // Delete project function
@@ -61,6 +65,7 @@ function Main() {
   const handleCreate = () => {
     // backend here
     if (projects) {
+      setIsLoading(true);
       const duplicate = projects.filter((project) => project.name === newProjectName);
       if (duplicate.length > 0) {
         alert(`Project, ${newProjectName}, already exists!`);
@@ -79,6 +84,7 @@ function Main() {
 
   const handleDelete = () => {
     if (selectedProject) {
+      setIsLoading(true);
       axios.post(`${API_URL}/api/project/delete`, { projectId: selectedProject.id })
         .then((res) => {
           alert(res.data.message);
@@ -91,6 +97,7 @@ function Main() {
         .catch(err => {
           console.error("Error deleting project: ", err);
         })
+        .finally(() => setIsLoading(false))
     }
   }
 
@@ -100,9 +107,10 @@ function Main() {
 
   return (
     <div>
+      {isLoading && <Loading />}
       <TopBar onLogoClick={toggleNav} userName={userName} />
       <div className="d-flex">
-        {isNavVisible && <LeftNavBar />}
+        {isNavVisible && <LeftNavBar isAdmin={userName === "vnapp.pbmn@deheus.com"} />}
         <div style={{ flexGrow: 1 }}>
           {userName == "vnapp.pbmn@deheus.com" && (
             <>

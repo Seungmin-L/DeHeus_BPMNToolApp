@@ -656,13 +656,18 @@ const checkNewDiagram = async (diagramId) => {
 }
 
 const getDraftData = async (req, res) => {
-    const { diagramId, userEmail } = req.query;
+    const { projectId, diagramId, userEmail } = req.query;
     try{
         const draftData = await getLatestDraftDiagram(diagramId, userEmail);
         if(draftData){
             res.status(200).json(draftData);
         }else{
-            res.status(500).json({message: "Failed to load latest draft of the user"})
+            const publishData = await getLatestPublishedDiagram(projectId, diagramId);
+            if(publishData){
+                res.status(200).json(publishData);
+            }else{
+                res.status(500).json({message: "Failed to load latest draft of the user"});
+            }
         }
     }catch(err){
         console.error("Error fetching draft data: ", err);
@@ -719,7 +724,66 @@ const getAllDiagrams = async (req, res) => {
 
 const deleteDiagram = async (req, res) => {
     const { diagramId } = req.body;
-}
+    // console.log(`Start! diagramId: ${diagramId}`);
+
+    let transaction;
+
+    try {
+        transaction = new sql.Transaction();
+        await transaction.begin();
+
+        const deleteDiagramAndChildren = async (diagramId, transaction) => {
+            const request = new sql.Request(transaction);
+
+            const childDiagramsQuery = `
+                SELECT child_diagram_id
+                FROM diagram_relation
+                WHERE parent_diagram_id = @diagramId
+            `;
+            request.input("diagramId", sql.Int, diagramId);
+            const childResult = await request.query(childDiagramsQuery);
+
+            for (const row of childResult.recordset) {
+                // console.log(`Now deleting diagram: ${row.child_diagram_id}`);
+                await deleteDiagramAndChildren(row.child_diagram_id, transaction);
+            }
+
+            await transaction.request()
+                .input("diagramId", sql.Int, diagramId)
+                .query(`DELETE FROM diagram_relation WHERE child_diagram_id = @diagramId`);
+            await transaction.request()
+                .input("diagramId", sql.Int, diagramId)
+                .query(`DELETE FROM diagram_checkout WHERE diagram_id = @diagramId`);
+            await transaction.request()
+                .input("diagramId", sql.Int, diagramId)
+                .query(`DELETE FROM diagram_draft WHERE diagram_id = @diagramId`);
+            await transaction.request()
+                .input("diagramId", sql.Int, diagramId)
+                .query(`DELETE FROM diagram_published WHERE diagram_id = @diagramId`);
+            await transaction.request()
+                .input("diagramId", sql.Int, diagramId)
+                .query(`DELETE FROM node_attachment WHERE diagram_id = @diagramId`);
+            await transaction.request()
+                .input("diagramId", sql.Int, diagramId)
+                .query(`DELETE FROM diagram WHERE id = @diagramId`);
+        };
+
+        await deleteDiagramAndChildren(diagramId, transaction);
+
+        await transaction.commit();
+
+        res.status(200).json({ message: "Diagram and its children deleted successfully!" });
+    } catch (error) {
+        console.error("Error deleting diagram:", error.message);
+
+        if (transaction) {
+            await transaction.rollback();
+        }
+
+        res.status(500).json({ message: "Error deleting diagram", error: error.message });
+    }
+};
+
 
 
 

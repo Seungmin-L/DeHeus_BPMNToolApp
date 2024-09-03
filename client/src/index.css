@@ -106,6 +106,7 @@ body {
   height: 100vh;
   border-left: 1px solid #ccc;
   background-color: white;
+  border-top: 1px solid #ccc;
 
   overflow: auto;
   &:empty {
@@ -130,7 +131,7 @@ body {
 }
 
 .hierarchy-sidebar{
-  width: 300px;
+  width: 15vw;
   border: 1px solid hsl(225, 10%, 75%);
   animation: appear 100ms ease-in-out;
   span{

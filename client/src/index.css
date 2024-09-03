@@ -13,7 +13,7 @@ body {
 }
 
 .main-container{
-  height: 100%;
+  height: calc(100vh);
 }
 
 .model-header{
@@ -60,7 +60,7 @@ body {
 }
 
 .model-body{
-  height: 88%;
+  height: 100vh;
   display: flex;
   flex-direction: row;
 }
@@ -90,20 +90,20 @@ body {
   transform: rotate(-90deg);
   position: absolute;
   right: 340px;
-  top: 50%;
+  top: 45%;
   border-top: 1px solid #ccc;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
   border-bottom: none ;
   background-color: white; 
-  font-size: 15px;
-  font-weight:400;
+  font-size: 16px;
+  font-weight:450;
 }
 
 
 #properties-panel-parent {
   width: 400px;
-  height: 88vh;
+  height: 100vh;
   border-left: 1px solid #ccc;
   background-color: white;
 
@@ -119,7 +119,7 @@ body {
 
 #modeler-container{
   width: 100%;
-  height: 100%;
+  height: 100vh;
   position: relative;
   background: url("https://svgshare.com/i/eGa.svg") center no-repeat;
 }
@@ -268,4 +268,12 @@ code {
 
 .djs-minimap.open .toggle::before{
   content: "X";
+}
+
+/*CSS for contributor modal*/
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }

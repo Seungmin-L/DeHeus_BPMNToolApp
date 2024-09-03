@@ -43,6 +43,7 @@ import Sidebar from '../features/sidebar/Sidebar';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { navigateTo } from '../util/navigation';
 
+
 // Checkin
 import { Form, Button, Modal } from "react-bootstrap";
 
@@ -920,30 +921,27 @@ function BpmnEditor() {
                     </div>
                 </div>
                 <div>
-                <Modal show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
-                    <Modal.Header closeButton>
-                        <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px', fontWeight: 'bold' }}>
-                                <div style={{ textAlign: 'left' }}>Name</div>
-                                <div style={{ textAlign: 'left' }}>Email</div>
-                                <div style={{ textAlign: 'left' }}>Version</div>
-                            </div>
-                            {contributors.length > 0 ? contributors.map((contributor, index) => (
-                                <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px' }}>
-                                    <div style={{ textAlign: 'left' }}>{contributor.name}</div>
-                                    <div style={{ textAlign: 'left' }}>{contributor.email}</div>
-                                    <div style={{ textAlign: 'left' }}>#{contributor.index}</div>
+                    <Modal dialogClassName="contributor-modal" show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px', fontWeight: 'bold' }}>
+                                    <div style={{ textAlign: 'left' }}>Name</div>
+                                    <div style={{ textAlign: 'left' }}>Email</div>
+                                    <div style={{ textAlign: 'left' }}>Version</div>
                                 </div>
-                            )) : <div>No contributors found.</div>}
-                        </div>
-                    </Modal.Body>
-                </Modal>
-
-
-
+                                {contributors.length > 0 ? contributors.map((contributor, index) => (
+                                    <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px' }}>
+                                        <div className="truncate" style={{ textAlign: 'left' }}>{contributor.name}</div>
+                                        <div style={{ textAlign: 'left' }}>{contributor.email}</div>
+                                        <div style={{ textAlign: 'left' }}>#{contributor.index}</div>
+                                    </div>
+                                )) : <div>No contributors found.</div>}
+                            </div>
+                        </Modal.Body>
+                    </Modal>
 
                     <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
                         <Modal.Header closeButton>

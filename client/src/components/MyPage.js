@@ -9,6 +9,7 @@ import LeftNavBar from "./common/LeftNavBar";
 import TopBar from "./common/TopBar";
 import { useNavigate } from "react-router-dom";
 import { convertUTCToLocal } from '../utils/utils';
+import '../styles/MyPage.css';
 
 
 function MyPage() {
@@ -98,7 +99,7 @@ function MyPage() {
   });
 
   return (
-    <div>
+    <div className="myPage">
       <TopBar onLogoClick={toggleNav} userName={userName} />
       <div className="d-flex">
         {isNavVisible && <LeftNavBar />}
@@ -137,67 +138,70 @@ function MyPage() {
               <Row style={{ height: "80vh" }}>
                 <Col md={5}>
                   <h5>Checked Out Diagrams</h5>
-                  <Table bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>Diagram</th>
-                        <th>Remaining Time</th>
-                        <th>
-                          <BsThreeDots />
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {checkedOutDiagrams.map((diagram, index) => (
-                        <tr key={index}>
-                          <td>{diagram.name}</td>
-                          <td>
-                            <BsClock
-                              style={{
-                                marginLeft: "3px",
-                                marginRight: "7px",
-                                color:
-                                  diagram.time >= 7
-                                    ? "#4CAF50"
-                                    : diagram.time < 3
-                                      ? "#F44336"
-                                      : "#FFEB3B",
-                              }}
-                              size={19}
-                            />{" "}
-                            {diagram.time} days left
-                          </td>
-                          <td>
-                            <MdOpenInNew style={{cursor: "pointer"}} onClick={(event) => handleOpenClick(event, diagram)} />
-                          </td>
+                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <Table bordered hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Diagram</th>
+                          <th>Remaining Time</th>
+                          <th>
+                            <BsThreeDots />
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+                      </thead>
+                      <tbody>
+                        {checkedOutDiagrams.map((diagram, index) => (
+                          <tr key={index}>
+                            <td>{diagram.name}</td>
+                            <td>
+                              <BsClock
+                                style={{
+                                  marginLeft: "3px",
+                                  marginRight: "7px",
+                                  color:
+                                    diagram.time >= 7
+                                      ? "#4CAF50"
+                                      : diagram.time < 3
+                                        ? "#F44336"
+                                        : "#FFEB3B",
+                                }}
+                                size={19}
+                              />{" "}
+                              {diagram.time} days left
+                            </td>
+                            <td>
+                              <MdOpenInNew style={{ cursor: "pointer" }} onClick={(event) => handleOpenClick(event, diagram)} />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+
                 </Col>
                 <Col md={7}>
                   <h5>Activity Log</h5>
-                  <Table bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>Activity</th>
-                        <th
-                          style={{ cursor: "pointer" }}
-                          onClick={sortActivities}
-                        >
-                          Date {sortAscending ? <FaSortUp /> : <FaSortDown />}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {activityLog.map((log, index) => (
-                        <tr key={index}>
-                          <td>{log.activity}</td>
-                          <td>{log.date}</td>
+                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <Table bordered hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Activity</th>
+                          <th style={{ cursor: "pointer" }} onClick={sortActivities}>
+                            Date {sortAscending ? <FaSortUp /> : <FaSortDown />}
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+                      </thead>
+                      <tbody>
+                        {activityLog.map((log, index) => (
+                          <tr key={index}>
+                            <td>{log.activity}</td>
+                            <td>{log.date}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+
                 </Col>
               </Row>
             </div>

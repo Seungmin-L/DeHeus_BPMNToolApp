@@ -43,6 +43,7 @@ import Sidebar from '../features/sidebar/Sidebar';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { navigateTo } from '../util/navigation';
 
+
 // Checkin
 import { Form, Button, Modal } from "react-bootstrap";
 
@@ -689,45 +690,61 @@ function BpmnEditor() {
     }
 
     // Decline Publish function
-    const handleDeclinePublish = (e) => {
+    const handleDeclinePublish = async (e) => {
         // Email user about the decline result
         e.preventDefault();
-        const serviceId = 'service_deheusvn_bpmnapp';
-        const templateId = 'template_rfow6sk';
-        const publicKey = 'oQHqsgvCGRFGdRGwg';
 
-        const templateParams = {
-            to_email: 'RequestUserEmail', // set User
-            to_name: 'RequestUserName', // set User
-            diagram_name: diagramName,
-            decline_reason: declineReason,
-            link: link + "/" + diagramId,
-        };
+        try {
+            const response = await axios.get(`${API_URL}/api/admin/getRequestUser`, {
+                params: { diagramId: diagramId }
+            });
 
-        emailjs.send(serviceId, templateId, templateParams, publicKey)
-            .then((response) => {
-                console.log('Email sent successfully!', response);
-                alert("Email sent successfully!");
+            if (response.status === 200) {
+                const { userEmail, userName } = response.data;
 
-                // POST request to log decline publish to backend!!
-                axios.post(`${API_URL}/api/diagram/publish/decline`, {
-                    diagramId: diagramId
-                })
+                const serviceId = 'service_deheusvn_bpmnapp';
+                const templateId = 'template_vyxsf68';
+                const publicKey = 'oQHqsgvCGRFGdRGwg';
+
+                const templateParams = {
+                    to_email: userEmail,
+                    to_name: userName,
+                    diagram_name: diagramName,
+                    decline_reason: declineReason,
+                    link: link + "/" + diagramId,
+                };
+
+                emailjs.send(serviceId, templateId, templateParams, publicKey)
                     .then((response) => {
-                        console.log('Decline Publish request sent to backend:', response.data);
+                        console.log('Email sent successfully!', response);
+                        alert("Email sent successfully!");
+
+                        // POST request to log decline publish to backend!!
+                        axios.post(`${API_URL}/api/diagram/publish/decline`, {
+                            diagramId: diagramId
+                        })
+                            .then((response) => {
+                                console.log('Decline Publish request sent to backend:', response.data);
+                            })
+                            .catch((error) => {
+                                console.error('Error sending decline publish request to backend:', error);
+                            });
+
+                        setDeclineReason('');
+                        handleCloseConfirmPublishModal();
+                        window.location.reload();
                     })
                     .catch((error) => {
-                        console.error('Error sending decline publish request to backend:', error);
+                        console.error('Error sending email:', error);
+                        alert("Error sending email");
                     });
-
-                setDeclineReason('');
-                handleCloseConfirmPublishModal();
-                window.location.reload();
-            })
-            .catch((error) => {
-                console.error('Error sending email:', error);
-                alert("Error sending email");
-            });
+            } else {
+                alert("Failed to retrieve requester information.");
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Error during fetching request user.");
+        }
     }
 
     /**Tool bar functions */
@@ -821,17 +838,19 @@ function BpmnEditor() {
         }
     }
 
-    const handleDelete = async (diagramId) => {
+    const handleDelete = async () => {
         try {
             const response = await axios.post(`${API_URL}/api/diagram/delete`, { diagramId });
             if (response.status === 200) {
                 alert("Diagram successfully deleted!");
                 handleCloseDeleteModal();
                 window.location.href = '/main';
+            } else {
+                alert("Failed to delete the diagram.")
             }
         } catch (error) {
-            console.error("Error deleting diagram:", error.message);
-            alert("Failed to delete diagram.");
+            console.error("Error deleting the diagram:", error.message);
+            alert("Error occurred while trying to delete the diagram.");
         }
     }
 
@@ -920,7 +939,7 @@ function BpmnEditor() {
                     </div>
                 </div>
                 <div>
-                    <Modal show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
+                    <Modal dialogClassName="contributor-modal" show={showContributorsModal} onHide={handleCloseContributorsModal} centered>
                         <Modal.Header closeButton>
                             <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
                         </Modal.Header>
@@ -933,7 +952,7 @@ function BpmnEditor() {
                                 </div>
                                 {contributors.length > 0 ? contributors.map((contributor, index) => (
                                     <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px' }}>
-                                        <div style={{ textAlign: 'left' }}>{contributor.name}</div>
+                                        <div className="truncate" style={{ textAlign: 'left' }}>{contributor.name}</div>
                                         <div style={{ textAlign: 'left' }}>{contributor.email}</div>
                                         <div style={{ textAlign: 'left' }}>#{contributor.index}</div>
                                     </div>
@@ -941,9 +960,6 @@ function BpmnEditor() {
                             </div>
                         </Modal.Body>
                     </Modal>
-
-
-
 
                     <Modal show={showPublishModal} onHide={handleClosePublishModal} centered>
                         <Modal.Header closeButton>

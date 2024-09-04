@@ -113,7 +113,7 @@ function Main() {
       {isLoading && <Loading />}
       <TopBar onLogoClick={toggleNav} userName={userName} />
       <div className="d-flex">
-        {isNavVisible && <LeftNavBar />}
+        {isNavVisible && <LeftNavBar isAdmin={userName === "vnapp.pbmn@deheus.com"} />}
         <div style={{ flexGrow: 1 }}>
           {userName == "vnapp.pbmn@deheus.com" && (
             <>

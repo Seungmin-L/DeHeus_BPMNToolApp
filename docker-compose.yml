@@ -2,7 +2,7 @@ services:
   client:
     build: ./client
     ports:
-      - "3000:3000"
+      - "8080:80"
     env_file:
       - ./client/.env
     networks:

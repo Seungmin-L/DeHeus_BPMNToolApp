@@ -28,7 +28,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/main" element={<ProtectedRoute element={<Main />} />} />
-          <Route path="/admin" element={<ProtectedRoute element={<Admin />} />} />
+          <Route path="/users" element={<ProtectedRoute element={<Admin />} />} />
           <Route path="/mypage" element={<ProtectedRoute element={<MyPage />} />} />
           <Route path="/project/:projectId" element={<ProtectedRoute element={<ListSingleProject />} />} />
           <Route path="/project/:projectId/:diagramName" element={<ProtectedRoute element={<BpmnEditor />} />} />

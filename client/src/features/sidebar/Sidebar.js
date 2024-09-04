@@ -142,8 +142,8 @@ export default function Sidebar(props) {
                 <span style={{ fontWeight: "600" }}>Hierarchy</span>
                 <BsArrowBarLeft className='sidebar-btn' onClick={handleHidden} />
             </div>
-            <Table style={{ overflow: "auto", height: "calc(100% - 50px)", display: "block" }}>
-                <tbody>
+            <Table style={{ overflow: "auto", width: "100%", height: "20px" }}>
+                <tbody style={{ width: "100%" }}>
                     {processes && processes.map(process => renderRow(process))}
                 </tbody>
             </Table>

@@ -131,7 +131,7 @@ body {
 }
 
 .hierarchy-sidebar{
-  width: 15vw;
+  width: 250px;
   border: 1px solid hsl(225, 10%, 75%);
   animation: appear 100ms ease-in-out;
   span{

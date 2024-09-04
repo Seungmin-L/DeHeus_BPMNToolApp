@@ -13,7 +13,7 @@ body {
 }
 
 .main-container{
-  height: calc(100vh - 90px);
+  height: 100%;
 }
 
 .model-header{
@@ -166,9 +166,16 @@ body {
   width: 250px;
   border: 1px solid hsl(225, 10%, 75%);
   animation: appear 100ms ease-in-out;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  /* position: sticky; */
   span{
     font-size: 14px;
   }
+}
+
+.hierarchy-sidebar::-webkit-scrollbar {
+  display: none; /* Hide scrollbar */
 }
 
 @keyframes appear {

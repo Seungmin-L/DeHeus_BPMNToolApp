@@ -58,8 +58,32 @@ function Toolbar({
 
         <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/> */}
         {/* <button dangerouslySetInnerHTML={{ __html: Icons.export }} onClick={onExportClick}></button> */}
-        {isOpen &&
+        {isOpen && mode !== "editing" &&
           <ul className='export-options'>
+            <li>
+              <a id='export-xml' title='download BPMN diagram' target='_blank'
+                onClick={onExportXml}>XML
+              </a>
+            </li>
+            <li>
+              <a id='export-pdf' title='download BPMN diagram as pdf' target='_blank'
+                onClick={onExportPdf}>PDF
+              </a>
+            </li>
+            <li>
+              <a id='export-png' title='download BPMN diagram as png' target='_blank'
+                onClick={onExportPng}>PNG
+              </a>
+            </li>
+            <li>
+              <a id='export-svg' title='download BPMN diagram as svg' target='_blank'
+                onClick={onExportSvg}>SVG
+              </a>
+            </li>
+          </ul>
+        }
+        {isOpen && mode === 'editing' &&
+          <ul className='export-options-editing'>
             <li>
               <a id='export-xml' title='download BPMN diagram' target='_blank'
                 onClick={onExportXml}>XML

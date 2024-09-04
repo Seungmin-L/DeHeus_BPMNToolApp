@@ -59,6 +59,38 @@ body {
   background-color: hsl(210, 8%, 90%);
 }
 
+.export-options-editing{
+  background-color: hsl(240, 33%, 98%);
+  width: 100px;
+  padding: 10px 5px;
+  top: 96px;
+  right: 105px;
+  position: absolute;
+  list-style: none;
+  text-decoration: none;
+  border-radius: 5px;
+  z-index: 99999;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.export-options-editing li{
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+.export-options-editing li a{
+  text-decoration: none;
+  color: black;
+  width: 100%;
+  display: inline-block;
+}
+
+.export-options-editing li:hover{
+  cursor: pointer;
+  background-color: hsl(210, 8%, 90%);
+}
+
 .model-body{
   height: calc(100vh - 96px);
   display: flex;
@@ -154,10 +186,10 @@ body {
 }
 
 .djs-palette.two-column.open{
-  position: fixed !important;
+  /* position: fixed !important; */
   top: 20% !important;
-  left: 270px !important;
-  height: 70%;
+  /* left: 16vw !important; */
+  height: (100vh);
 }
 
 .sidebar-hidden{

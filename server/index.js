@@ -56,6 +56,7 @@ app.get('/api/admin/users', adminController.getUserList);
 app.get('/api/admin/users/:identifier', adminController.getUserData);
 app.get('/api/admin/getRequestUser', adminController.getRequestUser);
 app.post('/api/admin/saveUserData', adminController.saveUserData);
+app.post('/api/admin/addNewUser', adminController.addNewUser);
 
 // for testing the server status when using docker container
 // app.get('/', (req, res) => {

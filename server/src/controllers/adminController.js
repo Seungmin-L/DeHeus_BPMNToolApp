@@ -277,4 +277,88 @@ const getRequestUser = async (req, res) => {
     }
 };
 
-module.exports = { getUserList, getUserData, listAvailableProjects, saveUserData, getRequestUser };
+
+const addNewUser = async (req, res) => {
+    const { email, name, department, projects } = req.body;
+
+    // email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).send({ message: 'Invalid email format. Please try again.' });
+    }
+
+    try {
+        // check email if exists
+        const emailCheckRequest = new sql.Request();
+        emailCheckRequest.input('Email', sql.VarChar, email);
+
+        const checkEmailQuery = `
+            SELECT COUNT(*) as count FROM [user] WHERE email = @Email
+        `;
+        const emailCheckResult = await emailCheckRequest.query(checkEmailQuery);
+
+        if (emailCheckResult.recordset[0].count > 0) {
+            return res.status(400).send({ message: 'Email already exists. Please try again.' });
+        }
+
+        // then, insert the new user infos
+        const userInsertRequest = new sql.Request();
+        userInsertRequest.input('Email', sql.VarChar, email);
+        userInsertRequest.input('Name', sql.VarChar, name);
+        userInsertRequest.input('Department', sql.VarChar, department);
+
+        const insertUserQuery = `
+            INSERT INTO [user] (
+                id, 
+                email, 
+                name, 
+                tenant_id, 
+                token_issue_time, 
+                token_expiration_time, 
+                nonce, 
+                identity_provider, 
+                token_id, 
+                resource_id, 
+                department
+            )
+            VALUES (
+                'a',
+                @Email, 
+                @Name, 
+                'a',
+                1,
+                1,
+                'a',
+                'a',
+                'a',
+                'a',
+                @Department
+            )
+        `;
+        await userInsertRequest.query(insertUserQuery);
+
+        // update project contribution infos
+        for (const project of projects) {
+            const contributionRequest = new sql.Request();
+            contributionRequest.input('Email', sql.VarChar, email);
+            contributionRequest.input('ProjectId', sql.Int, project.projectId);
+            contributionRequest.input('Editor', sql.Bit, project.role === 'Editor' ? 1 : 0);
+
+            const insertContributionQuery = `
+                INSERT INTO diagram_contribution (user_email, project_id, editor)
+                VALUES (@Email, @ProjectId, @Editor)
+            `;
+
+            await contributionRequest.query(insertContributionQuery);
+        }
+
+        res.status(201).send({ message: 'New user added successfully' });
+
+    } catch (error) {
+        console.error("Error adding new user:", error);
+        res.status(500).send({ message: 'Failed to add new user' });
+    }
+};
+
+
+module.exports = { getUserList, getUserData, listAvailableProjects, saveUserData, getRequestUser, addNewUser };

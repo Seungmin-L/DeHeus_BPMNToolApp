@@ -1,4 +1,9 @@
-const whitelist = ['http://localhost:3000', 'http://localhost:3001', 'http://client:3000', 'http://server:3001'];  // 추후 배포 환경 링크도 추가할 것
+const whitelist = [
+  'http://localhost:3000', 'http://localhost:3001', 
+  'http://client:3000', 'http://server:3001', 
+  'http://localhost:8080', 'http://client:8080', 'http://client',
+  'vn-app-sa-bpmn-stapp-p-01.azurewebsites.net'
+];
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -7,7 +12,7 @@ const corsOptions = {
       callback(null, true);
     } else {
       // console.warn(`Blocked CORS for ${origin}`);
-      callback(new Error('Not allowed by CORS policy'), false);  // 정보 노출 최소화
+      callback(new Error('Not allowed by CORS policy'), false);
     }
   },
   credentials: true,

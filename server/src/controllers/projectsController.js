@@ -140,7 +140,6 @@ const deleteProject = async (req, res) => {
       res.status(200).json({message: "Please remove all diagrams before deleting a project!"});
     }else{
       res.status(200).json({message: "Project deleted successfully!", id: projectId});
-      res.status(500).json({ message: "Project deletion failed", id: projectId});
     }
     // const response = await deleteAllRelatives(projectId);
     // if (response) {

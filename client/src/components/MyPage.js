@@ -52,12 +52,14 @@ function MyPage() {
       axios.get(`${API_URL}/api/mypage/user/${identifier}`)
         .then(response => {
           const data = response.data;
+          // Format user data
           setUserInfo({
             name: data.name || "N/A",
             email: data.email || "N/A",
             department: data.department || "N/A",
           });
 
+          // Format diagram data that user checked out  
           setCheckedOutDiagrams(data.checkedOutDiagrams.map(diagram => ({
             id: diagram.id,
             projectId: diagram.projectId,
@@ -65,13 +67,12 @@ function MyPage() {
             time: diagram.time
           })));
 
+          // Format activity log
           setActivityLog(data.activityLog.map(log => ({
             activity: `${log.activity} [${log.diagram_name}] in [${log.project_name}]`,
-            // date: new Date(log.date).toLocaleString(),
             date: convertUTCToLocal(log.date),
           })));
 
-          console.log(response.data);
         })
         .catch(error => {
           console.error("Error fetching user info", error);

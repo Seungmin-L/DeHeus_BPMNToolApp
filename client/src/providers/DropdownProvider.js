@@ -58,7 +58,7 @@ DropdownPropertiesProvider.$inject = [ 'propertiesPanel', 'translate' ];
 // Create the custom magic group
 function createMagicGroup(element, translate) {
 
-  // create a group called "Magic properties".
+  // create a group called "Properties".
   const magicGroup = {
     id: 'dropdown',
     label: translate('Properties'),

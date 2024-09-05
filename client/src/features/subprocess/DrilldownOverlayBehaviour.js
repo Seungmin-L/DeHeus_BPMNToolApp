@@ -13,7 +13,7 @@ import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 import { classes, domify } from 'min-dom';
 import { getPlaneIdFromShape } from 'bpmn-js/lib/util/DrilldownUtil';
 import axios from 'axios';
-import { getLocation } from '../../util/navigation';
+import { getLocation } from '../../utils/navigation';
 
 /**
  * @typedef {import('diagram-js/lib/core/Canvas').default} Canvas
@@ -214,7 +214,7 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
               .then((response) => {
                 if (response.data.fileData) {
                   const { diagramName, fileData } = response.data;
-                  const url = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
+                  const url = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;
                   const data = { id: res.data.data.id, url: url, userName: userName, fileData: fileData }
                   const newWindow = window.open(url, "_blank");
                   newWindow.addEventListener("load", () => {
@@ -223,7 +223,7 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
                     }, 500);
                   });
                 }else{
-                  const url = `/project/${projectId}/${name.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
+                  const url = `/project/${projectId}/${name.replace(/ /g, '-')}`;
                   const data = { id: res.data.data.id, url: url, userName: userName }
                   const newWindow = window.open(url, "_blank");
                   newWindow.addEventListener("load", () => {
@@ -236,12 +236,6 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
                 console.error("Error fetching diagram data:", error);
                 alert('Failed to open the diagram.');
               })
-            // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
-            // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
-
-            // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
-            // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
-            // console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
           } else {
             const url = `/project/${projectId}/${res.data.data.name.replace(/ /g, '-')}`;
             const newWindow = window.open(url, "_blank");

@@ -23,6 +23,7 @@ export default function Sidebar(props) {
         );
     }
 
+    // Get current diagram
     const getCurrentDiagram = (processList) => {
         const current = processList?.filter(process => process.id === diagramId);
         if (current.length === 0) {
@@ -34,7 +35,6 @@ export default function Sidebar(props) {
             }
         }
     }
-
     const findDiagram = (process, list) => {
         process.forEach(p => {
             if (p.id == diagramId) {
@@ -59,25 +59,15 @@ export default function Sidebar(props) {
         onClick();
         try {
             const response = await axios.get(`${API_URL}/api/diagrams/get-diagram-with-project/${projectId}/${id}/${userName}`);
-            // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
-            // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
             if (response.data.fileData) {
-                const { diagramName, fileData } = response.data;  // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
-                // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
-                console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
+                const { diagramName, fileData } = response.data;
 
-                const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
-                // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
-
-                // 다이어그램 모델러 페이지로 이동
-                // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+                const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;
+                // Navigate to modeler
                 navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: fileData } });
             } else {
-                const generatedUrl = `/project/${projectId}/${name.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
-                // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
-
-                // 다이어그램 모델러 페이지로 이동
-                // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+                const generatedUrl = `/project/${projectId}/${name.replace(/ /g, '-')}`;
+                // Navigate to modeler
                 navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: null } });
             }
         } catch (error) {
@@ -135,7 +125,7 @@ export default function Sidebar(props) {
                 getCurrentDiagram(res.data.processes);
             })
             .catch((err) => console.error(err));
-    }, [diagramId, processes]);
+    }, [diagramId]);
     return (
         <div className='hierarchy-sidebar'>
             <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)" }}>

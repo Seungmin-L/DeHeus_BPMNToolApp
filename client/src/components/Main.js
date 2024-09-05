@@ -65,8 +65,8 @@ function Main() {
   const [newProjectName, setNewProjectName] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
 
+  // Create a project
   const handleCreate = () => {
-    // backend here
     if (projects) {
       setIsLoading(true);
       const duplicate = projects.filter((project) => project.name === newProjectName);
@@ -85,6 +85,7 @@ function Main() {
     }
   }
 
+  // Delete a project
   const handleDelete = () => {
     setIsLoading(true);
     if (selectedProject) {
@@ -102,10 +103,6 @@ function Main() {
         })
         .finally(() => setIsLoading(false))
     }
-  }
-
-  if (!isAuthenticated) {
-    return <NoAuth />;
   }
 
   return (

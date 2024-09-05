@@ -9,6 +9,8 @@ export default function PageForNav() {
     const isAuthenticated = useIsAuthenticated();
     const { accounts } = useMsal();
     const navigate = useNavigate();
+
+    // Fetch diagram from DB
     const getDiagramXML = async (name) => {
         try{
             const response = await axios.get(`${API_URL}/api/diagrams/get-diagram-with-project/${projectId}/${diagramId}/${name}`)
@@ -21,8 +23,9 @@ export default function PageForNav() {
             console.error("Error fetching diagram: ", err);
         }
     }
+
+    // Admin redirection to diagram draft
     useEffect(() => {
-        console.log(projectId, diagramName, diagramId);
         if (isAuthenticated && accounts.length > 0) {
             const userName = accounts[0].username;
             if (userName.includes('.pbmn@')) {

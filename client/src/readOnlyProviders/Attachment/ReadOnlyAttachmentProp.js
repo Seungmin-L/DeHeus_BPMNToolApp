@@ -13,7 +13,7 @@ import { useService } from 'bpmn-js-properties-panel';
 import { isFunction } from 'min-dash';
 import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
 import axios from 'axios';
-import { getLocation } from '../../util/navigation';
+import { getLocation } from '../../utils/navigation';
 
 export default function (element) {
   return [
@@ -73,7 +73,7 @@ function AttachmentList(props) {
         var url = URL.createObjectURL(res.data);
         window.open(url);
       })
-      .catch(err => console.log(err));
+      .catch(err => console.error(err));
   }
   // Check value changes
   hooks.useEffect(() => {

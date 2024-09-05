@@ -13,7 +13,7 @@ import { useService } from 'bpmn-js-properties-panel';
 import { isFunction } from 'min-dash';
 import { jsx, jsxs } from '@bpmn-io/properties-panel/preact/jsx-runtime';
 import axios from 'axios';
-import { getLocation } from '../../util/navigation';
+import { getLocation } from '../../utils/navigation';
 
 export default function (element) {
   return [
@@ -61,8 +61,7 @@ function Attachment(props) {
         file: file,
         type: value.type
       })
-        .then(res => console.log({ msg: res.data.message, file: res.data.file }))
-        .catch(err => console.log(err));
+        .catch(err => console.error(err));
     });
     return modeling.updateProperties(element, {
       attachment: names
@@ -72,8 +71,7 @@ function Attachment(props) {
   const deleteValue = async (names, value) => {
     // Function for deleting attachment files
     axios.post(`${API_URL}/api/attachments/${diagramId}/${nodeId}/${value}`)
-      .then(res => console.log({ msg: res.data.message, file: res.data.file }))
-      .catch(err => console.log(err));
+      .catch(err => console.error(err));
     return modeling.updateProperties(element, {
       attachment: names
     });
@@ -128,7 +126,7 @@ function AttachmentList(props) {
         var url = URL.createObjectURL(res.data);
         window.open(url);
       })
-      .catch(err => console.log(err));
+      .catch(err => console.error(err));
   }
   const btnOnClick = e => {
     e.preventDefault();

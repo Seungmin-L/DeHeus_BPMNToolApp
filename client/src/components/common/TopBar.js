@@ -53,29 +53,20 @@ function TopBar({ onLogoClick, userName, projectId }) {
   const handleOpenClick = async (event, item) => {
     event.stopPropagation();
 
-    // console.log("Item object:", item);  // 디버깅 용도라서 주석 처리!!
-
     try {
       const response = await axios.get(`/api/diagrams/get-diagram-with-project/${projectId}/${item.id}/${userName}`);
-      // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
-      // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
       if (response.data.fileData) {
-        const { diagramName, fileData } = response.data;  // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
-        // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
-        // console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
+        const { diagramName, fileData } = response.data;
 
-        const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
-        // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
+        // Replace white space with '-' in diagram name
+        const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;
 
-        // 다이어그램 모델러 페이지로 이동
-        // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+        // Navigate to modeler
         navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
       } else {
-        const generatedUrl = `/project/${projectId}/${item.name.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
-        // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
-
-        // 다이어그램 모델러 페이지로 이동
-        // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+        // Replace white space with '-' in diagram name
+        const generatedUrl = `/project/${projectId}/${item.name.replace(/ /g, '-')}`;
+        // Navigate to modeler
         navigate(generatedUrl, { state: { itemId: item.id, userName: userName } });
       }
     } catch (error) {

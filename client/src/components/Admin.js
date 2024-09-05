@@ -38,6 +38,7 @@ function Admin() {
       const userName = accounts[0].username;
       setUserName(userName);
 
+      // Get all users
       axios.get(`${API_URL}/api/admin/users`)
         .then(response => {
           setUsers(response.data);
@@ -70,10 +71,10 @@ function Admin() {
   const [tempUser, setTempUser] = useState(null);
 
   const handleShowModal = (user) => {
-    console.log("Selected user:", user);
 
     const userIdentifier = user.email.split('@')[0];
 
+    // Bring user details
     axios.get(`${API_URL}/api/admin/users/${userIdentifier}`)
     .then(response => {
         const existingProjects = response.data.projects.map(project => ({
@@ -106,6 +107,7 @@ function Admin() {
     setShowModal(false);
   };
 
+  // Function for handling role change of the user in a project
   const handleRoleChange = (projectIndex, newRole) => {
     setTempUser((tempUser) => {
       const updatedProjects = tempUser.projects.map((project, index) => {
@@ -116,10 +118,9 @@ function Admin() {
       });
       return { ...tempUser, projects: updatedProjects };
     });
-
-    // console.log("Role change stored in tempUser but not saved to DB yet");  // debugging console log
   };
 
+  // Function for excluding user from a project
   const handleRemoveProject = (projectIndex) => {
     const projectToRemove = tempUser.projects[projectIndex];
     const updatedProjects = tempUser.projects.filter(
@@ -132,12 +133,9 @@ function Admin() {
       ...prevRemovedProjects,
       projectToRemove.projectId,
     ]);
-
-    // console.log("Project removed:", projectToRemove);  // debugging console log
-    // console.log("Updated Removed Projects:", [...removedProjects, projectToRemove.projectId]);  // debugging console log
   };
 
-
+  // Function for adding user in a project
   const handleAddProject = (projId, projName) => {
     const newProject = {
       projectId: projId,
@@ -151,6 +149,7 @@ function Admin() {
     }));
   };
   
+  // Save
   const handleSaveChanges = () => {
     const existingProjects = tempUser.existingProjects || [];
     const projects = tempUser.projects || [];
@@ -171,10 +170,7 @@ function Admin() {
       role: project.role
     }));
 
-    // console.log("Final Removed Projects:", removedProjects);  // debugging console log
-    // console.log("Role Changes:", roleChanges);  // debugging console log
-    // console.log("Project Updates:", projectUpdates);  // debugging console log
-
+    // Save function call 
     axios.post(`${API_URL}/api/admin/saveUserData`, {
       userEmail: tempUser.email,
       projectUpdates,
@@ -182,7 +178,7 @@ function Admin() {
       roleChanges,
     })
     .then(response => {
-      console.log("User data saved successfully");
+      alert("User data saved successfully");
     })
     .catch(error => {
       console.error("Error saving user data", error);
@@ -194,7 +190,7 @@ function Admin() {
   };
   
 
-  // Add new user~~~!!!
+  // Add new user
   const [showNewUserModal, setShowNewUserModal] = useState(false);
 
   const [newUser, setNewUser] = useState({
@@ -208,6 +204,7 @@ function Admin() {
     return <NoAuth />;
   }
   
+  // Display user registration modal
   const handleShowNewUserModal = () => {
     setNewUser({
       email: '',
@@ -221,6 +218,7 @@ function Admin() {
     setShowNewUserModal(false);
   };
 
+  // New user project configuration (Adding)
   const handleAddNewUserProject = (projectId, projectName) => {
     const newProject = {
       projectId: projectId,
@@ -237,6 +235,7 @@ function Admin() {
     !newUser.projects.some(assignedProject => assignedProject.projectId === project.id)
   );
 
+  // New user role configuration
   const handleNewUserRoleChange = (projectIndex, newRole) => {
     setNewUser((prevNewUser) => {
       const updatedProjects = prevNewUser.projects.map((project, index) => {
@@ -249,6 +248,7 @@ function Admin() {
     });
   };
 
+  // New user project configuration (Removal)
   const handleRemoveNewUserProject = (projectIndex) => {
     setNewUser((prevNewUser) => ({
       ...prevNewUser,
@@ -256,10 +256,10 @@ function Admin() {
     }));
   };
 
+  // Add new user
   const handleAddNewUser = () => {
     axios.post(`${API_URL}/api/admin/addNewUser`, newUser)
       .then(response => {
-        console.log("New user added successfully:", response.data);
         alert("New user added successfully!!");
         handleCloseNewUserModal();
       })

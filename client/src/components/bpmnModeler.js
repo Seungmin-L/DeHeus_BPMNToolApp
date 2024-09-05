@@ -10,8 +10,8 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js
 import attachmentPropertiesProviderModule from '../providers';
 import readOnlyAttachmentProviderModule from '../readOnlyProviders';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
-import generateImage from '../util/generateImage';
-import generatePdf from '../util/generatePdf';
+import generateImage from '../utils/generateImage';
+import generatePdf from '../utils/generatePdf';
 //custom properties module
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
@@ -41,7 +41,7 @@ import '../styles/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 import Sidebar from '../features/sidebar/Sidebar';
 import { BsArrowBarRight } from 'react-icons/bs';
-import { navigateTo } from '../util/navigation';
+import { navigateTo } from '../utils/navigation';
 
 
 // Checkin
@@ -52,10 +52,9 @@ function BpmnEditor() {
     const API_URL = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
     const location = useLocation();
-    const diagramId = location.state?.itemId; // 프로젝트 리스트에서 접근할 때 state로 가지고 온 다이어그램 id
+    const diagramId = location.state?.itemId;
     const { projectId, itemName } = useParams();
-    const fileData = location.state?.fileData; // state로 가지고 온 다이어그램 userName
-    // const userName = "vnapp.pbmn@deheus.com"
+    const fileData = location.state?.fileData;
     const container = useRef(null);
     const importFile = useRef(null);
     const [importXML, setImportXML] = useState(null);
@@ -189,7 +188,6 @@ function BpmnEditor() {
                 params: { diagramId }
             });
             setIsRequest(response.data.requestedToPublish);
-            console.log(response.data.requestedToPublish)
         } catch (err) {
             console.error("An error occurred while fetching isRequest:", err.message);
         }
@@ -245,7 +243,6 @@ function BpmnEditor() {
             if (data) {
                 const { id, url, userName } = data;
                 if (id && url && userName) {
-                    console.log(data);
                     if (data.fileData) {
                         navigateTo(url, id, userName, data.fileData);
                     } else {
@@ -266,7 +263,6 @@ function BpmnEditor() {
                     modelerInstance.get('keyboard').bind(document);
                 })
                 .catch(err => {
-                    // console.log(err);
                     console.error("Error rendering diagram:", err);
                     setIsFileValid(false);
                 });
@@ -280,7 +276,6 @@ function BpmnEditor() {
                     modelerInstance.get('keyboard').bind(document);
                 })
                 .catch(err => {
-                    // console.log(err);
                     console.error("Error rendering diagram:", err);
                     setIsFileValid(false);
                 });
@@ -291,30 +286,32 @@ function BpmnEditor() {
                     modelerInstance.get('keyboard').bind(document);
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error("Error generating diagram: ", err);
                     setIsFileValid(false);
                 });
         }
         setModeler(modelerInstance);
 
-        // console.log(modeler?.get('elementRegistry'))
+        // Set eventlistener based on the user role
         if (modelerInstance) {
+            // Disable 'tab' key
             document.addEventListener("keydown", (e) => {
                 if (e.key === 'Tab') e.preventDefault();
             });
             const eventBus = modelerInstance.get('eventBus');
             const keyboard = modelerInstance.get('keyboard');
             if (userRole) {
-                console.log(userRole);
                 if (userRole !== 'editing') {
+                    // Disable double click event
                     eventBus.on('element.dblclick', priority, () => {
                         return false;
                     });
-
+                    // Disable all keyboard events
                     keyboard.addListener(priority, () => {
                         return false;
                     });
 
+                    // Enable ctrl + f for search
                     keyboard.addListener(20000, function (context) {
                         var event = context.keyEvent;
                         if (event.ctrlKey || event.metaKey) {
@@ -326,7 +323,8 @@ function BpmnEditor() {
                     });
                 } else {
                     const eventBus = modelerInstance.get('eventBus');
-                    const elementRegistry = modelerInstance.get('elementRegistry');
+
+                    // Update subprocess in DB on name changes
                     eventBus.on('commandStack.element.updateProperties.executed', ({ context }) => {
                         const { element, properties, oldProperties } = context;
                         const nodeId = element.businessObject.id;
@@ -338,14 +336,6 @@ function BpmnEditor() {
                             }
                         }
                     });
-                    eventBus.on('element.click', function (e) {
-                        const element = elementRegistry.get(e.element.id);
-                        const overlays = modelerInstance.get('overlays');
-                        const existingOverlays = overlays.get({ element: element, type: 'drilldown' });
-                        if (existingOverlays.length) {
-                            console.log('DrilldownOverlayBehavior.prototype._addOverlay was called for this element.');
-                        }
-                    });
                     // Check file api availablitiy
                     if (!window.FileList || !window.FileReader) {
                         window.alert(
@@ -355,14 +345,11 @@ function BpmnEditor() {
                         registerFileDrop(document.getElementById('modeler-container'));
                     }
                     // Save diagram on every change
-                    modelerInstance.on('commandStack.changed', () => console.log(modelerInstance.get('elementRegistry')));
                     modelerInstance.on('commandStack.changed', saveDiagram);
                     // modelerInstance.on('commandStack.shape.delete.executed', (e) => onElementDelete(e.context.shape.id || undefined));
+
                     // Add Save shortcut (ctrl + s)
                     modelerInstance.get('editorActions').register('save', saveDiagram);
-                    document.removeEventListener("keydown", (e) => {
-                        e.preventDefault();
-                    })
                     keyboard.addListener(function (context) {
                         var event = context.keyEvent;
                         if (event.ctrlKey || event.metaKey) {
@@ -383,6 +370,7 @@ function BpmnEditor() {
     }, [importXML, diagramXML, editor, diagramId, projectId, userRole, diagramPath]);
 
     useEffect(() => {
+        // Bring diagram data based on the user roles
         if (userRole) {
             if (userRole === 'editing') {
                 axios.get(`${API_URL}/api/diagram/getDraft`, {
@@ -416,11 +404,9 @@ function BpmnEditor() {
         }
     }, [hidePanel]);
 
+    // Update subprocess name
     const updateSubProcessName = async (newName, nodeId) => {
         axios.post(`${API_URL}/api/diagram/updateSubProcess`, { name: newName, nodeId: nodeId, diagramId: diagramId })
-            .then((res) => {
-                console.log(res);
-            })
             .catch(err => {
                 console.error("Error updating diagram name: ", err);
             })
@@ -430,6 +416,7 @@ function BpmnEditor() {
     const handleHidden = () => {
         setIsHidden(prev => !prev);
     }
+
     // File drag & drop
     const registerFileDrop = (container) => {
         const handleFileSelect = (e) => {
@@ -444,10 +431,9 @@ function BpmnEditor() {
                     var xml = e.target.result;
                     setImportXML(xml);
                 };
-
                 reader.readAsText(file);
             } else {
-                console.log("Invalid File");
+                alert("Invalid File");
             }
         }
 
@@ -487,7 +473,7 @@ function BpmnEditor() {
     const exportXml = async (id) => {
         if (modeler) {
             const { xml } = await modeler.saveXML({ format: true }).catch(err => {
-                console.log(err);
+                console.error(err);
             });
             if (xml) {
                 setEncoded(document.getElementById(id), diagramName + '.xml', xml);
@@ -499,7 +485,7 @@ function BpmnEditor() {
     const exportSvg = async (id) => {
         if (modeler) {
             const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
-                console.log(err);
+                console.error(err);
             });
             if (svg) {
                 setEncoded(document.getElementById(id), diagramName + '.svg', svg);
@@ -511,7 +497,7 @@ function BpmnEditor() {
     const exportPng = async (id) => {
         if (modeler) {
             const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
-                console.log(err);
+                console.error(err);
             });
             if (svg) {
                 const url = await generateImage('png', svg);
@@ -524,7 +510,7 @@ function BpmnEditor() {
     const exportPdf = async (id) => {
         if (modeler) {
             const { svg } = await modeler.saveSVG({ format: true }).catch(err => {
-                console.log(err);
+                console.error(err);
             });
             if (svg) {
                 const url = await generateImage('png', svg);
@@ -543,31 +529,27 @@ function BpmnEditor() {
             });
 
             if (xml) {
-                console.log("Saved XML:", xml);
-                console.log("diagramId:", diagramId);
                 axios.post(`${API_URL}/api/diagram/save`, { xml: xml, diagramId: diagramId, userEmail: userEmail })
-                    .then(response => {
-                        console.log("Diagram saved successfully:", response.data);
-                    })
                     .catch(error => {
                         console.error("Error saving diagram to the database:", error);
                     });
             }
         }
     }
+
+    // Delete attachments on element delete
     const onElementDelete = (nodeId) => {
         if (nodeId === undefined) {
-            console.log("undefined");
             return;
         }
         axios.post(`${API_URL}/api/attachments/${diagramId}/${nodeId}`)
-            .then(res => console.log(res.data))
             .catch(err => console.error("Error fetching processes", err));
     }
 
     const onImportClick = () => {
         importFile.current.click();
     }
+
     const onFileChange = (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -581,7 +563,7 @@ function BpmnEditor() {
 
             reader.readAsText(file);
         } else {
-            console.log("Invalid File");
+            alert("Invalid File");
         }
     }
 
@@ -609,9 +591,6 @@ function BpmnEditor() {
     // handle checkout function
     const handleCheckIn = async () => {
         try {
-            // console.log(diagramId);
-            // console.log(userEmail);
-            // console.log(userName);
             const response = await axios.post(`${API_URL}/api/diagram/checkedout`, { diagramId, userEmail });
 
             if (response.status === 200) {
@@ -647,17 +626,13 @@ function BpmnEditor() {
 
         emailjs.send(serviceId, templateId, templateParams, publicKey)
             .then((response) => {
-                console.log('Email sent successfully!', response);
                 alert("Email sent successfully!");
 
-                // POST request to log request publish to backend!!
+                // POST request to log request publish to backend
                 axios.post(`${API_URL}/api/diagram/requestPublish`, {
                     diagramId: diagramId,
                     userEmail: userEmail,
                 })
-                    .then((response) => {
-                        console.log('Publish request sent to backend:', response.data);
-                    })
                     .catch((error) => {
                         console.error('Error sending publish request to backend:', error);
                     });
@@ -674,11 +649,9 @@ function BpmnEditor() {
 
     // Confirm Publish function
     const handleConfirmPublish = () => {
-        // console.log(diagramXML, diagramId);  // 디버깅
         if (diagramXML) {
             axios.post(`${API_URL}/api/diagram/publish`, { xml: diagramXML, diagramId: diagramId })
                 .then(response => {
-                    // console.log("Diagram published successfully:", response.data);  // 디버깅
                     window.location.reload();
                 })
                 .catch(error => {
@@ -716,16 +689,12 @@ function BpmnEditor() {
 
                 emailjs.send(serviceId, templateId, templateParams, publicKey)
                     .then((response) => {
-                        console.log('Email sent successfully!', response);
                         alert("Email sent successfully!");
 
                         // POST request to log decline publish to backend!!
                         axios.post(`${API_URL}/api/diagram/publish/decline`, {
                             diagramId: diagramId
                         })
-                            .then((response) => {
-                                console.log('Decline Publish request sent to backend:', response.data);
-                            })
                             .catch((error) => {
                                 console.error('Error sending decline publish request to backend:', error);
                             });
@@ -759,7 +728,6 @@ function BpmnEditor() {
     // handle undo
     const handleUndo = () => {
         modeler?.get('commandStack').undo();
-        // console.log(modeler?.get('commandStack'))
     };
     // handle redo
     const handleRedo = () => {
@@ -774,19 +742,14 @@ function BpmnEditor() {
             });
 
             if (xml) {
-                console.log("Saved XML:", xml);
-                console.log("diagramId:", diagramId);
                 axios.post(`${API_URL}/api/diagram/save`, { xml: xml, diagramId: diagramId, userEmail: userEmail })
-                    .then(response => {
-                        console.log("Diagram saved successfully:", response.data);
-                    })
                     .catch(error => {
                         console.error("Error saving diagram to the database:", error);
                     });
             }
         }
-        // setUserRole("contributor");
     };
+
     // handle aligning elements
     const handleAlign = (alignment) => {
         const alignElements = modeler?.get('alignElements');
@@ -796,9 +759,10 @@ function BpmnEditor() {
         if (selectedElements.length > 1) {
             alignElements.trigger(selectedElements, alignment);
         } else {
-            console.log('Please select at least two elements to align.');
+            alert('Please select at least two elements to align.');
         }
     };
+
     // handle distributing elements
     const handleDistribute = (direction) => {
         const distributeElements = modeler?.get('distributeElements');
@@ -808,10 +772,9 @@ function BpmnEditor() {
         if (selectedElements.length > 2) {
             distributeElements.trigger(selectedElements, direction);
         } else {
-            console.log('Please select at least three elements to distribute.');
+            alert('Please select at least three elements to distribute.');
         }
     };
-
 
     // handle panel visibility
     const toggleVisibility = () => {
@@ -838,6 +801,7 @@ function BpmnEditor() {
         }
     }
 
+    // Diagram deletion
     const handleDelete = async () => {
         try {
             const response = await axios.post(`${API_URL}/api/diagram/delete`, { diagramId });
@@ -854,10 +818,9 @@ function BpmnEditor() {
         }
     }
 
+    // Cancel check out
     const handleCancelCheckout = async () => {
         try {
-            // console.log(diagramId);  // 디버깅용 주석 처리
-            // console.log(userEmail);  // 디버깅용 주석 처리
             const response = await axios.post(`${API_URL}/api/diagram/cancelCheckout`, { diagramId, userEmail });
 
             if (response.status === 200) {

@@ -73,6 +73,7 @@ function BpmnEditor() {
     const saveKeys = ['s', 'S'];
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [contributors, setContributors] = useState([]);
+    const [currentCheckoutUser, setCurrentCheckoutUser] = useState([]);
     const [isRequested, setIsRequest] = useState(false);
     let modelerInstance = null;
     const searchKeys = ['f', 'F'];
@@ -176,6 +177,7 @@ function BpmnEditor() {
                 params: { diagramId }
             });
             setContributors(response.data.contributors);
+            setCurrentCheckoutUser(response.data.currentCheckOut);
         } catch (err) {
             console.error("An error occurred while fetching the contributors:", err.message);
         }

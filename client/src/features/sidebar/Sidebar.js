@@ -119,7 +119,9 @@ export default function Sidebar(props) {
         )
     }
     useEffect(() => {
-        axios.get(`${API_URL}/api/processes/${projectId}`)
+        axios.get(`${API_URL}/api/processes/${projectId}`, {
+            params: { userName }
+          })
             .then((res) => {
                 setProcesses(res.data.processes);
                 getCurrentDiagram(res.data.processes);

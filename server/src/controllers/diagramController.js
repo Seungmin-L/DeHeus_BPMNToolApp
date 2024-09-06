@@ -569,7 +569,7 @@ async function getDiagramData(req, res) {
                 if (diagramData) {
                     res.status(200).json(diagramData);
                 } else {
-                    const msg = await checkNewDiagram(diagramId);
+                    const msg = await checkNewDiagram(diagramId, userEmail);
                     if (msg) {
                         res.status(200).json({ message: msg.message });
                     } else {
@@ -660,19 +660,20 @@ async function getLatestDraftDiagramForAdmin(diagramId) {
 }
 
 
-const checkNewDiagram = async (diagramId) => {
+const checkNewDiagram = async (diagramId, userEmail) => {
     try {
         const request = new sql.Request();
         const query = `
             SELECT 
         d.name AS diagramName
             FROM diagram d 
-            JOIN diagram_draft dd ON d.id = dd.diagram_id 
-            JOIN diagram_checkout dc ON dd.diagram_id = dc.diagram_id
+            JOIN diagram_checkout dc ON d.id = dc.diagram_id
             WHERE dc.diagram_id = @diagramId
+              AND user_email NOT LIKE @userEmail
               AND status = 1;
         `;
         request.input('diagramId', sql.Int, diagramId);
+        request.input('userEmail', sql.VarChar, userEmail);
 
         const result = await request.query(query);
         // console.log("Query Result:", result.recordset);

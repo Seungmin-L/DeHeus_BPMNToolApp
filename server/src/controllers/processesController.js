@@ -4,7 +4,6 @@ const { sql } = require("../config/dbConfig");
 const listProcesses = async (req, res) => {
   const { projectId } = req.params;
   const { userName } = req.query;
-  // console.log(projectId, userName);  // 디버깅 용도라서 주석 처리!!
 
   try {
     // check if editor in the current project before fetching processes
@@ -19,19 +18,16 @@ const listProcesses = async (req, res) => {
     request.input('userName', sql.VarChar, userName);
     
     const contributionResult = await request.query(contributionQuery);
-    // console.log('Contribution Query Result:', contributionResult.recordset);  // 디버깅 용도라서 주석 처리!!
 
     let role = '';
     if (contributionResult.recordset.length > 0) {
       const isEditor = contributionResult.recordset[0].editor;
-      // console.log('isEditor Value:', isEditor);  // 디버깅 용도라서 주석 처리!!
       if (isEditor) {
         role = 'editor';
       } else {
         role = 'read-only';
       }
     }
-    // console.log('Determined User Role:', role);  // 디버깅 용도라서 주석 처리!!
 
     const query = `
       SELECT 

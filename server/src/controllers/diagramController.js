@@ -8,7 +8,6 @@ const getUserRole = async (req, res) => {
 
     try {
         if (userEmail.includes('.pbmn@')) {
-            // console.log('Admin account detected:', userEmail);
             return res.status(200).json({ role: 'admin' });
         } else {
             const request = new sql.Request();
@@ -496,10 +495,10 @@ async function getLatestPublishedDiagram(projectId, diagramId) {
             };
         } else {
             console.log("No diagram found for the given projectId and diagramId");
-            return null;  // 해당 프로젝트 내에서 특정 다이어그램을 찾을 수 없는 경우
+            return null;
         }
     } catch (err) {
-        console.error('Error executing query:', err.message); // 쿼리 실행 중 오류 발생, 데베 문제
+        console.error('Error executing query:', err.message);
         throw new Error('Error fetching diagram: ' + err.message);
     }
 }
@@ -570,7 +569,6 @@ async function getLatestDraftDiagram(diagramId, userEmail) {
         request.input('userEmail', sql.VarChar(MAX), userEmail);
 
         const result = await request.query(query);
-        // console.log("Query Result:", result.recordset);
 
         if (result.recordset.length > 0) {
             const { file_data, file_type, diagramName } = result.recordset[0];
@@ -606,7 +604,6 @@ async function getLatestDraftDiagramForAdmin(diagramId) {
         request.input('diagramId', sql.Int, diagramId);
 
         const result = await request.query(query);
-        // console.log("Admin Query Result:", result.recordset);
 
         if (result.recordset.length > 0) {
             const { file_data, file_type, diagramName } = result.recordset[0];
@@ -641,16 +638,15 @@ const checkNewDiagram = async (diagramId) => {
         request.input('diagramId', sql.Int, diagramId);
 
         const result = await request.query(query);
-        // console.log("Query Result:", result.recordset);
 
         if (result.recordset.length === 0) {
             return { message: "available", id: diagramId };
         } else {
             console.log("Already checked out by someone");
-            return null;  // 이미 체크아웃 된 드래프트일 경우
+            return null;
         }
     } catch (err) {
-        console.error('Error executing query:', err.message); // 쿼리 실행 중 오류 발생, 데베 문제
+        console.error('Error executing query:', err.message);
         throw new Error('Error fetching diagram: ' + err.message);
     }
 }
@@ -690,7 +686,6 @@ const checkRequested = async (req, res) => {
         request.input('diagramId', sql.Int, diagramId);
 
         const result = await request.query(query);
-        // console.log("Query Result:", result.recordset);
 
         if (result.recordset.length > 0 && result.recordset[0].type === "Requested to publish") {
             res.status(200).json({ requestedToPublish: true });
@@ -724,7 +719,6 @@ const getAllDiagrams = async (req, res) => {
 
 const deleteDiagram = async (req, res) => {
     const { diagramId } = req.body;
-    // console.log(`Start! diagramId: ${diagramId}`);
 
     let transaction;
 
@@ -744,7 +738,6 @@ const deleteDiagram = async (req, res) => {
             const childResult = await request.query(childDiagramsQuery);
 
             for (const row of childResult.recordset) {
-                // console.log(`Now deleting diagram: ${row.child_diagram_id}`);
                 await deleteDiagramAndChildren(row.child_diagram_id, transaction);
             }
 

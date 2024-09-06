@@ -73,7 +73,6 @@ function BpmnEditor() {
     const saveKeys = ['s', 'S'];
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [contributors, setContributors] = useState([]);
-    const [currentCheckoutUser, setCurrentCheckoutUser] = useState([]);
     const [isRequested, setIsRequest] = useState(false);
     let modelerInstance = null;
     const searchKeys = ['f', 'F'];
@@ -177,8 +176,6 @@ function BpmnEditor() {
                 params: { diagramId }
             });
             setContributors(response.data.contributors);
-            setCurrentCheckoutUser(response.data.currentCheckOut);
-            console.log(`current Checked out User: ${currentCheckoutUser}`);
         } catch (err) {
             console.error("An error occurred while fetching the contributors:", err.message);
         }
@@ -923,18 +920,6 @@ function BpmnEditor() {
                                         <div style={{ textAlign: 'left' }}>#{contributor.index}</div>
                                     </div>
                                 )) : <div>No contributors found.</div>}
-                            </div>
-
-                            {/* Current Checked out User Section */}
-                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
-                                <p style={{ fontWeight: 'bold' }}>Current Checked out User</p> {/* Title for the section */}
-                                {/* {currentCheckoutUser!=='null' ?
-                                    <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px' }}>
-                                        <div className="truncate" style={{ textAlign: 'left' }}>{currentCheckoutUser.name}</div>
-                                        <div style={{ textAlign: 'left' }}>{currentCheckoutUser.email}</div>
-                                        <div style={{ textAlign: 'left' }}>{currentCheckoutUser.remainingTime} hrs</div>
-                                    </div>
-                                : <div>Diagram is not checked out.</div>} */}
                             </div>
                         </Modal.Body>
                     </Modal>

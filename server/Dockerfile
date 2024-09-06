@@ -6,7 +6,11 @@ COPY package*.json ./
 
 COPY . .
 
-EXPOSE 3001
+COPY ./key.pem /etc/ssl/key.pem
+COPY ./cert.pem /etc/ssl/cert.pem
+
+# EXPOSE 3001
+EXPOSE 443
 
 RUN npm install
 

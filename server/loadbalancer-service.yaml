@@ -8,6 +8,8 @@ spec:
     app: backend
   ports:
     - protocol: TCP
-      port: 80 
-      targetPort: 3001
+      # port: 80 
+      # targetPort: 3001
+      port: 443 
+      targetPort: 443
   type: LoadBalancer

@@ -17,4 +17,5 @@ spec:
       - name: backend
         image: vnacrsabpmnregp01.azurecr.io/backend:latest
         ports:
-        - containerPort: 3001
+        # - containerPort: 3001
+        - containerPort: 443

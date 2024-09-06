@@ -4,6 +4,8 @@ const { sql } = require("../config/dbConfig");
 // For Diagram Checkout
 const confirmCheckOut = async (req, res) => {
     const { diagramId, userEmail } = req.body;
+    // console.log(diagramId);  // 디버깅용 주석 처리
+    // console.log(userEmail);  // 디버깅용 주석 처리
 
     try {
         const request = new sql.Request();
@@ -49,6 +51,8 @@ const confirmCheckOut = async (req, res) => {
 
 const cancelCheckOut = async (req, res) => {
     const { diagramId, userEmail } = req.body;
+    // console.log(diagramId);  // 디버깅용 주석 처리
+    // console.log(userEmail);  // 디버깅용 주석 처리
 
     try {
         // Delete current draft version if exists

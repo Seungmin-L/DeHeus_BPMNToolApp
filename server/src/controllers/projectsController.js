@@ -136,11 +136,22 @@ const deleteProject = async (req, res) => {
       id = ${projectId}
       END  
     `);
-    if(result.rowsAffected.length === 0) {
+    if(result.rowsAffected.length === 0){
       res.status(200).json({message: "Please remove all diagrams before deleting a project!"});
-    } else {
+    }else{
       res.status(200).json({message: "Project deleted successfully!", id: projectId});
     }
+    // const response = await deleteAllRelatives(projectId);
+    // if (response) {
+    //   await sql.query(`
+    //     DELETE FROM project 
+    //     WHERE 
+    //     id = ${projectId}
+    //   `);
+    //   res.status(200).json({ message: "Project deleted successfully!", id: projectId });
+    // }else{
+    //   res.status(500).json({ message: "Project deletion failed", id: projectId});
+    // }
   } catch (err) {
     console.error("Error deleting project: ", err);
   }

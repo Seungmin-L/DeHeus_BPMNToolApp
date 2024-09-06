@@ -23,14 +23,12 @@ function Toolbar({
   onExportXml,
   onExportSvg,
   onExportPdf,
-  onExportBpmn,
   onExportPng,
   importFile,
   onFileChange,
   isOpen,
   setIsOpen,
   onContributor,
-  onExport,
   onCheckIn,
   onShare,
   onPublish,
@@ -42,8 +40,6 @@ function Toolbar({
 
   // for fonts
   const fonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana'];
-  // for export
-  // const [isOpen, setIsOpen] = useState(false);
   const onExportClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -52,12 +48,6 @@ function Toolbar({
   return (
     <div className="toolbar">
       <div className="toolbar-left">
-        {/* <div className="toolbar-group-save">
-          <button onClick={onSave} dangerouslySetInnerHTML={{ __html: Icons.save }} className="save-button" />
-        </div>
-
-        <div className='toolbar-spacing' dangerouslySetInnerHTML={{ __html: Icons.line }}/> */}
-        {/* <button dangerouslySetInnerHTML={{ __html: Icons.export }} onClick={onExportClick}></button> */}
         {isOpen && mode !== "editing" &&
           <ul className='export-options'>
             <li>

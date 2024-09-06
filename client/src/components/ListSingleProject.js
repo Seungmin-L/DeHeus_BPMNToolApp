@@ -18,7 +18,6 @@ import {
 import { MdOpenInNew } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 import LeftNavBar from "./common/LeftNavBar";
-import NoAuth from "./common/NoAuth";
 import TopBar from "./common/TopBar";
 import { formatProcessInfos } from '../utils/utils';
 
@@ -39,16 +38,12 @@ function ListSingleProject() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      console.log(projectId, userName);
       axios
         .get(`${API_URL}/api/processes/${projectId}`, {
           params: { userName }
         })
         .then((response) => {
-          // console.log("Fetched processes:", response.data);  // 디버깅 용도라서 주석 처리!!
           const formattedProcesses = formatProcessInfos(response.data.processes);
-          // console.log(response.data.processes);  // 디버깅 용도라서 주석 처리!!
-          // console.log(formattedProcesses);
           setProcesses(formattedProcesses);
           setProjectName(response.data.projectName);
           setOptions([...options, ...response.data.processes.map(process => ({
@@ -56,7 +51,6 @@ function ListSingleProject() {
             name: process.name
           }))]);
           const userRole = response.data.role;
-          // console.log(userRole);  // 디버깅 용도라서 주석 처리!!
           setUserRole(userRole);  // set user role to show the add diagram button only to editors
         })
         .catch((error) => {
@@ -77,29 +71,17 @@ function ListSingleProject() {
   const handleOpenClick = async (event, item) => {
     event.stopPropagation();
 
-    // console.log("Item object:", item);  // 디버깅 용도라서 주석 처리!!
-
     try {
       const response = await axios.get(`${API_URL}/api/diagrams/get-diagram-with-project/${projectId}/${item.id}/${userName}`);
-      // console.log(`Request URL: /api/diagrams/get-diagram-with-project/${projectId}/${item.id}`);  // 디버깅 용도라서 주석 처리!!!
-      // console.log("API Response:", response.data);  // 디버깅 용도라서 주석 처리!!!
       if (response.data.fileData) {
-        const { diagramName, fileData } = response.data;  // 더 필요한 변수 있으면 추가해서 사용하면 될 것 같습니다~!!!
-        // console.log(diagramName)  // 디버깅 용도라서 주석 처리!!!
-        console.log(fileData)  // 디버깅 용도라서 주석 처리!!!
+        const { diagramName, fileData } = response.data;
 
-        const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
-        // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
+        const generatedUrl = `/project/${projectId}/${diagramName.replace(/ /g, '-')}`;
 
-        // 다이어그램 모델러 페이지로 이동
-        // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+        // Navigate to modeler
         navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
       } else{
-        const generatedUrl = `/project/${projectId}/${item.name.replace(/ /g, '-')}`;  // 다이어그램 이름에 공백 존재할 경우 - 기호로 replace 하는 코드
-        // console.log("Generated URL:", generatedUrl);  // 디버깅 용도라서 주석 처리!!!
-
-        // 다이어그램 모델러 페이지로 이동
-        // navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
+        const generatedUrl = `/project/${projectId}/${item.name.replace(/ /g, '-')}`;
         navigate(generatedUrl, { state: { itemId: item.id, userName: userName } });
       }
     } catch (error) {
@@ -142,7 +124,6 @@ function ListSingleProject() {
             </span>
             {item.name}
           </td>
-          {/* <td>{item.status}</td> */}
           <td>
             {item.remainingTime !== null && (
               <BsClock
@@ -193,21 +174,13 @@ function ListSingleProject() {
         userEmail: userName
       })
         .then(res => {
-          console.log(res.data);
           window.location.reload();
         })
         .catch(err => {
           console.error(err);
         });
-      console.log("Creating Process:", processName);
     } else {
       if (diagramName !== "" && selectedProcess !== "") {
-        console.log(
-          "Creating Diagram:",
-          diagramName,
-          "for Process:",
-          selectedProcess
-        );
         axios.post(`${API_URL}/api/diagram/add`, {
           projectId: projectId,
           diagramName: diagramName,
@@ -215,7 +188,6 @@ function ListSingleProject() {
           userEmail: userName
         })
           .then(res => {
-            console.log(res.data);
             window.location.reload();
           })
           .catch(err => {
@@ -225,10 +197,6 @@ function ListSingleProject() {
     }
     handleCloseModal();
   };
-
-  // if (!isAuthenticated) {
-  //   return <NoAuth />;
-  // }
 
   return (
     <div>

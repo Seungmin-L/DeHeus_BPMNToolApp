@@ -57,13 +57,16 @@ function Main() {
   const handleShowAddModal = () => setAddModal(true);
   const handleCloseAddModal = () => setAddModal(false);
   const handleShowDeleteModal = () => setShowDeleteModal(true);
-  const handleCloseDeleteModal = () => setShowDeleteModal(false);
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setIsLoading(false);
+  }
 
   const [newProjectName, setNewProjectName] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
 
+  // Create a project
   const handleCreate = () => {
-    // backend here
     if (projects) {
       setIsLoading(true);
       const duplicate = projects.filter((project) => project.name === newProjectName);
@@ -82,9 +85,10 @@ function Main() {
     }
   }
 
+  // Delete a project
   const handleDelete = () => {
+    setIsLoading(true);
     if (selectedProject) {
-      setIsLoading(true);
       axios.post(`${API_URL}/api/project/delete`, { projectId: selectedProject.id })
         .then((res) => {
           alert(res.data.message);
@@ -99,10 +103,6 @@ function Main() {
         })
         .finally(() => setIsLoading(false))
     }
-  }
-
-  if (!isAuthenticated) {
-    return <NoAuth />;
   }
 
   return (

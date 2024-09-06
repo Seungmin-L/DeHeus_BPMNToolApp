@@ -378,30 +378,6 @@ export var GATEWAY = [
       eventGatewayType: 'Exclusive'
     }
   }
-
-  // Gateways deactivated until https://github.com/bpmn-io/bpmn-js/issues/194
-  // {
-  //   label: 'Event based instantiating Gateway',
-  //   actionName: 'replace-with-exclusive-event-based-gateway',
-  //   className: 'bpmn-icon-exclusive-event-based',
-  //   target: {
-  //     type: 'bpmn:EventBasedGateway'
-  //   },
-  //   options: {
-  //     businessObject: { instantiate: true, eventGatewayType: 'Exclusive' }
-  //   }
-  // },
-  // {
-  //   label: 'Parallel Event based instantiating Gateway',
-  //   actionName: 'replace-with-parallel-event-based-instantiate-gateway',
-  //   className: 'bpmn-icon-parallel-event-based-instantiate-gateway',
-  //   target: {
-  //     type: 'bpmn:EventBasedGateway'
-  //   },
-  //   options: {
-  //     businessObject: { instantiate: true, eventGatewayType: 'Parallel' }
-  //   }
-  // }
 ];
 
 /**
@@ -488,16 +464,7 @@ export var TASK = [
       type: 'bpmn:SubProcess',
       isExpanded: false
     }
-  },
-  // {
-  //   label: 'Sub-process (expanded)',
-  //   actionName: 'replace-with-expanded-subprocess',
-  //   className: 'bpmn-icon-subprocess-expanded',
-  //   target: {
-  //     type: 'bpmn:SubProcess',
-  //     isExpanded: true
-  //   }
-  // }
+  }
 ];
 
 /**
@@ -836,7 +803,6 @@ export var PARTICIPANT = [
     },
     actionName: 'replace-with-collapsed-pool',
 
-    // TODO(@janstuemmel): maybe design new icon
     className: 'bpmn-icon-lane',
     target: {
       type: 'bpmn:Participant',

@@ -78,6 +78,49 @@ const addProject = (req, res) => {
   }
 }
 
+const deleteAllRelatives = async (projectId) => {
+  try {
+    const request = new sql.Request();
+    const query = `
+    DELETE dr FROM diagram_relation dr
+    LEFT JOIN diagram d
+    ON dr.parent_diagram_id = d.id
+    WHERE d.project_id = @projectId;
+    DELETE dc FROM diagram_checkout dc
+    INNER JOIN diagram d
+    ON dc.diagram_id = d.id
+    WHERE d.project_id = @projectId;
+    DELETE dd FROM diagram_draft dd
+    INNER JOIN diagram d
+    ON dd.diagram_id = d.id
+    WHERE d.project_id = @projectId;
+    DELETE dp FROM diagram_published dp
+    INNER JOIN diagram d
+    ON dp.diagram_id = d.id
+    WHERE d.project_id = @projectId;
+    DELETE na FROM node_attachment na
+    INNER JOIN diagram d
+    ON na.diagram_id = d.id
+    WHERE d.project_id = @projectId;
+    DELETE al FROM user_activity_log al
+    INNER JOIN diagram d
+    ON al.diagram_id = d.id
+    WHERE d.project_id = @projectId;
+    DELETE FROM diagram_contribution WHERE project_id = @projectId;
+    DELETE FROM diagram WHERE project_id = @projectId
+  `;
+    request.input("projectId", projectId);
+    const result = await request.query(query);
+    if (result.rowsAffected.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    console.error("Error deleting data: ", err);
+  }
+}
+
 const deleteProject = async (req, res) => {
   const { projectId } = req.body;
   try {
@@ -98,6 +141,17 @@ const deleteProject = async (req, res) => {
     }else{
       res.status(200).json({message: "Project deleted successfully!", id: projectId});
     }
+    // const response = await deleteAllRelatives(projectId);
+    // if (response) {
+    //   await sql.query(`
+    //     DELETE FROM project 
+    //     WHERE 
+    //     id = ${projectId}
+    //   `);
+    //   res.status(200).json({ message: "Project deleted successfully!", id: projectId });
+    // }else{
+    //   res.status(500).json({ message: "Project deletion failed", id: projectId});
+    // }
   } catch (err) {
     console.error("Error deleting project: ", err);
   }

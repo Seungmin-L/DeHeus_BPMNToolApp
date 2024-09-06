@@ -168,8 +168,42 @@ const getContributors = async (req, res) => {
                 contributors.push({ email, name, index });
             }
         }
+        const checkoutRequest = new sql.Request();
+        const checkoutQuery = `
+            SELECT user_email, expiry_time
+            FROM diagram_checkout
+            WHERE diagram_id = @diagramId AND status = 1;
+        `;
+        checkoutRequest.input('diagramId', sql.Int, diagramId);
+        const checkoutResult = await checkoutRequest.query(checkoutQuery);
 
-        res.status(200).json({ contributors });
+        let currentCheckOut = null;
+
+        if (checkoutResult.recordset.length > 0) {
+            const { user_email, expiry_time } = checkoutResult.recordset[0];
+            const currentTime = new Date();
+            const remainingTime = Math.ceil((new Date(expiry_time) - currentTime) / (1000 * 60 * 60 * 24));
+
+            const userQuery = `
+                SELECT email, name
+                FROM [user]
+                WHERE email = @userEmail;
+            `;
+            const userRequest = new sql.Request();
+            userRequest.input('userEmail', sql.VarChar, user_email);
+            const userResult = await userRequest.query(userQuery);
+
+            if (userResult.recordset.length > 0) {
+                const { email, name } = userResult.recordset[0];
+                currentCheckOut = {
+                    checkoutUserEmail: email,
+                    checkoutUserName: name,
+                    remainingTime
+                };
+            }
+        }
+
+        res.status(200).json({ contributors, currentCheckOut });
     } catch (error) {
         console.error('Error fetching contributor:', error.message);
         res.status(500).json({ message: 'Error fetching contributor', error: error.message });

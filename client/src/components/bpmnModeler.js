@@ -74,6 +74,7 @@ function BpmnEditor() {
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [contributors, setContributors] = useState([]);
     const [isRequested, setIsRequest] = useState(false);
+    const [currentCheckoutUser, setCurrentCheckoutUser] = useState([]);
     let modelerInstance = null;
     const searchKeys = ['f', 'F'];
     let priority = 10000;
@@ -176,6 +177,9 @@ function BpmnEditor() {
                 params: { diagramId }
             });
             setContributors(response.data.contributors);
+            setCurrentCheckoutUser(null);
+            setCurrentCheckoutUser(response.data.currentCheckOut);
+            // console.log(`current Checked out User: ${currentCheckoutUser.checkoutUserEmail}`);
         } catch (err) {
             console.error("An error occurred while fetching the contributors:", err.message);
         }
@@ -907,7 +911,7 @@ function BpmnEditor() {
                             <Modal.Title style={{ textAlign: 'center', width: '100%' }}>Contributors</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px', marginBottom: '20px' }}>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '10px', fontWeight: 'bold' }}>
                                     <div style={{ textAlign: 'left' }}>Name</div>
                                     <div style={{ textAlign: 'left' }}>Email</div>
@@ -920,6 +924,18 @@ function BpmnEditor() {
                                         <div style={{ textAlign: 'left' }}>#{contributor.index}</div>
                                     </div>
                                 )) : <div>No contributors found.</div>}
+                            </div>
+
+                            {/* Current Checked out User Section */}
+                            <div style={{ padding: '15px', backgroundColor: '#e9ecef', borderRadius: '5px' }}>
+                                <div style={{ fontWeight: 'bold' }}>Current Checked out User</div> {/* Title for the section */}
+                                {currentCheckoutUser ?
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '7px' }}>
+                                        <div className="truncate" style={{ textAlign: 'left' }}>{currentCheckoutUser.checkoutUserName}</div>
+                                        <div style={{ textAlign: 'left' }}>{currentCheckoutUser.checkoutUserEmail}</div>
+                                        <div style={{ textAlign: 'left' }}>{currentCheckoutUser.remainingTime} days left</div>
+                                    </div>
+                                : <div>Not checked out.</div>}
                             </div>
                         </Modal.Body>
                     </Modal>

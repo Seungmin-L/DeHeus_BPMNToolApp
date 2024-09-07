@@ -50,7 +50,7 @@ export default function Sidebar(props) {
                     if (list.includes(ch.id)) {
                         !list.includes(p.id) && list.push(p.id);
                     }
-                }) 
+                })
             });
         }
     }
@@ -66,9 +66,13 @@ export default function Sidebar(props) {
                 // Navigate to modeler
                 navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: fileData } });
             } else {
-                const generatedUrl = `/project/${projectId}/${name.replace(/ /g, '-')}`;
-                // Navigate to modeler
-                navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: null } });
+                if (response.data.message && response.data.message.startsWith("available")) {
+                    const generatedUrl = `/project/${projectId}/${name.replace(/ /g, '-')}`;
+                    // Navigate to modeler
+                    navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: null } });
+                } else {
+                    alert("Publishing in progress");
+                }
             }
         } catch (error) {
             console.error("Error fetching diagram data:", error);
@@ -121,7 +125,7 @@ export default function Sidebar(props) {
     useEffect(() => {
         axios.get(`${API_URL}/api/processes/${projectId}`, {
             params: { userName }
-          })
+        })
             .then((res) => {
                 setProcesses(res.data.processes);
                 getCurrentDiagram(res.data.processes);

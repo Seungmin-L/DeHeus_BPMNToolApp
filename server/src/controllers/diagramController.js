@@ -573,7 +573,7 @@ async function getDiagramData(req, res) {
                     if (msg) {
                         res.status(200).json({ message: msg.message });
                     } else {
-                        res.status(500).json({ message: 'Diagram already has been checked out by someone' });
+                        res.status(200).json({ message: 'Diagram already has been checked out by someone' });
                     }
                 }
             }

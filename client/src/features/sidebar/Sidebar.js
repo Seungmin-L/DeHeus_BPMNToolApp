@@ -89,14 +89,14 @@ export default function Sidebar(props) {
                     <td className="process-list-item" style={{
                         paddingLeft: (level + 1) * 5 + "px",
                         backgroundColor: process.id == diagramId ? "rgb(211, 224, 234)" : "white",
-                        display: "flex", justifyContent: "space-between", cursor: "pointer", width: "250px"
+                        display: "flex", justifyContent: "space-between", cursor: "pointer", width: "100%"
                     }}
                         onClick={(e) => {
                             e.stopPropagation();
                             handleOpenClick(process.id, process.name);
                         }}
                     >
-                        <span className="mx-1">{process.name}</span>
+                        <span className="mx-1" style={{overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", width: "200px"}}>{process.name}</span>
                         <span onClick={(e) => {
                             e.stopPropagation();
                             hasChildren && toggleRow(process.id);
@@ -134,11 +134,11 @@ export default function Sidebar(props) {
     }, [diagramId]);
     return (
         <div className='hierarchy-sidebar'>
-            <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)" }}>
+            <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)", width: "100%" }}>
                 <span style={{ fontWeight: "600" }}>Hierarchy</span>
                 <BsArrowBarLeft className='sidebar-btn' onClick={handleHidden} />
             </div>
-            <Table style={{ overflow: "auto", width: "100%", height: "20px" }}>
+            <Table style={{ overflow: "auto", width: "100%", height: "20px", tableLayout: "fixed" }}>
                 <tbody style={{ width: "100%" }}>
                     {processes && processes.map(process => renderRow(process))}
                 </tbody>

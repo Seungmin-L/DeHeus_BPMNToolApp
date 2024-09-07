@@ -32,7 +32,7 @@ function ListSingleProject() {
   const [expandedRows, setExpandedRows] = useState([]);
   const [isNavVisible, setIsNavVisible] = useState(false);
   const navigate = useNavigate();
-  const [options, setOptions] = useState([{id: "", name: "<None>"}]);
+  const [options, setOptions] = useState([{ id: "", name: "<None>" }]);
   const [projectName, setProjectName] = useState([]);
   const [userRole, setUserRole] = useState([]);
 
@@ -67,7 +67,7 @@ function ListSingleProject() {
     );
   };
 
-  
+
   const handleOpenClick = async (event, item) => {
     event.stopPropagation();
 
@@ -80,9 +80,13 @@ function ListSingleProject() {
 
         // Navigate to modeler
         navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: fileData } });
-      } else{
-        const generatedUrl = `/project/${projectId}/${item.name.replace(/ /g, '-')}`;
-        navigate(generatedUrl, { state: { itemId: item.id, userName: userName } });
+      } else {
+        if (response.data.message && response.data.message.startsWith("available")) {
+          const generatedUrl = `/project/${projectId}/${item.name.replace(/ /g, '-')}`;
+          navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: null } });
+        } else {
+          alert("Publishing in progress");
+        }
       }
     } catch (error) {
       console.error("Error fetching diagram data:", error);

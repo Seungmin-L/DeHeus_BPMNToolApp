@@ -40,7 +40,7 @@ var EMPTY_MARKER = 'bjs-drilldown-empty';
  * @param {Translate} translate
  */
 export default function DrilldownOverlayBehavior(
-    canvas, eventBus, elementRegistry, overlays, translate
+  canvas, eventBus, elementRegistry, overlays, translate
 ) {
   CommandInterceptor.call(this, eventBus);
 
@@ -51,7 +51,7 @@ export default function DrilldownOverlayBehavior(
   this._translate = translate;
   var self = this;
 
-  this.executed('shape.toggleCollapse', LOW_PRIORITY, function(context) {
+  this.executed('shape.toggleCollapse', LOW_PRIORITY, function (context) {
     var shape = context.shape;
 
     // Add overlay to the collapsed shape
@@ -63,7 +63,7 @@ export default function DrilldownOverlayBehavior(
   }, true);
 
 
-  this.reverted('shape.toggleCollapse', LOW_PRIORITY, function(context) {
+  this.reverted('shape.toggleCollapse', LOW_PRIORITY, function (context) {
     var shape = context.shape;
 
     // Add overlay to the collapsed shape
@@ -75,11 +75,11 @@ export default function DrilldownOverlayBehavior(
   }, true);
 
 
-  this.executed([ 'shape.create', 'shape.move', 'shape.delete' ], LOW_PRIORITY,
-    function(context) {
+  this.executed(['shape.create', 'shape.move', 'shape.delete'], LOW_PRIORITY,
+    function (context) {
       var oldParent = context.oldParent,
-          newParent = context.newParent || context.parent,
-          shape = context.shape;
+        newParent = context.newParent || context.parent,
+        shape = context.shape;
 
       // Add overlay to the collapsed shape
       if (self._canDrillDown(shape)) {
@@ -92,11 +92,11 @@ export default function DrilldownOverlayBehavior(
     }, true);
 
 
-  this.reverted([ 'shape.create', 'shape.move', 'shape.delete' ], LOW_PRIORITY,
-    function(context) {
+  this.reverted(['shape.create', 'shape.move', 'shape.delete'], LOW_PRIORITY,
+    function (context) {
       var oldParent = context.oldParent,
-          newParent = context.newParent || context.parent,
-          shape = context.shape;
+        newParent = context.newParent || context.parent,
+        shape = context.shape;
 
       // Add overlay to the collapsed shape
       if (self._canDrillDown(shape)) {
@@ -109,10 +109,10 @@ export default function DrilldownOverlayBehavior(
     }, true);
 
 
-  eventBus.on('import.render.complete', function() {
-    elementRegistry.filter(function(e) {
+  eventBus.on('import.render.complete', function () {
+    elementRegistry.filter(function (e) {
       return self._canDrillDown(e);
-    }).map(function(el) {
+    }).map(function (el) {
       self._addOverlay(el);
     });
   });
@@ -124,7 +124,7 @@ inherits(DrilldownOverlayBehavior, CommandInterceptor);
 /**
  * @param {Shape} shape
  */
-DrilldownOverlayBehavior.prototype._updateDrilldownOverlay = function(shape) {
+DrilldownOverlayBehavior.prototype._updateDrilldownOverlay = function (shape) {
   var canvas = this._canvas;
 
   if (!shape) {
@@ -143,7 +143,7 @@ DrilldownOverlayBehavior.prototype._updateDrilldownOverlay = function(shape) {
  *
  * @return {boolean}
  */
-DrilldownOverlayBehavior.prototype._canDrillDown = function(element) {
+DrilldownOverlayBehavior.prototype._canDrillDown = function (element) {
   var canvas = this._canvas;
 
   return is(element, 'bpmn:SubProcess') && canvas.findRoot(getPlaneIdFromShape(element));
@@ -155,7 +155,7 @@ DrilldownOverlayBehavior.prototype._canDrillDown = function(element) {
  *
  * @param {Parent} element The collapsed root or shape.
  */
-DrilldownOverlayBehavior.prototype._updateOverlayVisibility = function(element) {
+DrilldownOverlayBehavior.prototype._updateOverlayVisibility = function (element) {
   var overlays = this._overlays;
 
   var businessObject = getBusinessObject(element);
@@ -179,10 +179,10 @@ DrilldownOverlayBehavior.prototype._updateOverlayVisibility = function(element) 
  *
  * @param {Shape} element The collapsed shape.
  */
-DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
+DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
   var canvas = this._canvas,
-      overlays = this._overlays,
-      bo = getBusinessObject(element);
+    overlays = this._overlays,
+    bo = getBusinessObject(element);
 
   var existingOverlays = overlays.get({ element: element, type: 'drilldown' });
 
@@ -191,8 +191,8 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
   }
 
   var button = domify('<button type="button" class="bjs-drilldown">' + ARROW_DOWN_SVG + '</button>'),
-      elementName = bo.get('name') || bo.get('id'),
-      title = this._translate('Open {element}', { element: elementName });
+    elementName = bo.get('name') || bo.get('id'),
+    title = this._translate('Open {element}', { element: elementName });
   button.setAttribute('title', title);
 
   button.addEventListener('click', function () {
@@ -222,15 +222,19 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
                       newWindow.postMessage(data, window.location.origin);
                     }, 500);
                   });
-                }else{
-                  const url = `/project/${projectId}/${name.replace(/ /g, '-')}`;
-                  const data = { id: res.data.data.id, url: url, userName: userName }
-                  const newWindow = window.open(url, "_blank");
-                  newWindow.addEventListener("load", () => {
-                    setTimeout(() => {
-                      newWindow.postMessage(data, window.location.origin);
-                    }, 500);
-                  });
+                } else {
+                  if (response.data.message && response.data.message.startsWith("available")) {
+                    const url = `/project/${projectId}/${name.replace(/ /g, '-')}`;
+                    const data = { id: res.data.data.id, url: url, userName: userName }
+                    const newWindow = window.open(url, "_blank");
+                    newWindow.addEventListener("load", () => {
+                      setTimeout(() => {
+                        newWindow.postMessage(data, window.location.origin);
+                      }, 500);
+                    });
+                  } else {
+                    alert("Publishing in progress");
+                  }
                 }
               }).catch((error) => {
                 console.error("Error fetching diagram data:", error);
@@ -264,7 +268,7 @@ DrilldownOverlayBehavior.prototype._addOverlay = function(element) {
   this._updateOverlayVisibility(element);
 };
 
-DrilldownOverlayBehavior.prototype._removeOverlay = function(element) {
+DrilldownOverlayBehavior.prototype._removeOverlay = function (element) {
   var overlays = this._overlays;
 
   overlays.remove({

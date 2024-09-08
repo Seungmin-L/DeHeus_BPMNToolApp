@@ -13,6 +13,7 @@ import {
 import { FaSearch, FaUserCircle } from "react-icons/fa";
 import logo from "../../assets/logos/logo_deheus.png";
 import { useNavigate, useParams } from "react-router-dom";
+import Swal from 'sweetalert2';
 
 function TopBar({ onLogoClick, userName, projectId }) {
   const API_URL = process.env.REACT_APP_API_URL;
@@ -71,7 +72,13 @@ function TopBar({ onLogoClick, userName, projectId }) {
       }
     } catch (error) {
       console.error("Error fetching diagram data:", error);
-      alert('Failed to open the diagram.');
+      // alert('Failed to open the diagram.');
+      Swal.fire({
+        title: 'Failed to open the diagram!',
+        text: 'Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 

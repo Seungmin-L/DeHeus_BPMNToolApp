@@ -20,6 +20,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import LeftNavBar from "./common/LeftNavBar";
 import TopBar from "./common/TopBar";
 import { formatProcessInfos } from '../utils/utils';
+import Swal from 'sweetalert2';
 
 
 function ListSingleProject() {
@@ -85,12 +86,24 @@ function ListSingleProject() {
           const generatedUrl = `/project/${projectId}/${item.name.replace(/ /g, '-')}`;
           navigate(generatedUrl, { state: { itemId: item.id, userName: userName, fileData: null } });
         } else {
-          alert("Publishing in progress");
+          // alert("Publishing in progress");
+          Swal.fire({
+            title: 'Publishing in progress!',
+            text: 'Please try again after the diagram is published.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
         }
       }
     } catch (error) {
       console.error("Error fetching diagram data:", error);
-      alert('Failed to open the diagram.');
+      // alert('Failed to open the diagram.');
+      Swal.fire({
+        title: 'Failed to open the diagram!',
+        text: 'Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 

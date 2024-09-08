@@ -7,6 +7,7 @@ import {
     BsChevronUp
 } from "react-icons/bs";
 import { useNavigate, useParams } from "react-router-dom";
+import Swal from 'sweetalert2';
 
 export default function Sidebar(props) {
     const API_URL = process.env.REACT_APP_API_URL;
@@ -71,12 +72,24 @@ export default function Sidebar(props) {
                     // Navigate to modeler
                     navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: null } });
                 } else {
-                    alert("Publishing in progress");
+                    // alert("Publishing in progress");
+                    Swal.fire({
+                        title: 'Publishing in progress!',
+                        text: 'Please try again after the diagram is published.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
                 }
             }
         } catch (error) {
             console.error("Error fetching diagram data:", error);
-            alert('Failed to open the diagram.');
+            // alert('Failed to open the diagram.');
+            Swal.fire({
+                title: 'Failed to open the diagram!',
+                text: 'Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     }
 

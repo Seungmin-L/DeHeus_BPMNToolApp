@@ -14,6 +14,7 @@ import { classes, domify } from 'min-dom';
 import { getPlaneIdFromShape } from 'bpmn-js/lib/util/DrilldownUtil';
 import axios from 'axios';
 import { getLocation } from '../../utils/navigation';
+import Swal from 'sweetalert2';
 
 /**
  * @typedef {import('diagram-js/lib/core/Canvas').default} Canvas
@@ -233,12 +234,24 @@ DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
                       }, 500);
                     });
                   } else {
-                    alert("Publishing in progress");
+                    // alert("Publishing in progress");
+                    Swal.fire({
+                      title: 'Publishing in progress!',
+                      text: 'Please try again after the diagram is published.',
+                      icon: 'error',
+                      confirmButtonText: 'OK'
+                    });
                   }
                 }
               }).catch((error) => {
                 console.error("Error fetching diagram data:", error);
-                alert('Failed to open the diagram.');
+                // alert('Failed to open the diagram.');
+                Swal.fire({
+                  title: 'Failed to open the diagram!',
+                  text: 'Please try again.',
+                  icon: 'error',
+                  confirmButtonText: 'OK'
+                });
               })
           } else {
             const url = `/project/${projectId}/${res.data.data.name.replace(/ /g, '-')}`;
@@ -253,7 +266,13 @@ DrilldownOverlayBehavior.prototype._addOverlay = function (element) {
         })
         .catch(err => console.error(err));
     } else {
-      alert("To create a subprocess, there must be a name for it");
+      // alert("To create a subprocess, there must be a name for it");
+      Swal.fire({
+        title: 'Error!',
+        text: 'To create a subprocess, there must be a name for it.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   });
 

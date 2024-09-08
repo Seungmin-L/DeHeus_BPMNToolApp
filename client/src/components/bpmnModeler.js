@@ -12,6 +12,7 @@ import readOnlyAttachmentProviderModule from '../readOnlyProviders';
 import attachmentModdleDescriptor from '../providers/descriptor/attachment.json';
 import generateImage from '../utils/generateImage';
 import generatePdf from '../utils/generatePdf';
+import Swal from 'sweetalert2';
 //custom properties module
 import parameterPropertiesProviderModule from '../providers';
 import parameterModdleDescriptor from '../providers/descriptor/parameter.json';
@@ -437,7 +438,13 @@ function BpmnEditor() {
                 };
                 reader.readAsText(file);
             } else {
-                alert("Invalid File");
+                // alert("Invalid File");
+                Swal.fire({
+                    title: 'Invalid File!',
+                    text: 'Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         }
 
@@ -567,7 +574,13 @@ function BpmnEditor() {
 
             reader.readAsText(file);
         } else {
-            alert("Invalid File");
+            // alert("Invalid File");
+            Swal.fire({
+                title: 'Invalid File!',
+                text: 'Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     }
 
@@ -598,16 +611,33 @@ function BpmnEditor() {
             const response = await axios.post(`${API_URL}/api/diagram/checkedout`, { diagramId, userEmail });
 
             if (response.status === 200) {
-                alert("Checked In!");
+                // alert("Checked In!");
+                Swal.fire({
+                    title: 'Successfully Checked out!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
                 handleCloseCheckInModal();
                 setUserRole("editing");
             } else {
-                console.error("Checked-out failed:", response.data.message);
-                alert("Checked-out failed. Please try again.");
+                console.error("Checked out failed:", response.data.message);
+                // alert("Checked out failed. Please try again.");
+                Swal.fire({
+                    title: 'Checked out failed!',
+                    test: 'Please try again.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
             }
         } catch (error) {
-            console.error("Error during checked-out:", error.message);
-            alert("Error during checked-out. Please try again.");
+            console.error("Error during checked out:", error.message);
+            // alert("Error during checked out. Please try again.");
+            Swal.fire({
+                title: 'Error during checked out!',
+                test: 'Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     }
 
@@ -630,8 +660,13 @@ function BpmnEditor() {
 
         emailjs.send(serviceId, templateId, templateParams, publicKey)
             .then((response) => {
-                alert("Email sent successfully!");
-
+                // alert("Email sent successfully!");
+                Swal.fire({
+                    title: 'Email sent successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                  
                 // POST request to log request publish to backend
                 axios.post(`${API_URL}/api/diagram/requestPublish`, {
                     diagramId: diagramId,
@@ -646,7 +681,13 @@ function BpmnEditor() {
             })
             .catch((error) => {
                 console.error('Error sending email:', error);
-                alert("Error sending email");
+                // alert("Error sending email");
+                Swal.fire({
+                    title: 'Error sending email!',
+                    text: 'Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             });
     }
 
@@ -656,13 +697,22 @@ function BpmnEditor() {
         if (diagramXML) {
             axios.post(`${API_URL}/api/diagram/publish`, { xml: diagramXML, diagramId: diagramId })
                 .then(response => {
-                    window.location.reload();
+                    // window.location.reload();
+                    Swal.fire({
+                        title: 'Diagram Published!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
                 })
                 .catch(error => {
                     console.error("Error saving diagram to the database:", error);
                 });
         }
-        alert("Diagram Published!");
+        // alert("Diagram Published!");
         handleCloseConfirmPublishModal();
     }
 
@@ -693,30 +743,70 @@ function BpmnEditor() {
 
                 emailjs.send(serviceId, templateId, templateParams, publicKey)
                     .then((response) => {
-                        alert("Email sent successfully!");
+                    // // Commented out line 757 ~ 777 if needed
+                    //     alert("Email sent successfully!");
 
-                        // POST request to log decline publish to backend!!
-                        axios.post(`${API_URL}/api/diagram/publish/decline`, {
-                            diagramId: diagramId
-                        })
+                    //     // POST request to log decline publish to backend!!
+                    //     axios.post(`${API_URL}/api/diagram/publish/decline`, {
+                    //         diagramId: diagramId
+                    //     })
+                    //         .catch((error) => {
+                    //             console.error('Error sending decline publish request to backend:', error);
+                    //         });
+
+                    //     setDeclineReason('');
+                    //     handleCloseConfirmPublishModal();
+                    //     window.location.reload();         
+                    // })
+                        Swal.fire({
+                            title: 'Email sent successfully to the user!',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                            // POST request to log decline publish to backend
+                            axios.post(`${API_URL}/api/diagram/publish/decline`, {
+                                diagramId: diagramId
+                            })
                             .catch((error) => {
                                 console.error('Error sending decline publish request to backend:', error);
                             });
-
-                        setDeclineReason('');
-                        handleCloseConfirmPublishModal();
-                        window.location.reload();
+                    
+                            setDeclineReason('');
+                            handleCloseConfirmPublishModal();
+                            
+                            window.location.reload();
+                            }
+                        });
                     })
                     .catch((error) => {
                         console.error('Error sending email:', error);
-                        alert("Error sending email");
+                        // alert("Error sending email");
+                        Swal.fire({
+                            title: 'Error sending email!',
+                            text: 'Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
                     });
             } else {
-                alert("Failed to retrieve requester information.");
+                // alert("Failed to retrieve requester information.");
+                Swal.fire({
+                    title: 'Failed to retrieve requester information!',
+                    text: 'Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         } catch (error) {
             console.error('Error:', error);
-            alert("Error during fetching request user.");
+            // alert("Error during fetching request user.");
+            Swal.fire({
+                title: 'Error during fetching request user!',
+                text: 'Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     }
 
@@ -763,7 +853,12 @@ function BpmnEditor() {
         if (selectedElements.length > 1) {
             alignElements.trigger(selectedElements, alignment);
         } else {
-            alert('Please select at least two elements to align.');
+            // alert('Please select at least two elements to align.');
+            Swal.fire({
+                title: 'Please select at least two elements to align.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
         }
     };
 
@@ -776,7 +871,12 @@ function BpmnEditor() {
         if (selectedElements.length > 2) {
             distributeElements.trigger(selectedElements, direction);
         } else {
-            alert('Please select at least three elements to distribute.');
+            // alert('Please select at least three elements to distribute.');
+            Swal.fire({
+                title: 'Please select at least three elements to distribute.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
         }
     };
 
@@ -810,15 +910,32 @@ function BpmnEditor() {
         try {
             const response = await axios.post(`${API_URL}/api/diagram/delete`, { diagramId });
             if (response.status === 200) {
-                alert("Diagram successfully deleted!");
+                // alert("Diagram successfully deleted!");
+                Swal.fire({
+                    title: 'Diagram successfully deleted!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
                 handleCloseDeleteModal();
                 window.location.href = '/main';
             } else {
-                alert("Failed to delete the diagram.")
+                // alert("Failed to delete the diagram.")
+                Swal.fire({
+                    title: 'Failed to delete the diagram!',
+                    text: 'Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         } catch (error) {
             console.error("Error deleting the diagram:", error.message);
-            alert("Error occurred while trying to delete the diagram.");
+            // alert("Error occurred while trying to delete the diagram.");
+            Swal.fire({
+                title: 'Error occurred while trying to delete the diagram!',
+                text: 'Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     }
 
@@ -828,16 +945,40 @@ function BpmnEditor() {
             const response = await axios.post(`${API_URL}/api/diagram/cancelCheckout`, { diagramId, userEmail });
 
             if (response.status === 200) {
-                alert("Checked-out canceled!");
-                handleCloseCancelModal();
-                window.location.reload();
+                // commented out line 932 ~ 941 if needed
+                // alert("Checked-out canceled!");
+                // });
+                // handleCloseCancelModal();
+                // window.location.reload();
+                Swal.fire({
+                    title: 'Checked out canceled successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        handleCloseCancelModal();
+                        window.location.reload();
+                    }
+                });
             } else {
-                console.error("Cancel Checked-out failed:", response.data.message);
-                alert("Cancel Checked-out failed. Please try again.");
+                console.error("Cancel checked out failed:", response.data.message);
+                // alert("Cancel Checked-out failed. Please try again.");
+                Swal.fire({
+                    title: 'Cancel checked out failed!',
+                    text: 'Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         } catch (error) {
             console.error("Error during cancel checked-out:", error.message);
-            alert("Error during cancel checked-out. Please try again.");
+            // alert("Error during cancel checked-out. Please try again.");
+            Swal.fire({
+                title: 'Error during cancel checked out!',
+                text: 'Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     }
 

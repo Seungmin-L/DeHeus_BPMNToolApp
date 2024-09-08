@@ -22,6 +22,7 @@ import TopBar from "./common/TopBar";
 import { convertUTCToLocal } from '../utils/utils';
 import {  BsFillPlusCircleFill } from "react-icons/bs";
 import NoAuth from "./common/NoAuth";
+import Swal from 'sweetalert2';
 
 function Admin() {
   const API_URL = process.env.REACT_APP_API_URL;
@@ -178,7 +179,12 @@ function Admin() {
       roleChanges,
     })
     .then(response => {
-      alert("User data saved successfully");
+      // alert("User data saved successfully");
+      Swal.fire({
+        title: 'User data saved successfully!',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
     })
     .catch(error => {
       console.error("Error saving user data", error);
@@ -260,15 +266,32 @@ function Admin() {
   const handleAddNewUser = () => {
     axios.post(`${API_URL}/api/admin/addNewUser`, newUser)
       .then(response => {
-        alert("New user added successfully!!");
+        // alert("New user added successfully!");
+        Swal.fire({
+          title: 'New user added successfully!',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
         handleCloseNewUserModal();
       })
       .catch(error => {
         console.error("Error adding new user", error);
         if (error.response && error.response.status === 400) {
-          alert(error.response.data.message);
+          // alert(error.response.data.message);
+          Swal.fire({
+            title: 'Error adding new user!',
+            text: `${error.response.data.message}. Please try again.`,
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
         } else {
-          alert("Failed to add new user. Please try again.");
+          // alert("Failed to add new user. Please try again.");
+          Swal.fire({
+            title: 'Failed to add new user!',
+            text: 'Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
         }
       });
   };

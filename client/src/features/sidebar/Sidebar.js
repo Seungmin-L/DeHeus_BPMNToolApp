@@ -7,6 +7,7 @@ import {
     BsChevronUp
 } from "react-icons/bs";
 import { useNavigate, useParams } from "react-router-dom";
+import Swal from 'sweetalert2';
 
 export default function Sidebar(props) {
     const API_URL = process.env.REACT_APP_API_URL;
@@ -50,7 +51,7 @@ export default function Sidebar(props) {
                     if (list.includes(ch.id)) {
                         !list.includes(p.id) && list.push(p.id);
                     }
-                }) 
+                })
             });
         }
     }
@@ -66,13 +67,29 @@ export default function Sidebar(props) {
                 // Navigate to modeler
                 navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: fileData } });
             } else {
-                const generatedUrl = `/project/${projectId}/${name.replace(/ /g, '-')}`;
-                // Navigate to modeler
-                navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: null } });
+                if (response.data.message && response.data.message.startsWith("available")) {
+                    const generatedUrl = `/project/${projectId}/${name.replace(/ /g, '-')}`;
+                    // Navigate to modeler
+                    navigate(generatedUrl, { state: { itemId: id, userName: userName, fileData: null } });
+                } else {
+                    // alert("Publishing in progress");
+                    Swal.fire({
+                        title: 'Publishing in progress!',
+                        text: 'Please try again after the diagram is published.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
             }
         } catch (error) {
             console.error("Error fetching diagram data:", error);
-            alert('Failed to open the diagram.');
+            // alert('Failed to open the diagram.');
+            Swal.fire({
+                title: 'Failed to open the diagram!',
+                text: 'Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     }
 
@@ -85,14 +102,14 @@ export default function Sidebar(props) {
                     <td className="process-list-item" style={{
                         paddingLeft: (level + 1) * 5 + "px",
                         backgroundColor: process.id == diagramId ? "rgb(211, 224, 234)" : "white",
-                        display: "flex", justifyContent: "space-between", cursor: "pointer", width: "250px"
+                        display: "flex", justifyContent: "space-between", cursor: "pointer", width: "100%"
                     }}
                         onClick={(e) => {
                             e.stopPropagation();
                             handleOpenClick(process.id, process.name);
                         }}
                     >
-                        <span className="mx-1">{process.name}</span>
+                        <span className="mx-1" style={{overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", width: "200px"}}>{process.name}</span>
                         <span onClick={(e) => {
                             e.stopPropagation();
                             hasChildren && toggleRow(process.id);
@@ -119,7 +136,9 @@ export default function Sidebar(props) {
         )
     }
     useEffect(() => {
-        axios.get(`${API_URL}/api/processes/${projectId}`)
+        axios.get(`${API_URL}/api/processes/${projectId}`, {
+            params: { userName }
+        })
             .then((res) => {
                 setProcesses(res.data.processes);
                 getCurrentDiagram(res.data.processes);
@@ -128,11 +147,11 @@ export default function Sidebar(props) {
     }, [diagramId]);
     return (
         <div className='hierarchy-sidebar'>
-            <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)" }}>
+            <div className="d-flex justify-content-between align-items-center p-2" style={{ backgroundColor: "hsl(225, 10%, 95%)", width: "100%" }}>
                 <span style={{ fontWeight: "600" }}>Hierarchy</span>
                 <BsArrowBarLeft className='sidebar-btn' onClick={handleHidden} />
             </div>
-            <Table style={{ overflow: "auto", width: "100%", height: "20px" }}>
+            <Table style={{ overflow: "auto", width: "100%", height: "20px", tableLayout: "fixed" }}>
                 <tbody style={{ width: "100%" }}>
                     {processes && processes.map(process => renderRow(process))}
                 </tbody>

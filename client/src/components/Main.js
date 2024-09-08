@@ -10,6 +10,7 @@ import { formatProjectDates } from '../utils/utils';
 import { Form, Button, Modal } from "react-bootstrap";
 import { BsFillPlusCircleFill, BsThreeDots, BsTrash } from "react-icons/bs";
 import Loading from "./common/Loading";
+import Swal from 'sweetalert2';
 
 function Main() {
   const API_URL = process.env.REACT_APP_API_URL;
@@ -71,16 +72,35 @@ function Main() {
       setIsLoading(true);
       const duplicate = projects.filter((project) => project.name === newProjectName);
       if (duplicate.length > 0) {
-        alert(`Project, ${newProjectName}, already exists!`);
+        // alert(`Project, ${newProjectName}, already exists!`);
+        Swal.fire({
+          title: `Project, ${newProjectName}, already exists!`,
+          text: 'Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       } else {
+        // axios.post(`${API_URL}/api/project/add`, { projectName: newProjectName })
+        //   .then((res) => {
+        //     alert(`Project, ${newProjectName}, has been successfully added!`);
+        //   })
+        //   .catch(err => console.error("Error creating new project: ", err))
+        //   .finally(() => {
+        //     window.location.reload();
+        // });
         axios.post(`${API_URL}/api/project/add`, { projectName: newProjectName })
           .then((res) => {
-            alert(`Project, ${newProjectName}, has been successfully added!`);
+            Swal.fire({
+              title: `Project [${newProjectName}] has been successfully added!`,
+              icon: 'success',
+              confirmButtonText: 'OK'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.reload();
+              }
+            });
           })
-          .catch(err => console.error("Error creating new project: ", err))
-          .finally(() => {
-            window.location.reload();
-          });
+          .catch(err => console.error("Error creating new project: ", err));
       }
     }
   }
@@ -91,17 +111,32 @@ function Main() {
     if (selectedProject) {
       axios.post(`${API_URL}/api/project/delete`, { projectId: selectedProject.id })
         .then((res) => {
-          alert(res.data.message);
-          if (res.data.message.endsWith("successfully!")) {
-            window.location.reload()
-          } else {
-            handleCloseDeleteModal();
-          }
+          // alert(res.data.message);
+          Swal.fire({
+            title: `${res.data.message}!`,
+            icon: res.data.message.endsWith("successfully!") ? 'success' : 'info',
+            confirmButtonText: 'OK'
+        //   });
+        //   if (res.data.message.endsWith("successfully!")) {
+        //     window.location.reload()
+        //   } else {
+        //     handleCloseDeleteModal();
+        //   }
+        // })
+          }).then((result) => {
+            if (result.isConfirmed) {
+              if (res.data.message.endsWith("successfully!")) {
+                window.location.reload();
+              } else {
+                handleCloseDeleteModal();
+              }
+            }
+          });
         })
         .catch(err => {
           console.error("Error deleting project: ", err);
         })
-        .finally(() => setIsLoading(false))
+        .finally(() => setIsLoading(false));
     }
   }
 

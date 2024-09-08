@@ -74,7 +74,7 @@ function Main() {
       if (duplicate.length > 0) {
         // alert(`Project, ${newProjectName}, already exists!`);
         Swal.fire({
-          title: `Project, ${newProjectName}, already exists!`,
+          title: `Project [${newProjectName}] already exists!`,
           text: 'Please try again.',
           icon: 'error',
           confirmButtonText: 'OK'

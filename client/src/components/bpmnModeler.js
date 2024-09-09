@@ -915,9 +915,12 @@ function BpmnEditor() {
                     title: 'Diagram successfully deleted!',
                     icon: 'success',
                     confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        handleCloseDeleteModal();
+                        window.location.href = '/main';
+                    }
                 });
-                handleCloseDeleteModal();
-                window.location.href = '/main';
             } else {
                 // alert("Failed to delete the diagram.")
                 Swal.fire({

@@ -126,14 +126,14 @@ const deleteProject = async (req, res) => {
   try {
     const result = await sql.query(`
       IF NOT EXISTS (
-      SELECT 1 FROM diagram 
-      WHERE 
-      project_id = ${projectId}
+        SELECT 1 FROM diagram 
+        WHERE project_id = ${projectId}
       )
       BEGIN
-      DELETE FROM project 
-      WHERE 
-      id = ${projectId}
+        DELETE FROM diagram_contribution 
+        WHERE project_id = ${projectId};
+        DELETE FROM project 
+        WHERE id = ${projectId}
       END  
     `);
     if(result.rowsAffected.length === 0){

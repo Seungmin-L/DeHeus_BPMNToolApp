@@ -149,15 +149,14 @@ function Toolbar({
           <button onClick={onDelete} dangerouslySetInnerHTML={{ __html: Icons.delete }} className='delete-button' title="delete"/>
         )}
         <button onClick={onContributor} dangerouslySetInnerHTML={{ __html: Icons.user }} title="contributors" />
+        <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} title="export" />
         {mode === "contributor" && ( // if contributor
           <>
-            <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} title="export" />
             <button onClick={onCheckIn} dangerouslySetInnerHTML={{ __html: Icons.checkIn }} className='checkIn-button' title="check in" />
           </>
         )}
         {mode === 'editing' && ( // if editing
           <>
-            <button onClick={onExportClick} dangerouslySetInnerHTML={{ __html: Icons.export2 }} title="export" />
             <button onClick={onShare} dangerouslySetInnerHTML={{ __html: Icons.share }} className='share-button' title="request" />
             <button onClick={onSave} dangerouslySetInnerHTML={{ __html: Icons.save }} className='clipboard-button' title="save" />
 

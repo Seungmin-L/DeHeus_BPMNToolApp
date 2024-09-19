@@ -36,7 +36,7 @@
 			- 'subprocess/': custom subprocess from bpmn.js node module
 			- 'toolbar/': toolbar for modeler
 				- 'toolbar.js': handles basic modeler and user functions including checkout, publish, view contributor, and etc.
-		- 'providers/': extensions for the BPMN properties panel
+		- 'providers/': extensions for the BPMN properties panel. Further implementation guides on custom elements and properties can be found at 'https://github.com/bpmn-io/bpmn-js-examples/tree/main'
 			- 'descriptor/': moddle descriptors for custom BPMN elements
 			- 'props/': property entries for custom BPMN elements
 			- 'AttachmentPropertiesProvider.js': provider for displaying custom attachment property

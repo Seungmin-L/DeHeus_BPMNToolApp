@@ -102,7 +102,6 @@ Ensure these values are set correctly in the Azure environment or on your local 
 This project is deployed on **Azure App Service (AAS)** and **Azure Kubernetes (AKS)** using **Azure Container**.
 
 ### 2. Steps to Deploy (Frontend & Backend)
-
 You don't need to run `npm run build` manually since the Dockerfile already handles the build process. Tthe Docker image itself will include the necessary build steps.
 
 1. Log in to Azure Container Registry (ACR) and build the Docker image:
